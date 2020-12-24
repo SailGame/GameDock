@@ -1,12 +1,12 @@
-#include "ftxui/component/menu.hpp"
-#include "include/tetris/tetrisBox.hpp"
- 
 #include <chrono>
 #include <iostream>
 #include <thread>
  
-#include "ftxui/component/screen_interactive.hpp"
- 
+#include <ftxui/component/menu.hpp>
+#include <ftxui/component/screen_interactive.hpp>
+
+#include <tetris/tetrisBox.hpp>
+
 using namespace tetris;
 
 int main(int argc, const char* argv[]) {

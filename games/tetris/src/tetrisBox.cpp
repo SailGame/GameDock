@@ -1,6 +1,5 @@
 #include "tetris/tetrisBox.hpp"
 
-
 #include <algorithm>
 #include <iostream>
 
@@ -15,7 +14,8 @@ Element TetrisBox::Render() {
     auto style = (selected != int(i))
                      ? normal_style
                      : is_focused ? focused_style : selected_style;
-    auto focused = (selected != int(i)) ? nothing : is_focused ? focus : select;
+    auto focused =
+        (selected != int(i)) ? nothing : is_focused ? focus : ftxui::select;
     auto icon = (selected != int(i)) ? L"  " : L"> ";
     elements.push_back(text(icon + entries[i]) | style | focused);
   }
@@ -23,14 +23,11 @@ Element TetrisBox::Render() {
 }
 
 bool TetrisBox::OnEvent(Event event) {
-  if (!Focused())
-    return false;
+  if (!Focused()) return false;
 
   int old_selected = selected;
-  if (event == Event::ArrowUp || event == Event::Character('k'))
-    selected--;
-  if (event == Event::ArrowDown || event == Event::Character('j'))
-    selected++;
+  if (event == Event::ArrowUp || event == Event::Character('k')) selected--;
+  if (event == Event::ArrowDown || event == Event::Character('j')) selected++;
   if (event == Event::Tab && entries.size())
     selected = (selected + 1) % entries.size();
   if (event == Event::TabReverse && entries.size())
