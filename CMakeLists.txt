@@ -1,5 +1,5 @@
 cmake_minimum_required (VERSION 3.11)
- 
+
 include(FetchContent)
 FetchContent_Declare(ftxui
   GIT_REPOSITORY https://github.com/ArthurSonzogni/ftxui
@@ -11,6 +11,9 @@ if(NOT ftxui_POPULATED)
 endif()
 
 add_subdirectory(externals)
+
+enable_testing()
+
 add_subdirectory(common)
 add_subdirectory(games)
 

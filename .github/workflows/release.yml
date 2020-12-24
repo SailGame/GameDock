@@ -1,0 +1,64 @@
+name: Release
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v1
+      with:
+        submodules: 'recursive'
+
+    - name: Create Build Environment
+      # Some projects don't allow in-source building, so create a separate build directory
+      # We'll use this as our working directory for all subsequent commands
+      working-directory: ${{runner.workspace}}
+      run: |
+        cmake -E make_directory build
+        cmake -E make_directory build/release
+
+    - name: Configure CMake
+      # Use a bash shell so we can use the same syntax for environment variable
+      # access regardless of the host operating system
+      shell: bash
+      working-directory: ${{runner.workspace}}/build/release
+      # Note the current convention is to use the -S and -B options here to specify source 
+      # and build directories, but this is only available with CMake 3.13 and higher.  
+      # The CMake binaries on the Github Actions machines are (as of this writing) 3.12
+      run: cmake $GITHUB_WORKSPACE -DCMAKE_BUILD_TYPE=release
+
+    - name: Build Release
+      working-directory: ${{runner.workspace}}/build/release
+      shell: bash
+      # Execute the build.  You can specify a specific target with "--target <NAME>"
+      run: cmake --build . --config release
+
+    - name: Test Release
+      working-directory: ${{runner.workspace}}/build/release/
+      shell: bash
+      # Execute tests defined by the CMake configuration.  
+      # See https://cmake.org/cmake/help/latest/manual/ctest.1.html for more detail
+      run: ctest -L GameDock
+
+    - name: Create package
+      id: package
+      run: |
+        PACKAGE_NAME=sailgame.core.${GITHUB_REF#refs/tags/}.${{ matrix.goos }}.${{ matrix.goarch }}.tar.gz
+        cp README.md build/
+        cp LICENSE build/
+        tar -czvf $PACKAGE_NAME -C build .
+        echo ::set-output name=name::${PACKAGE_NAME}
+
+    - name: Upload asset
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ github.event.release.upload_url }}
+        asset_path: ./${{ steps.package.outputs.name }}
+        asset_name: ${{ steps.package.outputs.name }}
+        asset_content_type: application/gzip
