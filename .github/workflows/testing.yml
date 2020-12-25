@@ -34,7 +34,7 @@ jobs:
       uses: actions/cache@v2
       with:
         path: ${{runner.workspace}}/build/externals
-        key: ${{ runner.os }}-build-${{ hashFiles('externals/**/CMakeLists.txt') }}
+        key: ${{ runner.os }}-build-${{ matrix.build_type }}-${{ hashFiles('externals/**/CMakeLists.txt') }}
 
     - name: Build
       working-directory: ${{runner.workspace}}/build/
