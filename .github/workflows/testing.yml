@@ -30,6 +30,12 @@ jobs:
       working-directory: ${{runner.workspace}}/build/
       run: cmake $GITHUB_WORKSPACE -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
 
+    - name: Cache externals
+      uses: actions/cache@v2
+      with:
+        path: ${{runner.workspace}}/build/externals
+        key: ${{ runner.os }}-build-${{ hashFiles('externals/**/CMakeLists.txt') }}
+
     - name: Build
       working-directory: ${{runner.workspace}}/build/
       shell: bash
