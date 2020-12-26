@@ -16,13 +16,20 @@ else()
 endif()
 
 aux_source_directory(. SOURCE)
+add_subdirectory(archive)
+add_subdirectory(component)
+add_subdirectory(dock)
+add_subdirectory(game)
 add_subdirectory(grpc)
-add_subdirectory(home)
 add_subdirectory(tests)
 
 add_library(${PROJECT_NAME} ${SOURCE})
 
-target_link_libraries(${PROJECT_NAME} PRIVATE ftxui::component grpc++)
+target_link_libraries(${PROJECT_NAME}
+  grpc++
+  ftxui::screen
+  ftxui::dom
+  ftxui::component)
 
 target_include_directories(${PROJECT_NAME} PUBLIC ..)
 

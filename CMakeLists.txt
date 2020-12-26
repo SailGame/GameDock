@@ -28,10 +28,7 @@ project (GameDock)
 
 add_executable(main main.cpp)
 target_link_libraries(main
-  PRIVATE ftxui::screen
-  PRIVATE ftxui::dom
-  PRIVATE ftxui::component
-  PRIVATE tetris
+  PRIVATE common
 )
 
 set_target_properties(main PROPERTIES CXX_STANDARD 17)
