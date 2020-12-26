@@ -18,4 +18,4 @@ jobs:
 
     - name: Dry run
       shell: bash
-      run: python3 run-clang-format.py -d -r .
+      run: python3 run-clang-format.py -r .
