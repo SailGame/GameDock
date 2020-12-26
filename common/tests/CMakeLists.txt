@@ -1,5 +1,13 @@
 project (common_unit_test)
 
+if(MSVC)
+    add_compile_options(
+        $<$<CONFIG:>:/MT> #---------|
+        $<$<CONFIG:Debug>:/MTd> #---|-- Statically link the runtime libraries
+        $<$<CONFIG:Release>:/MT> #--|
+    )
+endif()
+
 aux_source_directory(. SOURCE)
 
 add_executable(common_unit_test main.cpp ${SOURCE})
