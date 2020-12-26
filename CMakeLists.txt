@@ -1,5 +1,15 @@
 cmake_minimum_required (VERSION 3.11)
 
+enable_testing()
+
+if(MSVC)
+    add_compile_options(
+        $<$<CONFIG:>:/MT> #---------|
+        $<$<CONFIG:Debug>:/MTd> #---|-- Statically link the runtime libraries
+        $<$<CONFIG:Release>:/MT> #--|
+    )
+endif()
+
 include(FetchContent)
 FetchContent_Declare(ftxui
   GIT_REPOSITORY https://github.com/ArthurSonzogni/ftxui
@@ -11,9 +21,6 @@ if(NOT ftxui_POPULATED)
 endif()
 
 add_subdirectory(externals)
-
-enable_testing()
-
 add_subdirectory(common)
 add_subdirectory(games)
 
