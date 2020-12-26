@@ -16,5 +16,5 @@ make
 ```bash
 # clang-format
 # version requirement >10
-./run-clang-format.py
+python3 run-clang-format.py -i -r .
 ```

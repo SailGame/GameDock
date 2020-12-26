@@ -1,21 +1,21 @@
-  
+
 #include <gtest/gtest.h>
 
-namespace Common { namespace Test {
+namespace Common {
+namespace Test {
 
 using namespace testing;
 
 class Fixture : public ::testing::Test {
-public:
-    Fixture() {}
+ public:
+  Fixture() {}
 
-    void SetUp() {}
+  void SetUp() {}
 
-    void TearDown() {}
+  void TearDown() {}
 };
 
-TEST_F(Fixture, Hello) {
-    EXPECT_TRUE(true);
-}
+TEST_F(Fixture, Hello) { EXPECT_TRUE(true); }
 
-}}
+}  // namespace Test
+}  // namespace Common
