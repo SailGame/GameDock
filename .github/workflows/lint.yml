@@ -1,0 +1,21 @@
+name: Lint
+
+# Trigger on PRs (excluding documentation changes), and nightly.
+on:
+  pull_request:
+  schedule:
+    - cron: 0 0 * * * # daily at 00:00
+
+jobs:
+  clang-format:
+    runs-on: ubuntu-20.04
+
+    steps:
+    - uses: actions/checkout@v1
+
+    - name: Install clang-format
+      run: sudo apt-get install -y clang-format
+
+    - name: Dry run
+      shell: bash
+      run: python3 run-clang-format.py -r .
