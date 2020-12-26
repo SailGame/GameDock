@@ -39,7 +39,7 @@ jobs:
       working-directory: ${{runner.workspace}}/build/
       shell: bash
       run: 
-        cmake --build . --config ${{ matrix.node }}
+        cmake --build . --config ${{ matrix.node }} -j 4
 
     - name: Test
       working-directory: ${{runner.workspace}}/build/
