@@ -1,9 +1,9 @@
-`#pragma once
+#pragma once
 
-    namespace common {
-  namespace archive {
+namespace common {
+namespace archive {
 
-  class Archive {};
+class Archive {};
 
-  }  // namespace archive
+}  // namespace archive
 }  // namespace common

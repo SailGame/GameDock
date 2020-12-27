@@ -12,7 +12,7 @@ class ModeSelector : public ftxui::Component {
  public:
   ModeSelector();
   ftxui::Element Render() override;
-  virtual bool OnEvent(ftxui::Event e) { return mMenu.OnEvent(e); }
+  virtual bool OnEvent(ftxui::Event e) override { return mMenu.OnEvent(e); }
 
  private:
   void OnEnter();

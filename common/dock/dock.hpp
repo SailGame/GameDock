@@ -18,14 +18,9 @@ class Dock : public ftxui::Component {
 
   void Loop();
 
-  ftxui::Element Render() override { return mCurrentElement->Render(); }
+  ftxui::Element Render() override;
 
-  virtual bool OnEvent(ftxui::Event e) {
-    // TODO: use F1~F12 as functional key
-    // e.g. exit game, list room, xxx
-    // pass other event to downstream
-    return mCurrentElement->OnEvent(e);
-  }
+  virtual bool OnEvent(ftxui::Event e) override;
 
  private:
   DockConfig mDockConfig;

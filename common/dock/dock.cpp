@@ -30,5 +30,14 @@ void Dock::Loop() {
   mScreen.Loop(this);
 }
 
+Element Dock::Render() { return mCurrentElement->Render(); }
+
+bool Dock::OnEvent(ftxui::Event e) {
+  // TODO: use F1~F12 as functional key
+  // e.g. exit game, list room, xxx
+  // pass other event to downstream
+  return mCurrentElement->OnEvent(e);
+}
+
 }  // namespace dock
 }  // namespace common
