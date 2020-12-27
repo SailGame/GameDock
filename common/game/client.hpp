@@ -1,20 +1,23 @@
 #pragma once
 
 #include <ftxui/component/component.hpp>
-
-#include "hook.hpp"
+#include <string>
 
 namespace common {
 namespace game {
 
+struct GameInfo {
+  std::string GameName;
+  bool SupportsOnlineMode = false;
+  bool SupportsOfflineMode = false;
+};
+
 class GameClient {
   virtual ftxui::Component* UIComponent() = 0;
+  virtual GameInfo& GetGameInfo() const = 0;
   virtual void Start() = 0;
   virtual void Stop() = 0;
   virtual void HandleServerMsg(/*TODO*/) = 0;
-  virtual void SetPlugin(Plugin*) = 0;
-  virtual bool SupportsOnlineMode() = 0;
-  virtual bool SupportsOfflineMode() = 0;
 };
 
 }  // namespace game

@@ -8,11 +8,11 @@
 namespace common {
 namespace dock {
 
-class ModeSelector : public ftxui::Component {
+class Lobby : public ftxui::Component {
  public:
-  ModeSelector();
+  Lobby();
   ftxui::Element Render() override;
-  virtual bool OnEvent(ftxui::Event e) override { return mMenu.OnEvent(e); }
+  bool OnEvent(ftxui::Event e) override;
 
  private:
   void OnEnter();

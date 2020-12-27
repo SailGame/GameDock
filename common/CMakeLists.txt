@@ -15,6 +15,9 @@ else()
   set(_GRPC_CPP_PLUGIN_EXECUTABLE $<TARGET_FILE:grpc_cpp_plugin>)
 endif()
 
+FIND_PACKAGE(Boost 1.69 COMPONENTS program_options REQUIRED)
+INCLUDE_DIRECTORIES( ${Boost_INCLUDE_DIR} )
+
 aux_source_directory(. SOURCE)
 add_subdirectory(archive)
 add_subdirectory(component)
@@ -29,7 +32,8 @@ target_link_libraries(${PROJECT_NAME}
   grpc++
   ftxui::screen
   ftxui::dom
-  ftxui::component)
+  ftxui::component
+  ${Boost_LIBRARIES})
 
 target_include_directories(${PROJECT_NAME} PUBLIC ..)
 

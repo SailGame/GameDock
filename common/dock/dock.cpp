@@ -5,7 +5,7 @@
 #include <ftxui/screen/screen.hpp>
 #include <thread>
 
-#include "modeSelector.hpp"
+#include "lobby.hpp"
 
 namespace common {
 namespace dock {
@@ -14,7 +14,7 @@ using namespace ftxui;
 
 Dock::Dock(const DockConfig& config)
     : mDockConfig(config), mScreen(ScreenInteractive::Fullscreen()) {
-  mCurrentElement = &mModeSelector;
+  mCurrentElement = &mLobby;
 }
 Dock::~Dock() {}
 
