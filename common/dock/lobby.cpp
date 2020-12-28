@@ -1,5 +1,7 @@
 #include "lobby.hpp"
 
+#include "dock.hpp"
+
 #include <ftxui/component/component.hpp>
 
 namespace common {
@@ -8,16 +10,21 @@ namespace dock {
 using namespace ftxui;
 
 Lobby::Lobby() {
-  mMenu.entries = {L"Online", L"Offline"};
-  mMenu.selected = 0;
-  mMenu.on_enter = std::bind(&Lobby::OnEnter, this);
+  mRooms.entries = {L"Room1", L"Room2"};
+  mRooms.selected = 0;
+  mRooms.on_enter = std::bind(&Lobby::OnEnter, this);
 }
 
-Element Lobby::Render() { return vbox({mMenu.Render() | hcenter}); }
+Element Lobby::Render() { return vbox({mRooms.Render() | vcenter}); }
 
-bool Lobby::OnEvent(ftxui::Event e) { return mMenu.OnEvent(e); }
+bool Lobby::OnEvent(ftxui::Event e) { return mRooms.OnEvent(e); }
 
-void Lobby::OnEnter() {}
+void Lobby::OnEnter() {
+  if(Focused())
+  {
+
+  }
+}
 
 }  // namespace dock
 }  // namespace common

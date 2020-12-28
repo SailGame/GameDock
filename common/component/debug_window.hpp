@@ -2,23 +2,24 @@
 #pragma once
 
 #include <ftxui/component/component.hpp>
-#include <ftxui/component/menu.hpp>
 #include <ftxui/screen/screen.hpp>
 
+#include <string>
+
 namespace common {
-namespace dock {
+namespace component {
 
-class Lobby : public ftxui::Component {
+class DebugWindow : public ftxui::Component {
  public:
-  Lobby();
+  explicit DebugWindow(unsigned int maxLines);
   ftxui::Element Render() override;
-  bool OnEvent(ftxui::Event e) override;
-
+  void DebugInfo(const std::wstring&);
  private:
   void OnEnter();
 
  private:
-  ftxui::Menu mRooms;
+  std::deque<std::wstring> mInfos;
+  const int mMaxLines;
 };
 
 }  // namespace dock
