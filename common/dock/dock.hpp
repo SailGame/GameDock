@@ -30,7 +30,6 @@ class Dock : public ftxui::Component {
 
   DockConfig mDockConfig;
   ftxui::ScreenInteractive mScreen;
-  DockFSM mDockFSM;
   dock::Lobby mLobby;
   component::DebugWindow mDebugWindow;
   // Room mRoom;

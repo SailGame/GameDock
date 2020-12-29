@@ -1,8 +1,5 @@
 project(common)
 
-FIND_PACKAGE(Boost 1.69 COMPONENTS program_options REQUIRED)
-INCLUDE_DIRECTORIES( ${Boost_INCLUDE_DIR} )
-
 # After using add_subdirectory, we can now use the grpc targets directly from
 # this build.
 set(_PROTOBUF_LIBPROTOBUF libprotobuf)
@@ -81,7 +78,7 @@ target_link_libraries(${PROJECT_NAME}
   ftxui::screen
   ftxui::dom
   ftxui::component
-  ${Boost_LIBRARIES}
+  # ${Boost_LIBRARIES}
   ${_GRPC_GRPCPP}
   ${_PROTOBUF_LIBPROTOBUF}
   ${_REFLECTION}
