@@ -23,6 +23,9 @@ jobs:
       with:
         submodules: 'recursive'
 
+    - name: Install Protoc
+      uses: arduino/setup-protoc@v1
+
     - name: Create Build Environment
       working-directory: ${{runner.workspace}}
       run: |

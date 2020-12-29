@@ -55,7 +55,7 @@ add_custom_command(
     COMMAND ${_PROTOBUF_PROTOC}
     ARGS --grpc_out=generate_mock_code=true:"${CMAKE_CURRENT_BINARY_DIR}"
     --cpp_out "${CMAKE_CURRENT_BINARY_DIR}"
-    -I "${proto_dir}" -I "/usr/include/"
+    -I "${proto_dir}"
     --plugin=protoc-gen-grpc="${_GRPC_CPP_PLUGIN_EXECUTABLE}"
     ${proto_files}
     DEPENDS "${proto_files}" "${_PROTOBUF_PROTOC}" "${_GRPC_CPP_PLUGIN_EXECUTABLE}"
