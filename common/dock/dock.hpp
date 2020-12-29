@@ -1,13 +1,12 @@
 #pragma once
 
+#include <common/component/debug_window.hpp>
 #include <common/game/client.hpp>
 #include <ftxui/component/screen_interactive.hpp>
 #include <ftxui/dom/elements.hpp>
 #include <ftxui/screen/screen.hpp>
 #include <iostream>
 #include <vector>
-
-#include <common/component/debug_window.hpp>
 
 #include "config.hpp"
 #include "lobby.hpp"
@@ -16,7 +15,7 @@
 namespace common {
 namespace dock {
 
-class Dock : public ftxui::Component{ 
+class Dock : public ftxui::Component {
  public:
   Dock(const DockConfig&);
   ~Dock();

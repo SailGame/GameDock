@@ -13,12 +13,14 @@ namespace dock {
 using namespace ftxui;
 
 Dock::Dock(const DockConfig& config)
-    : mDockConfig(config), mScreen(ScreenInteractive::Fullscreen()), mDebugWindow(10) {
-      (void) mDockConfig;
-      Add(&mLobby);
-      Add(&mDebugWindow);
-      SetActiveChild(&mLobby);
-      mCurrentElement = &mLobby;
+    : mDockConfig(config),
+      mScreen(ScreenInteractive::Fullscreen()),
+      mDebugWindow(10) {
+  (void)mDockConfig;
+  Add(&mLobby);
+  Add(&mDebugWindow);
+  SetActiveChild(&mLobby);
+  mCurrentElement = &mLobby;
 }
 
 Dock::~Dock() {}
@@ -36,58 +38,38 @@ void Dock::Loop() {
   mScreen.Loop(this);
 }
 
-Element Dock::Render() { 
-  return hbox({
-    mCurrentElement->Render() | border | flex,
-    vbox({
-      vbox({text(L"Game Info")}) | border,
-      mDebugWindow.Render() | border,
-    }) | border | flex
-  });
+Element Dock::Render() {
+  return hbox({mCurrentElement->Render() | border | flex,
+               vbox({
+                   vbox({text(L"Game Info")}) | border,
+                   mDebugWindow.Render() | border,
+               }) | border |
+                   flex});
 }
 
 bool Dock::OnEvent(ftxui::Event e) {
   // TODO: use F1~F12 as functional key
   // e.g. exit game, list room, xxx
   // pass other event to downstream
-  if(e == Event::Custom)
-  {
+  if (e == Event::Custom) {
     // refresh
     return true;
   }
-  mDebugWindow.DebugInfo(std::wstring(L"OnEvent: ")+e.character());
+  mDebugWindow.DebugInfo(std::wstring(L"OnEvent: ") + e.character());
 
-  if(OnFunctionEvent(e))
-  {
+  if (OnFunctionEvent(e)) {
     return true;
   }
   return mCurrentElement->OnEvent(e);
 }
 
-bool Dock::OnFunctionEvent(ftxui::Event e)
-{
-  if (e == Event::F1)
-  {
-
-  }
-  else if (e == Event::F2)
-  {
-    
-  }
-  else if (e == Event::F3)
-  {
-    
-  }
-  else if (e == Event::F4)
-  {
-    
-  }
-  else if (e == Event::F5)
-  {
-    
-  }
-  else
-  {
+bool Dock::OnFunctionEvent(ftxui::Event e) {
+  if (e == Event::F1) {
+  } else if (e == Event::F2) {
+  } else if (e == Event::F3) {
+  } else if (e == Event::F4) {
+  } else if (e == Event::F5) {
+  } else {
     return false;
   }
   return true;

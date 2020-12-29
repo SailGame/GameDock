@@ -1,8 +1,8 @@
 #include "lobby.hpp"
 
-#include "dock.hpp"
-
 #include <ftxui/component/component.hpp>
+
+#include "dock.hpp"
 
 namespace common {
 namespace dock {
@@ -20,9 +20,7 @@ Element Lobby::Render() { return vbox({mRooms.Render() | vcenter}); }
 bool Lobby::OnEvent(ftxui::Event e) { return mRooms.OnEvent(e); }
 
 void Lobby::OnEnter() {
-  if(Focused())
-  {
-
+  if (Focused()) {
   }
 }
 
