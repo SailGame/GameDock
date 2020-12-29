@@ -23,6 +23,22 @@ jobs:
       with:
         submodules: 'recursive'
 
+    - name: Cache Boost
+      id: cache-boost
+      uses: actions/cache@v1
+      with:
+        path: boost_1_72_0/installdir
+        key: ${{ runner.os }}-boost_1_72_0-fs-system-test
+
+    - name: Install Boost
+      if: steps.cache-boost.outputs.cache-hit != 'true'
+      run: |
+        wget https://dl.bintray.com/boostorg/release/1.72.0/source/boost_1_72_0.tar.gz
+        tar -zxf boost_1_72_0.tar.gz
+        cd boost_1_72_0
+        ./bootstrap.sh --with-libraries=filesystem,system,test
+        ./b2 install
+
     - name: Create Build Environment
       working-directory: ${{runner.workspace}}
       run: |
