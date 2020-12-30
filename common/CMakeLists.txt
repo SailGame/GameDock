@@ -50,12 +50,16 @@ list(APPEND grpc_hdrs
     "${CMAKE_CURRENT_BINARY_DIR}/core/types.grpc.pb.h"
 )
 
+if(NOT PROTOBUF_ROOT_DIR)
+set(PROTOBUF_ROOT_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../externals/grpc/third_party/protobuf)
+endif()
+
 add_custom_command(
     OUTPUT ${proto_srcs} ${proto_hdrs} ${grpc_srcs} ${grpc_hdrs}
     COMMAND ${_PROTOBUF_PROTOC}
     ARGS --grpc_out=generate_mock_code=true:"${CMAKE_CURRENT_BINARY_DIR}"
     --cpp_out "${CMAKE_CURRENT_BINARY_DIR}"
-    -I "${proto_dir}"
+    -I "${proto_dir}" -I "${PROTOBUF_ROOT_DIR}/src"
     --plugin=protoc-gen-grpc="${_GRPC_CPP_PLUGIN_EXECUTABLE}"
     ${proto_files}
     DEPENDS "${proto_files}" "${_PROTOBUF_PROTOC}" "${_GRPC_CPP_PLUGIN_EXECUTABLE}"
