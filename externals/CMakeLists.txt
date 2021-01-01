@@ -1,2 +1,2 @@
-add_subdirectory(grpc)
-add_subdirectory(googletest)
+add_subdirectory(grpc EXCLUDE_FROM_ALL)
+add_subdirectory(googletest EXCLUDE_FROM_ALL)
