@@ -1,4 +1,12 @@
+# enable x.y version format
+cmake_policy(SET CMP0048 NEW)
+project(Uno VERSION 0.1)
+
 cmake_minimum_required (VERSION 3.11)
+
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_BUILD_TYPE Debug)
 
 enable_testing()
 
@@ -22,9 +30,7 @@ endif()
 
 add_subdirectory(externals)
 add_subdirectory(common)
-# add_subdirectory(games)
-
-project (GameDock)
+add_subdirectory(games)
 
 add_executable(main main.cpp)
 target_link_libraries(main common)
