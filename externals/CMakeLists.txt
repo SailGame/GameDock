@@ -1,2 +1,4 @@
-add_subdirectory(grpc EXCLUDE_FROM_ALL)
-add_subdirectory(googletest EXCLUDE_FROM_ALL)
+# add_subdirectory(grpc)
+add_subdirectory(googletest)
+set(BUILD_UNO_LIB ON)
+add_subdirectory(CommonLib)

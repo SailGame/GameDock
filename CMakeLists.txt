@@ -22,13 +22,11 @@ endif()
 
 add_subdirectory(externals)
 add_subdirectory(common)
-add_subdirectory(games)
+# add_subdirectory(games)
 
 project (GameDock)
 
 add_executable(main main.cpp)
-target_link_libraries(main
-  PRIVATE common
-)
+target_link_libraries(main common)
 
 set_target_properties(main PROPERTIES CXX_STANDARD 17)

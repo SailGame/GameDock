@@ -1,9 +1,8 @@
-
 #pragma once
 
+#include <string>
 #include <ftxui/component/component.hpp>
 #include <ftxui/screen/screen.hpp>
-#include <string>
 
 namespace common {
 namespace component {

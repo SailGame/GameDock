@@ -1,16 +1,16 @@
 #pragma once
 
-#include <common/component/debug_window.hpp>
-#include <common/game/client.hpp>
+#include <iostream>
+#include <vector>
 #include <ftxui/component/screen_interactive.hpp>
 #include <ftxui/dom/elements.hpp>
 #include <ftxui/screen/screen.hpp>
-#include <iostream>
-#include <vector>
 
 #include "config.hpp"
 #include "lobby.hpp"
 #include "state.hpp"
+#include "../common/component/debug_window.hpp"
+#include "../common/game/client.hpp"
 
 namespace common {
 namespace dock {

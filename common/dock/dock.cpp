@@ -1,9 +1,9 @@
 #include "dock.hpp"
 
+#include <thread>
 #include <ftxui/component/menu.hpp>
 #include <ftxui/component/screen_interactive.hpp>
 #include <ftxui/screen/screen.hpp>
-#include <thread>
 
 #include "lobby.hpp"
 
