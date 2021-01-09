@@ -1,12 +1,11 @@
-project(common)
+project(dock)
 
 aux_source_directory(. SOURCE)
-add_subdirectory(archive)
 add_subdirectory(component)
-add_subdirectory(dock)
-add_subdirectory(game)
-add_subdirectory(grpc)
-add_subdirectory(tests)
+add_subdirectory(core)
+add_subdirectory(screen)
+# add_subdirectory(tests)
+add_subdirectory(util)
 
 add_library(${PROJECT_NAME} ${SOURCE})
 
@@ -14,7 +13,9 @@ target_link_libraries(${PROJECT_NAME} PUBLIC
   ftxui::screen
   ftxui::dom
   ftxui::component
-  pb_lib
+  spdlog::spdlog
+  common_lib
+  game_core
 )
 
 set_property(TARGET ${PROJECT_NAME} PROPERTY CXX_STANDARD 17)

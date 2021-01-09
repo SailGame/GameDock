@@ -4,13 +4,17 @@
 #include <vector>
 
 #include <sailgame_pb/uno/uno.pb.h>
+#include <sailgame_pb/core/types.pb.h>
 
+#include <sailgame/common/util.h>
+#include <sailgame/common/state_machine.h>
 #include <sailgame/uno/card.h>
+// #include "util.h"
 
-#include "util.h"
+namespace SailGame { namespace Uno {
 
-namespace SailGame { namespace Game {
-
+using Common::IState;
+using Common::Util;
 using ::Uno::StartGameSettings;
 
 class GameState {
@@ -72,11 +76,12 @@ public:
     Card mLastPlayedCard{};
 };
 
-class WholeState {
+class WholeState : public IState {
 public:
+    // WholeState(const BasicState &basicState) : BasicState(basicState) {}
+    // ~WholeState() = default;
 
 public:
-    std::map<int, int> mUserIdToPlayerIndex;
     GameState mGameState;
     SelfState mSelfState;
     std::vector<PlayerState> mPlayerStates;  // use playerIndex as index

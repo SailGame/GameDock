@@ -7,3 +7,6 @@
 [submodule "externals/CommonLib"]
 	path = externals/CommonLib
 	url = https://github.com/SailGame/CommonLib.git
+[submodule "externals/spdlog"]
+	path = externals/spdlog
+	url = https://github.com/gabime/spdlog

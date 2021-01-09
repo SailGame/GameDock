@@ -1,6 +1,6 @@
 #include "state.h"
 
-namespace SailGame { namespace Game {
+namespace SailGame { namespace Uno {
 
 void GameState::UpdateAfterDraw()
 {
@@ -52,8 +52,8 @@ void GameState::UpdateAfterPlay(Card card)
 void GameState::NextPlayer()
 {
     mCurrentPlayer = mIsInClockwise ? 
-        UnoUtil::Wrap(mCurrentPlayer + 1, mPlayerNum) :
-        UnoUtil::Wrap(mCurrentPlayer - 1, mPlayerNum);
+        Util::Wrap(mCurrentPlayer + 1, mPlayerNum) :
+        Util::Wrap(mCurrentPlayer - 1, mPlayerNum);
     // mTimeElapsed = 0;
 }
 

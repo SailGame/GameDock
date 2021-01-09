@@ -4,89 +4,46 @@
 
 #include <sailgame/common/state_machine.h>
 #include <sailgame/common/util.h>
+#include <sailgame/common/event.h>
+#include <sailgame/common/core_msg_builder.h>
 #include <sailgame/uno/msg_builder.h>
 
-#include "state.h"
+#include "state_machine.h"
 
-namespace SailGame { namespace Common {
+namespace SailGame { namespace Uno {
 
-using Game::Card;
-using Game::CardSet;
-using Game::GameState;
-using Game::WholeState;
-using Game::MsgBuilder;
-using Core::ProviderMsg;
-using Core::BroadcastMsg;
-using Core::RegisterRet;
-using Core::StartGameArgs;
-using Core::CloseGameArgs;
-using Core::QueryStateArgs;
-using Core::UserOperationArgs;
-using Core::NotifyMsgArgs;
-using ::Uno::StartGameSettings;
-using ::Uno::UserOperation;
-using ::Uno::NotifyMsg;
-using ::Uno::Draw;
-using ::Uno::DrawRsp;
-using ::Uno::Skip;
-using ::Uno::Play;
-using ::Uno::Uno;
-using ::Uno::Catch;
-using ::Uno::Doubt;
-using ::Uno::GameStart;
-using ::Uno::Exit;
-using ::Uno::CardColor;
-using ::Uno::CardText;
+using Common::CoreMsgBuilder;
 
-#define TransitionForMsg(MsgT) \
-    template<> \
-    template<> \
-    void StateMachine<WholeState>::TransitionForBroadcastMsg<MsgT>(const MsgT &msg)
-
-#define TransitionForEvent(EventT) \
-    template<> \
-    template<> \
-    OperationInRoomArgsPtr StateMachine<WholeState>::TransitionForUserInput<EventT>( \
-        const EventT &event)
-
-TransitionForMsg(BroadcastMsg);
-
-TransitionForMsg(NotifyMsg);
-TransitionForMsg(Draw);
-TransitionForMsg(DrawRsp);
-TransitionForMsg(Skip);
-TransitionForMsg(Play);
-
-TransitionForMsg(BroadcastMsg)
+void StateMachine::Transition(const BroadcastMsg &msg)
 {
     switch (msg.Msg_case()) {
         case BroadcastMsg::MsgCase::kCustom:
-            TransitionForBroadcastMsg<NotifyMsg>(
-                Util::UnpackGrpcAnyTo<NotifyMsg>(msg.custom()));
+            Transition(Common::Util::UnpackGrpcAnyTo<NotifyMsg>(msg.custom()));
             break;
         /// TODO: handle other cases
     }
     throw std::runtime_error("Unsupported msg type");
 }
 
-TransitionForMsg(NotifyMsg)
+void StateMachine::Transition(const NotifyMsg &msg)
 {
     switch (msg.Msg_case()) {
         case NotifyMsg::MsgCase::kDraw:
-            TransitionForBroadcastMsg<Draw>(msg.draw()); break;
+            Transition(msg.draw()); break;
         case NotifyMsg::MsgCase::kDrawRsp:
-            TransitionForBroadcastMsg<DrawRsp>(msg.drawrsp()); break;
+            Transition(msg.drawrsp()); break;
         case NotifyMsg::MsgCase::kSkip:
-            TransitionForBroadcastMsg<Skip>(msg.skip()); break;
+            Transition(msg.skip()); break;
         case NotifyMsg::MsgCase::kPlay:
-            TransitionForBroadcastMsg<Play>(msg.play()); break;
+            Transition(msg.play()); break;
         /// TODO: handle other cases
     }
     throw std::runtime_error("Unsupported msg type");
 }
 
-TransitionForMsg(Draw)
+void StateMachine::Transition(const Draw &msg)
 {
+    assert(mState.mGameState.mCardsNumToDraw == msg.number());
     mState.mPlayerStates[mState.mGameState.mCurrentPlayer].UpdateAfterDraw(
         msg.number());
 
@@ -94,10 +51,22 @@ TransitionForMsg(Draw)
     mState.mGameState.UpdateAfterDraw();
 }
 
-TransitionForMsg(DrawRsp)
+// OperationInRoomArgs StateMachine::Transition(const DrawEvent &event)
+// {
+//     assert(mState.mGameState.mCurrentPlayer == mState.mGameState.mSelfPlayerIndex);
+//     auto number = mState.mGameState.mCardsNumToDraw;
+//     mState.mPlayerStates[mState.mGameState.mCurrentPlayer].UpdateAfterDraw(
+//         number);
+
+//     mState.mGameState.UpdateAfterDraw();
+//     return CoreMsgBuilder::CreateOperationInRoomArgs(
+//         MsgBuilder::CreateDraw(number));
+// }
+
+void StateMachine::Transition(const DrawRsp &msg)
 {
     assert(mState.mGameState.IsMyTurn());
-    auto grpcCards = Util::ConvertGrpcRepeatedPtrFieldToVector(msg.cards());
+    auto grpcCards = Common::Util::ConvertGrpcRepeatedPtrFieldToVector(msg.cards());
 
     std::vector<Card> cards;
     for (auto card : grpcCards) {
@@ -106,16 +75,22 @@ TransitionForMsg(DrawRsp)
     mState.mSelfState.UpdateAfterDrawRsp(cards);
 }
 
-TransitionForMsg(Skip)
+void StateMachine::Transition(const Skip &msg)
 {
-    if (mState.mGameState.IsMyTurn()) {
-        mState.mSelfState.UpdateAfterSkip();
-    }
     mState.mPlayerStates[mState.mGameState.mCurrentPlayer].UpdateAfterSkip();
     mState.mGameState.UpdateAfterSkip();
 }
 
-TransitionForMsg(Play)
+// OperationInRoomArgs StateMachine::Transition(const SkipEvent &event)
+// {
+//     assert(mState.mGameState.mCurrentPlayer == mState.mGameState.mSelfPlayerIndex);
+//     mState.mSelfState.UpdateAfterSkip();
+//     mState.mPlayerStates[mState.mGameState.mCurrentPlayer].UpdateAfterSkip();
+//     mState.mGameState.UpdateAfterSkip();
+//     return CoreMsgBuilder::CreateOperationInRoomArgs(MsgBuilder::CreateSkip());
+// }
+
+void StateMachine::Transition(const Play &msg)
 {
     auto card = msg.card();
     if (mState.mGameState.IsMyTurn()) {
@@ -124,4 +99,17 @@ TransitionForMsg(Play)
     mState.mPlayerStates[mState.mGameState.mCurrentPlayer].UpdateAfterPlay(card);
     mState.mGameState.UpdateAfterPlay(card);
 }
+
+// OperationInRoomArgs StateMachine::Transition(const PlayEvent &event)
+// {
+//     assert(mState.mGameState.mCurrentPlayer == mState.mGameState.mSelfPlayerIndex);
+//     auto card = event.mCard;
+//     mState.mSelfState.UpdateAfterPlay(card);
+//     card.mColor = event.mNextColor;
+//     mState.mPlayerStates[mState.mGameState.mCurrentPlayer].UpdateAfterPlay(card);
+//     mState.mGameState.UpdateAfterPlay(card);
+//     return CoreMsgBuilder::CreateOperationInRoomArgs(
+//         MsgBuilder::CreatePlay(event.mCard, event.mNextColor));
+// }
+
 }}
