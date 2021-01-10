@@ -17,6 +17,10 @@ MATCHER_P2(QueryRoomArgsMatcher, token, roomId, "") {
     return arg.token() == token && arg.roomid() == roomId;
 }
 
+MATCHER_P2(ReadyMatcher, token, ready, "") {
+    return arg.token() == token && arg.ready() == ready;
+}
+
 MATCHER_P(ListenArgsMatcher, token, "") { return arg.token() == token; }
 
 }}

@@ -81,6 +81,9 @@ public:
     }
 
     static Element ShowGameSettings(const RoomDetails &details) {
+        if (details.gamename() == "") {
+            return text(L"empty");
+        }
         if (details.gamename() == "UNO") {
             return UnoUtil::ShowGameSettings(details.gamesetting());
         }

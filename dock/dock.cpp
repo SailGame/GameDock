@@ -7,8 +7,9 @@
 #include <ftxui/screen/string.hpp>
 #include <sailgame/common/network_interface.h>
 #include <sailgame/common/core_msg_builder.h>
-
 #include <sailgame_pb/core/types.pb.h>
+
+#include "../games/uno/src/state_machine.h"
 
 namespace SailGame { namespace Dock {
 
@@ -43,8 +44,11 @@ Dock::Dock(const std::shared_ptr<UIProxy> &uiProxy)
 
     mRoomScreen.OnExitRoom = [this] { mLobbyScreen.TakeFocus(); };
 
-    /// TODO: switch state machine
-    // mRoomScreen.OnGameStart = [this] { mLobbyScreen.TakeFocus(); };
+    mRoomScreen.OnGameStart = [this] { 
+        mUIProxy->SwitchToNewStateMachine(
+            SailGame::Uno::StateMachine::Create());
+        // mGameScreen.TakeFocus()
+    };
 }
 
 Dock::~Dock() {}

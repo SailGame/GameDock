@@ -11,7 +11,7 @@ endif()
 aux_source_directory(. DOCK_TEST_SRCS)
 
 add_executable(dock_test ${DOCK_TEST_SRCS})
-target_link_libraries(dock_test PRIVATE dock gtest gmock)
+target_link_libraries(dock_test dock gtest gmock)
 
 include(GoogleTest)
 gtest_discover_tests(dock_test PROPERTIES LABELS GameDock)

@@ -34,6 +34,5 @@ add_subdirectory(games)
 
 add_executable(main main.cpp)
 target_link_libraries(main dock)
-target_link_libraries(main uno_core)
 
 set_target_properties(main PROPERTIES CXX_STANDARD 17)

@@ -50,13 +50,29 @@ public:
         mThread->join();
     }
 
-    void UserEvent(const std::function<void()> &callback) {
+    void LoginSuccess(const std::string &token) {
+        EXPECT_CALL(*mMockStub, ListenRaw(_, ListenArgsMatcher(token)))
+            .Times(1)
+            .WillOnce(Return(mMockStream));
+        mDock.mUIProxy->OnLoginSuccess(token);
+    }
+
+    void UserEvent(const std::function<void()> &callback = []{}) {
         // wait for 1 seconds to display ui
         using namespace std::chrono_literals;
         std::this_thread::sleep_for(1s);
         callback();
         // an event is needed to refresh ui, i don't know why
         mDock.mScreen.PostEvent(ftxui::Event::Custom);
+    }
+
+    void CoreMsg(const BroadcastMsg &msg) {
+        EXPECT_CALL(*mMockStream, Read(_)).Times(1).WillOnce(
+            DoAll(SetArgPointee<0>(msg), Return(true)));
+        auto &networkInterface = mDock.mUIProxy->mNetworkInterface;
+        networkInterface->OnEventHappens(networkInterface->ReceiveMsg());
+
+        while (mDock.mUIProxy->mGameManager->HasEventToProcess()) {}
     }
 
 protected:

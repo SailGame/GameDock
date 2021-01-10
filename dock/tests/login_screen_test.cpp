@@ -1,10 +1,6 @@
-#include <gtest/gtest.h>
-#include <grpcpp/test/mock_stream.h>
-
 #include <sailgame_pb/core/types.pb.h>
 #include <ftxui/screen/string.hpp>
 
-#include "../dock.h"
 #include "matcher.h"
 #include "screen_fixture.h"
 
@@ -13,14 +9,10 @@ namespace SailGame { namespace Test {
 using namespace testing;
 using namespace Dock;
 using Common::CoreMsgBuilder;
-using Common::NetworkInterface;
-using ::Core::BroadcastMsg;
 using ::Core::ErrorNumber;
-using ::Core::MockGameCoreStub;
 using ftxui::to_string;
 using ftxui::to_wstring;
 using grpc::Status;
-using grpc::testing::MockClientReader;
 
 class LoginScreenFixture : public ScreenFixture {
 public:

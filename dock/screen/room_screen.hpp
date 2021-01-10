@@ -32,7 +32,7 @@ public:
         mContainer.Add(&mExitRoomButton);
 
         mReadyToggleButton.on_click = [this] {
-            if (mIsReady) {
+            if (!mIsReady) {
                 mUIProxy->OperationInRoom(
                     CoreMsgBuilder::CreateOperationInRoomArgs(Ready::READY));
             }
@@ -62,6 +62,8 @@ public:
 
     Element Render() final {
         Update();
+        // Remember that details could be empty
+        // because state machine is updated asynchrously.
         auto details = GetState().mRoomDetails;
 
         auto doc = hbox({
@@ -98,7 +100,11 @@ public:
     }
 
     bool AreAllUsersReady() const {
-        for (const auto &roomUser : GetState().mRoomDetails.user()) {
+        auto roomUsers = GetState().mRoomDetails.user();
+        if (roomUsers.empty()) {
+            return false;
+        }
+        for (const auto &roomUser : roomUsers) {
             if (roomUser.userstate() != RoomUser::READY) {
                 return false;
             }

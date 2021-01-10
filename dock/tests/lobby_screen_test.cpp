@@ -1,12 +1,8 @@
-#include <gtest/gtest.h>
-#include <grpcpp/test/mock_stream.h>
-
 #include <sailgame/uno/msg_builder.h>
 #include <sailgame_pb/core/types.pb.h>
 #include <ftxui/screen/string.hpp>
 #include <google/protobuf/util/message_differencer.h>
 
-#include "../dock.h"
 #include "matcher.h"
 #include "screen_fixture.h"
 
@@ -15,29 +11,29 @@ namespace SailGame { namespace Test {
 using namespace testing;
 using namespace Dock;
 using Common::CoreMsgBuilder;
-using Common::NetworkInterface;
-using ::Core::BroadcastMsg;
 using ::Core::ErrorNumber;
-using ::Core::MockGameCoreStub;
 using ftxui::to_string;
 using ftxui::to_wstring;
 using google::protobuf::util::MessageDifferencer;
 using grpc::Status;
-using grpc::testing::MockClientReader;
 
 class LobbyScreenFixture : public ScreenFixture {
 public:
     LobbyScreenFixture() : ScreenFixture() {
+        LoginSuccess(mToken);
+        mDock.mLobbyScreen.mUsername = "test";
+        mDock.mLobbyScreen.mPoints = 2147483648;
         mDock.mLobbyScreen.TakeFocus();
     }
+
+protected:
+    std::string mToken{"tttokenforlobby"};
 };
 
 TEST_F(LobbyScreenFixture, SearchRoomList_HasRoom) {
     std::string content = "UNO";
-    std::string token = "tttokenforlobby";
-    CoreMsgBuilder::SetToken(token);
     mDock.mLobbyScreen.mSearchInput.content = to_wstring(content);
-    UserEvent([]{});
+    UserEvent();
 
     std::vector<Room> roomList = {
         CoreMsgBuilder::CreateRoom("UNO", 101, {"a", "b", "c"}),
@@ -56,7 +52,7 @@ TEST_F(LobbyScreenFixture, SearchRoomList_HasRoom) {
             CoreMsgBuilder::CreateRoomUser("c", RoomUser::PREPARING),
         }, Uno::MsgBuilder::CreateStartGameSettings(
             true, true, false, false, 15)));
-    EXPECT_CALL(*mMockStub, QueryRoom(_, QueryRoomArgsMatcher(token, 101), _))
+    EXPECT_CALL(*mMockStub, QueryRoom(_, QueryRoomArgsMatcher(mToken, 101), _))
         .Times(1)
         .WillOnce(DoAll(SetArgPointee<2>(queryRoomRet), Return(Status::OK)));
 
@@ -72,10 +68,8 @@ TEST_F(LobbyScreenFixture, SearchRoomList_HasRoom) {
 
 TEST_F(LobbyScreenFixture, SearchRoomList_NoRoom) {
     std::string content = "UNA";
-    std::string token = "tttokenforlobby";
-    CoreMsgBuilder::SetToken(token);
     mDock.mLobbyScreen.mSearchInput.content = to_wstring(content);
-    UserEvent([]{});
+    UserEvent();
 
     auto listRoomRet = CoreMsgBuilder::CreateListRoomRet(ErrorNumber::OK, {});
     EXPECT_CALL(*mMockStub, ListRoom(_, ListRoomArgsMatcher(content), _))

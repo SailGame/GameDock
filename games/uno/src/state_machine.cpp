@@ -19,7 +19,7 @@ void StateMachine::Transition(const BroadcastMsg &msg)
     switch (msg.Msg_case()) {
         case BroadcastMsg::MsgCase::kCustom:
             Transition(Common::Util::UnpackGrpcAnyTo<NotifyMsg>(msg.custom()));
-            break;
+            return;
         /// TODO: handle other cases
     }
     throw std::runtime_error("Unsupported msg type");
@@ -29,13 +29,13 @@ void StateMachine::Transition(const NotifyMsg &msg)
 {
     switch (msg.Msg_case()) {
         case NotifyMsg::MsgCase::kDraw:
-            Transition(msg.draw()); break;
+            Transition(msg.draw()); return;
         case NotifyMsg::MsgCase::kDrawRsp:
-            Transition(msg.drawrsp()); break;
+            Transition(msg.drawrsp()); return;
         case NotifyMsg::MsgCase::kSkip:
-            Transition(msg.skip()); break;
+            Transition(msg.skip()); return;
         case NotifyMsg::MsgCase::kPlay:
-            Transition(msg.play()); break;
+            Transition(msg.play()); return;
         /// TODO: handle other cases
     }
     throw std::runtime_error("Unsupported msg type");

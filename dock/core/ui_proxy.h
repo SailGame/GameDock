@@ -114,7 +114,8 @@ public:
         return mGameManager->GetState();
     };
 
-private:
+// private:
+public:
     std::shared_ptr<NetworkInterface<false>> mNetworkInterface;
     std::shared_ptr<GameManager<false>> mGameManager;
     std::unique_ptr<std::thread> mGameManagerThread;
