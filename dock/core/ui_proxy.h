@@ -16,38 +16,10 @@ namespace SailGame { namespace Dock {
 using Common::CoreMsgBuilder;
 using Common::EventLoop;
 using Common::GameManager;
+using Common::NetworkInterface;
 using Common::IState;
 using Common::IStateMachine;
 using Common::NetworkInterface;
-// using ::Core::Account;
-// using ::Core::BroadcastMsg;
-// using ::Core::ControlRoomArgs;
-// using ::Core::ControlRoomRet;
-// using ::Core::CreateRoomArgs;
-// using ::Core::CreateRoomRet;
-// using ::Core::ErrorNumber;
-// using ::Core::ExitRoomArgs;
-// using ::Core::ExitRoomRet;
-// using ::Core::JoinRoomArgs;
-// using ::Core::JoinRoomRet;
-// using ::Core::ListenArgs;
-// using ::Core::ListenRet;
-// using ::Core::ListRoomArgs;
-// using ::Core::ListRoomRet;
-// using ::Core::LoginArgs;
-// using ::Core::LoginRet;
-// using ::Core::MessageArgs;
-// using ::Core::MessageRet;
-// using ::Core::OperationInRoomArgs;
-// using ::Core::OperationInRoomRet;
-// using ::Core::QueryAccountArgs;
-// using ::Core::QueryAccountRet;
-// using ::Core::QueryRoomArgs;
-// using ::Core::QueryRoomRet;
-// using ::Core::Ready;
-// using ::Core::Room;
-// using ::Core::RoomDetails;
-// using ::Core::RoomUser;
 using namespace ::Core;
 
 class IUIProxy {
@@ -79,12 +51,22 @@ public:
     virtual MessageRet Message(const MessageArgs &args) = 0;
 
     virtual const IState &GetState() const = 0;
+
+    virtual void Stop() = 0;
 };
 
 class UIProxy : public IUIProxy {
 public:
-    UIProxy(const std::shared_ptr<NetworkInterface<false>> &networkInterface)
-        : mNetworkInterface(networkInterface) {}
+    UIProxy(const std::shared_ptr<NetworkInterface<false>> &networkInterface,
+        bool isTest = false)
+        : mNetworkInterface(networkInterface), mIsTest(isTest) {}
+    
+    static std::shared_ptr<IUIProxy> Create(
+        const std::shared_ptr<NetworkInterface<false>> &networkInterface,
+        bool isTest = false) 
+    {
+        return std::make_shared<UIProxy>(networkInterface, isTest);
+    }
 
     virtual void SwitchToNewStateMachine(
         const std::shared_ptr<IStateMachine> &stateMachine) override
@@ -98,36 +80,68 @@ public:
         mGameManager = std::make_shared<GameManager<false>>(
             EventLoop::Create(), 
             SailGame::Dock::StateMachine::Create(), mNetworkInterface);
-        /// XXX: where to join
-        mGameManagerThread = std::make_unique<std::thread>(
-            [&, this] {
+        // token cannot be captured by reference here
+        // because the thread may start running after token gets destructed
+        mGameManagerThread = std::make_unique<std::thread>([token, this] {
+            if (!mIsTest) {
                 mGameManager->StartWithToken(token);
             }
-        );
+            else {
+                CoreMsgBuilder::SetToken(token);
+                // if test, NetworkInterface should Connect instead of AsyncListen
+                mGameManager->Start();
+            }
+        });
+    }
+
+    virtual void Stop() override {
+        if (mGameManager) {
+            assert(mGameManagerThread);
+            mGameManager->Stop();
+            mGameManagerThread->join();
+        }
     }
 
     virtual LoginRet Login(const LoginArgs &args) override {
         return mNetworkInterface->Login(args);
     }
 
-    virtual QueryAccountRet QueryAccount(const QueryAccountArgs &args) = 0;
+    virtual QueryAccountRet QueryAccount(const QueryAccountArgs &args) override {
+        return {};
+    }
 
-    virtual CreateRoomRet CreateRoom(const CreateRoomArgs &args) = 0;
+    virtual CreateRoomRet CreateRoom(const CreateRoomArgs &args) override {
+        return {};
+    }
 
-    virtual ControlRoomRet ControlRoom(const ControlRoomArgs &args) = 0;
+    virtual ControlRoomRet ControlRoom(const ControlRoomArgs &args) override {
+        return {};
+    }
 
-    virtual ListRoomRet ListRoom(const ListRoomArgs &args) = 0;
+    virtual ListRoomRet ListRoom(const ListRoomArgs &args) override {
+        return {};
+    }
 
-    virtual JoinRoomRet JoinRoom(const JoinRoomArgs &args) = 0;
+    virtual JoinRoomRet JoinRoom(const JoinRoomArgs &args) override {
+        return {};
+    }
 
-    virtual ExitRoomRet ExitRoom(const ExitRoomArgs &args) = 0;
+    virtual ExitRoomRet ExitRoom(const ExitRoomArgs &args) override {
+        return {};
+    }
 
-    virtual QueryRoomRet QueryRoom(const QueryRoomArgs &args) = 0;
+    virtual QueryRoomRet QueryRoom(const QueryRoomArgs &args) override {
+        return {};
+    }
 
     virtual OperationInRoomRet OperationInRoom(
-        const OperationInRoomArgs &args) = 0;
+        const OperationInRoomArgs &args) override {
+            return {};
+        }
 
-    virtual MessageRet Message(const MessageArgs &args) = 0;
+    virtual MessageRet Message(const MessageArgs &args) override {
+        return {};
+    }
 
     virtual const IState &GetState() const override {
         return mGameManager->GetState();
@@ -137,12 +151,19 @@ private:
     std::shared_ptr<NetworkInterface<false>> mNetworkInterface;
     std::shared_ptr<GameManager<false>> mGameManager;
     std::unique_ptr<std::thread> mGameManagerThread;
+    bool mIsTest{false};
 };
 
 class MockUIProxy : public UIProxy {
 public:
     MockUIProxy(const std::shared_ptr<NetworkInterface<false>> &networkInterface)
         : UIProxy(networkInterface) {}
+
+    static std::shared_ptr<IUIProxy> Create(
+        const std::shared_ptr<NetworkInterface<false>> &networkInterface) 
+    {
+        return std::make_shared<MockUIProxy>(networkInterface);
+    }
 
     virtual void SwitchToNewStateMachine(
         const std::shared_ptr<IStateMachine> &stateMachine) override {}

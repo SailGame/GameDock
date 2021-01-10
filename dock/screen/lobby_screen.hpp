@@ -14,6 +14,8 @@
 #include "../component/non_border_button.hpp"
 #include "../util/util.hpp"
 
+namespace SailGame { namespace Dock {
+
 using namespace ftxui;
 
 using ::Core::ErrorNumber;
@@ -131,7 +133,8 @@ public:
     std::vector<Room> mRooms;
     RoomDetails mDetails;
 
-private:
+public:
+// private:
     IUIProxy *mUIProxy;
     Container mContainer{Container::Vertical()};
     Container mSearchBar{Container::Horizontal()};
@@ -142,3 +145,5 @@ private:
     Container mRoomDetail{Container::Vertical()};
     Button mJoinRoomButton{L"Join"};
 };
+
+}}

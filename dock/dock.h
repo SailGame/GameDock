@@ -20,18 +20,19 @@ using SailGame::Dock::MockUIProxy;
 
 class Dock : public ftxui::Component {
 public:
-    Dock();
+    Dock(const std::shared_ptr<IUIProxy> &uiProxy);
 
     ~Dock();
 
     // FtxUI
     void Loop();
 
-private:
-    ftxui::ScreenInteractive mScreen;
+// private:
+public:
+    ftxui::ScreenInteractive mScreen{ScreenInteractive::Fullscreen()};
     
-    Container mScreenContainer = Container::Tab(nullptr);
-    std::unique_ptr<IUIProxy> mUIProxy;
+    Container mScreenContainer{Container::Tab(nullptr)};
+    std::shared_ptr<IUIProxy> mUIProxy;
     LoginScreen mLoginScreen;
     LobbyScreen mLobbyScreen;
     RoomScreen mRoomScreen;

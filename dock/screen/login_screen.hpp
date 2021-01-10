@@ -5,6 +5,8 @@
 #include <ftxui/component/input.hpp>
 #include <ftxui/component/container.hpp>
 
+namespace SailGame { namespace Dock {
+
 using namespace ftxui;
 
 using ::Core::ErrorNumber;
@@ -35,27 +37,30 @@ public:
 
     void SetUIProxy(IUIProxy *uiProxy) { mUIProxy = uiProxy; }
 
-  Element Render() final {
-    auto document =
-        vbox({
-            text(L"Login"),
-            separator(),
-            mUsernameInput.Render(),
-            mPasswordInput.Render(),
-            mLoginButton.Render(),
-        }) |
-        border;
+    Element Render() final {
+        auto document =
+            vbox({
+                text(L"Login"),
+                separator(),
+                mUsernameInput.Render(),
+                mPasswordInput.Render(),
+                mLoginButton.Render(),
+            }) |
+            border;
 
-    return document | 
-        size(HEIGHT, GREATER_THAN, 18) | 
-        size(WIDTH, GREATER_THAN, 18) |
-        center;
+        return document | 
+            size(HEIGHT, GREATER_THAN, 18) | 
+            size(WIDTH, GREATER_THAN, 18) |
+            center;
     }
 
-private:
+public:
+// private:
     IUIProxy *mUIProxy;
     Container mContainer{Container::Vertical()};
     Input mUsernameInput;
     Input mPasswordInput;
     Button mLoginButton{L"Login"};
 };
+
+}}

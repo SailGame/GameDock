@@ -9,6 +9,8 @@
 #include "../core/ui_proxy.h"
 #include "../core/state.h"
 
+namespace SailGame { namespace Dock {
+
 using namespace ftxui;
 
 using ::Core::Ready;
@@ -108,9 +110,12 @@ public:
 public:
     bool mIsReady{false};
 
-private:
+public:
+// private:
     IUIProxy *mUIProxy;
     Container mContainer{Container::Horizontal()};
     Button mReadyToggleButton{L"Ready"};
     Button mExitRoomButton{L"Exit Room"};
 };
+
+}}

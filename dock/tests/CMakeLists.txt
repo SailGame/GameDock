@@ -1,4 +1,4 @@
-project (common_unit_test)
+project (dock_test)
 
 if(MSVC)
     add_compile_options(
@@ -8,12 +8,16 @@ if(MSVC)
     )
 endif()
 
-aux_source_directory(. SOURCE)
+aux_source_directory(. DOCK_TEST_SRCS)
 
-add_executable(common_unit_test main.cpp ${SOURCE})
-target_link_libraries(common_unit_test PRIVATE common gtest gmock)
+add_executable(dock_test ${DOCK_TEST_SRCS})
+target_link_libraries(dock_test PRIVATE dock gtest gmock)
 
 include(GoogleTest)
-gtest_discover_tests(common_unit_test PROPERTIES LABELS GameDock)
+gtest_discover_tests(dock_test PROPERTIES LABELS GameDock)
 
-set_target_properties(common_unit_test PROPERTIES CXX_STANDARD 17)
+set_target_properties(dock_test 
+    PROPERTIES 
+    CXX_STANDARD 17
+    RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}"
+)

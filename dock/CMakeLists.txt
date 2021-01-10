@@ -1,13 +1,13 @@
 project(dock)
 
-aux_source_directory(. SOURCE)
+aux_source_directory(. DOCK_SRCS)
 add_subdirectory(component)
 add_subdirectory(core)
 add_subdirectory(screen)
-# add_subdirectory(tests)
+add_subdirectory(tests)
 add_subdirectory(util)
 
-add_library(${PROJECT_NAME} ${SOURCE})
+add_library(${PROJECT_NAME} ${DOCK_SRCS})
 
 target_link_libraries(${PROJECT_NAME} PUBLIC
   ftxui::screen

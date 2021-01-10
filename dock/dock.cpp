@@ -17,18 +17,14 @@ using ::Core::ErrorNumber;
 using SailGame::Common::CoreMsgBuilder;
 using SailGame::Common::NetworkInterface;
 
-Dock::Dock()
-    : mScreen(ScreenInteractive::Fullscreen())
+Dock::Dock(const std::shared_ptr<IUIProxy> &uiProxy)
+    : mUIProxy(uiProxy)
 {
     Add(&mScreenContainer);
     mScreenContainer.Add(&mLoginScreen);
     mScreenContainer.Add(&mLobbyScreen);
     mScreenContainer.Add(&mRoomScreen);
 
-    mUIProxy = std::make_unique<MockUIProxy>(
-        NetworkInterface<false>::Create(
-        NetworkInterface<false>::CreateStub("localhost:50051")
-    ));
     mLoginScreen.SetUIProxy(mUIProxy.get());
     mLobbyScreen.SetUIProxy(mUIProxy.get());
     mRoomScreen.SetUIProxy(mUIProxy.get());
