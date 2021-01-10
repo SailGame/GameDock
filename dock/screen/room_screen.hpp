@@ -17,7 +17,6 @@ using ::Core::Ready;
 using ::Core::RoomDetails;
 using ::Core::RoomUser;
 using SailGame::Common::CoreMsgBuilder;
-using SailGame::Dock::IUIProxy;
 using SailGame::Dock::DockUtil;
 using SailGame::Dock::State;
 
@@ -52,7 +51,7 @@ public:
         };
     }
 
-    void SetUIProxy(IUIProxy *uiProxy) { mUIProxy = uiProxy; }
+    void SetUIProxy(UIProxy *uiProxy) { mUIProxy = uiProxy; }
 
     void Update() {
         mReadyToggleButton.label = mIsReady ? L"Cancel" : L"Ready";
@@ -112,7 +111,7 @@ public:
 
 public:
 // private:
-    IUIProxy *mUIProxy;
+    UIProxy *mUIProxy;
     Container mContainer{Container::Horizontal()};
     Button mReadyToggleButton{L"Ready"};
     Button mExitRoomButton{L"Exit Room"};

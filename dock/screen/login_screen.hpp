@@ -35,7 +35,7 @@ public:
         };
     }
 
-    void SetUIProxy(IUIProxy *uiProxy) { mUIProxy = uiProxy; }
+    void SetUIProxy(UIProxy *uiProxy) { mUIProxy = uiProxy; }
 
     Element Render() final {
         auto document =
@@ -56,7 +56,7 @@ public:
 
 public:
 // private:
-    IUIProxy *mUIProxy;
+    UIProxy *mUIProxy;
     Container mContainer{Container::Vertical()};
     Input mUsernameInput;
     Input mPasswordInput;

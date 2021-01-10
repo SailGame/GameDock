@@ -15,12 +15,11 @@
 
 namespace SailGame { namespace Dock {
 
-using SailGame::Dock::IUIProxy;
-using SailGame::Dock::MockUIProxy;
+using SailGame::Dock::UIProxy;
 
 class Dock : public ftxui::Component {
 public:
-    Dock(const std::shared_ptr<IUIProxy> &uiProxy);
+    Dock(const std::shared_ptr<UIProxy> &uiProxy);
 
     ~Dock();
 
@@ -32,7 +31,7 @@ public:
     ftxui::ScreenInteractive mScreen{ScreenInteractive::Fullscreen()};
     
     Container mScreenContainer{Container::Tab(nullptr)};
-    std::shared_ptr<IUIProxy> mUIProxy;
+    std::shared_ptr<UIProxy> mUIProxy;
     LoginScreen mLoginScreen;
     LobbyScreen mLobbyScreen;
     RoomScreen mRoomScreen;

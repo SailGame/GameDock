@@ -17,7 +17,7 @@ using ::Core::ErrorNumber;
 using SailGame::Common::CoreMsgBuilder;
 using SailGame::Common::NetworkInterface;
 
-Dock::Dock(const std::shared_ptr<IUIProxy> &uiProxy)
+Dock::Dock(const std::shared_ptr<UIProxy> &uiProxy)
     : mUIProxy(uiProxy)
 {
     Add(&mScreenContainer);

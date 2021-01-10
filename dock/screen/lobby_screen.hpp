@@ -24,7 +24,6 @@ using ::Core::JoinRoomRet;
 using ::Core::RoomDetails;
 using SailGame::Common::CoreMsgBuilder;
 using SailGame::Common::Util;
-using SailGame::Dock::IUIProxy;
 using SailGame::Dock::NonBorderButton;
 using SailGame::Dock::DockUtil;
 
@@ -75,7 +74,7 @@ public:
         };
     }
 
-    void SetUIProxy(IUIProxy *uiProxy) { mUIProxy = uiProxy; }
+    void SetUIProxy(UIProxy *uiProxy) { mUIProxy = uiProxy; }
 
     void Update() {
         DockUtil::MapVectorToMenuEntries(mRoomList, mRooms, 
@@ -135,7 +134,7 @@ public:
 
 public:
 // private:
-    IUIProxy *mUIProxy;
+    UIProxy *mUIProxy;
     Container mContainer{Container::Vertical()};
     Container mSearchBar{Container::Horizontal()};
     Input mSearchInput;

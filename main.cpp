@@ -11,7 +11,7 @@ using SailGame::Common::EventLoop;
 using SailGame::Common::GameManager;
 using SailGame::Common::NetworkInterface;
 using SailGame::Dock::Dock;
-using SailGame::Dock::MockUIProxy;
+using SailGame::Dock::UIProxy;
 
 int main(int argc, const char* argv[]) {
     spdlog::set_default_logger(spdlog::basic_logger_mt("GameDock", "dev.log"));
@@ -19,7 +19,7 @@ int main(int argc, const char* argv[]) {
     spdlog::default_logger()->flush_on(spdlog::level::info);
     spdlog::info("hello, game dock!");
 
-    auto uiProxy = MockUIProxy::Create(
+    auto uiProxy = UIProxy::Create(
         NetworkInterface<false>::Create(
             NetworkInterface<false>::CreateStub("localhost:50051")));
     Dock dock(uiProxy);
