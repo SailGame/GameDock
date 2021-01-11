@@ -13,6 +13,8 @@ MATCHER_P(ListRoomArgsMatcher, gameName, "") {
     return arg.gamename() == gameName;
 }
 
+MATCHER_P(ExitRoomArgsMatcher, token, "") { return arg.token() == token; }
+
 MATCHER_P2(QueryRoomArgsMatcher, token, roomId, "") {
     return arg.token() == token && arg.roomid() == roomId;
 }

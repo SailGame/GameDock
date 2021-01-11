@@ -10,6 +10,7 @@ namespace SailGame { namespace Test {
 using namespace testing;
 using namespace Dock;
 using Common::CoreMsgBuilder;
+using Common::GameType;
 using ::Core::ErrorNumber;
 using ::Core::Ready;
 using ftxui::to_wstring;
@@ -46,6 +47,15 @@ TEST_F(RoomScreenFixture, ToggleReady) {
     EXPECT_FALSE(mDock.mRoomScreen.mIsReady);
 }
 
+TEST_F(RoomScreenFixture, ExitRoom) {
+    auto exitRoomRet = CoreMsgBuilder::CreateExitRoomRet(ErrorNumber::OK);
+    EXPECT_CALL(*mMockStub, ExitRoom(_, ExitRoomArgsMatcher(mToken), _))
+        .Times(1)
+        .WillOnce(DoAll(SetArgPointee<2>(exitRoomRet), Return(Status::OK)));
+    UserEvent(mDock.mRoomScreen.mExitRoomButton.on_click);
+    EXPECT_TRUE(mDock.mLobbyScreen.Focused());
+}
+
 TEST_F(RoomScreenFixture, NewPlayerJoins) {
     RoomDetails roomDetails = CoreMsgBuilder::CreateRoomDetails("UNO", 101, {
         CoreMsgBuilder::CreateRoomUser("a", RoomUser::READY),
@@ -65,5 +75,31 @@ TEST_F(RoomScreenFixture, NewPlayerJoins) {
     EXPECT_TRUE(MessageDifferencer::Equals(
         mDock.mRoomScreen.GetState().mRoomDetails, roomDetails));
     UserEvent();
+}
+
+TEST_F(RoomScreenFixture, GameStart) {
+    RoomDetails roomDetails = CoreMsgBuilder::CreateRoomDetails("UNO", 102, {
+        CoreMsgBuilder::CreateRoomUser("a", RoomUser::READY),
+        CoreMsgBuilder::CreateRoomUser("b", RoomUser::PREPARING),
+    }, Uno::MsgBuilder::CreateStartGameSettings(true, true, false, false, 15));
+    CoreMsg(
+        CoreMsgBuilder::CreateBroadcastMsgByRoomDetails(0, 0, 0, roomDetails));
+    UserEvent();
+
+    // b gets ready, game start now
+    roomDetails.mutable_user(1)->set_userstate(RoomUser::READY);
+    CoreMsg(
+        CoreMsgBuilder::CreateBroadcastMsgByRoomDetails(0, 0, 0, roomDetails));
+    EXPECT_TRUE(mDock.mRoomScreen.AreAllUsersReady());
+    EXPECT_EQ(mDock.mUIProxy->mGameManager->GetGameType(), GameType::NoGame);
+    EXPECT_EQ(mDock.mGameScreen.GetGameType(), GameType::NoGame);
+    // next frame: all players are ready in room screen
+    UserEvent();
+
+    // next frame: game screen
+    UserEvent();
+    EXPECT_EQ(mDock.mUIProxy->mGameManager->GetGameType(), GameType::Uno);
+    EXPECT_EQ(mDock.mGameScreen.GetGameType(), GameType::Uno);
+    EXPECT_TRUE(mDock.mGameScreen.Focused());
 }
 }}

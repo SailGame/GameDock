@@ -55,16 +55,19 @@ public:
 
     void Update() {
         mReadyToggleButton.label = mIsReady ? L"Cancel" : L"Ready";
+        // Remember that details could be empty
+        // because state machine is updated asynchrously.
+        mDetails = GetState().mRoomDetails;
+        // OnGameStart callback will switch state machine,
+        // so it should be invoked after updating mDetails
         if (AreAllUsersReady()) {
             OnGameStart();
         }
     }
 
     Element Render() final {
+        spdlog::error("room render");
         Update();
-        // Remember that details could be empty
-        // because state machine is updated asynchrously.
-        auto details = GetState().mRoomDetails;
 
         auto doc = hbox({
             vbox({
@@ -76,7 +79,7 @@ public:
                 separator(),
                 // playerlist
                 DockUtil::MapVectorToVBox(
-                    details.user(),
+                    mDetails.user(),
                     &DockUtil::RoomUserToText
                 )
             }),
@@ -85,10 +88,10 @@ public:
                 text(L"Room Detail"),
                 separator(),
                 /// TODO: owner can change game and its settings
-                text(to_wstring(details.gamename())),
-                text(to_wstring(details.roomid())),
+                text(to_wstring(mDetails.gamename())),
+                text(to_wstring(mDetails.roomid())),
                 separator(),
-                DockUtil::ShowGameSettings(details),
+                DockUtil::ShowGameSettings(mDetails),
             })
         }) | border;
 
@@ -114,9 +117,10 @@ public:
 
 public:
     bool mIsReady{false};
+    RoomDetails mDetails;
 
-public:
-// private:
+   public:
+    // private:
     UIProxy *mUIProxy;
     Container mContainer{Container::Horizontal()};
     Button mReadyToggleButton{L"Ready"};

@@ -12,6 +12,7 @@
 #include "screen/lobby_screen.hpp"
 #include "screen/login_screen.hpp"
 #include "screen/room_screen.hpp"
+#include "screen/game_screen.hpp"
 
 namespace SailGame { namespace Dock {
 
@@ -35,6 +36,7 @@ public:
     LoginScreen mLoginScreen;
     LobbyScreen mLobbyScreen;
     RoomScreen mRoomScreen;
+    GameScreen mGameScreen;
 };
 
 }}

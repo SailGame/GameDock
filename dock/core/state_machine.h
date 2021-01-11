@@ -10,6 +10,7 @@ using ::Core::BroadcastMsg;
 using ::Core::RoomDetails;
 using Common::IStateMachine;
 using Common::IState;
+using Common::GameType;
 
 class StateMachine : public IStateMachine {
 public:
@@ -20,6 +21,8 @@ public:
     }
 
     const IState &GetState() const override { return mState; }
+
+    GameType GetType() const override { return GameType::NoGame; }
 
 protected:
     virtual void Transition(const BroadcastMsg &msg) override {

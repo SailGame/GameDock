@@ -34,12 +34,9 @@ public:
 
     void SetUp() {
         spdlog::set_level(spdlog::level::err);
-        mThread = std::make_unique<std::thread>([&] {
+        mThread = std::make_unique<std::thread>([this] {
             mDock.Loop();
         });
-        using namespace std::chrono_literals;
-        // make sure mDock has entered loop before running test case
-        std::this_thread::sleep_for(10ms);
     }
 
     void TearDown() {
@@ -62,7 +59,7 @@ public:
         using namespace std::chrono_literals;
         std::this_thread::sleep_for(1s);
         callback();
-        // an event is needed to refresh ui, i don't know why
+        // post an event to refresh ui
         mDock.mScreen.PostEvent(ftxui::Event::Custom);
     }
 

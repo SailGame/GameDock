@@ -2,6 +2,7 @@
 
 #include <sailgame/common/state_machine.h>
 #include <sailgame/common/event.h>
+#include <sailgame/common/types.h>
 #include <sailgame_pb/core/types.pb.h>
 #include <sailgame_pb/uno/uno.pb.h>
 
@@ -10,6 +11,7 @@
 namespace SailGame { namespace Uno {
 
 using Common::IStateMachine;
+using Common::GameType;
 using namespace ::Core;
 using namespace ::Uno;
 
@@ -22,6 +24,8 @@ public:
     }
 
     const IState &GetState() const override { return mState; }
+
+    GameType GetType() const override { return GameType::Uno; }
 
 protected:
     virtual void Transition(const BroadcastMsg &msg) override;

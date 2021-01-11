@@ -25,10 +25,12 @@ Dock::Dock(const std::shared_ptr<UIProxy> &uiProxy)
     mScreenContainer.Add(&mLoginScreen);
     mScreenContainer.Add(&mLobbyScreen);
     mScreenContainer.Add(&mRoomScreen);
+    mScreenContainer.Add(&mGameScreen);
 
     mLoginScreen.SetUIProxy(mUIProxy.get());
     mLobbyScreen.SetUIProxy(mUIProxy.get());
     mRoomScreen.SetUIProxy(mUIProxy.get());
+    mGameScreen.SetUIProxy(mUIProxy.get());
 
     // navigation between screens
     mLoginScreen.OnLogin = [this](const auto& ret) {
@@ -44,10 +46,22 @@ Dock::Dock(const std::shared_ptr<UIProxy> &uiProxy)
 
     mRoomScreen.OnExitRoom = [this] { mLobbyScreen.TakeFocus(); };
 
-    mRoomScreen.OnGameStart = [this] { 
+    mRoomScreen.OnGameStart = [this] {
+        auto gameName = dynamic_cast<const State &>(mUIProxy->GetState())
+            .mRoomDetails.gamename();
+        
         mUIProxy->SwitchToNewStateMachine(
-            SailGame::Uno::StateMachine::Create());
-        // mGameScreen.TakeFocus()
+            DockUtil::GetStateMachineByGameName(gameName));
+
+        mGameScreen.SwitchToNewGameScreen(
+            DockUtil::GetGameScreenByGameName(gameName));
+        mGameScreen.TakeFocus();
+    };
+
+    mGameScreen.OnGameOver = [this] {
+        mUIProxy->SwitchToNewStateMachine(StateMachine::Create());
+        mGameScreen.ResetGameScreen();
+        mRoomScreen.TakeFocus();
     };
 }
 
