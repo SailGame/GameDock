@@ -29,7 +29,10 @@ public:
 
     void NextPlayer();
 
-    bool IsMyTurn() const { return mCurrentPlayer == mSelfPlayerIndex; }
+    bool IsMyTurn() const { 
+        return mCurrentPlayer == mSelfPlayerIndex && 
+            mSelfPlayerIndex != -1; 
+    }
 
 public:
     int mPlayerNum;

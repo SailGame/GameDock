@@ -13,9 +13,14 @@ using namespace ftxui;
 
 class NotMyTurnPanel : public Component, public Dock::UIProxyClient {
 public:
+    std::function<void()> OnMyTurn;
+
     NotMyTurnPanel() = default;
 
     Element Render() {
+        if (GetState().mGameState.IsMyTurn()) {
+            OnMyTurn();
+        }
         auto handcards = GetState().mSelfState.mHandcards;
         auto username = GetState().mPlayerStates[
             GetState().mGameState.mSelfPlayerIndex].mUsername;

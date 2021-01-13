@@ -86,10 +86,11 @@ public:
     void UserEvent(const std::function<void()> &callback = []{}) {
         // wait for 1 seconds to display ui
         using namespace std::chrono_literals;
-        std::this_thread::sleep_for(1s);
+        std::this_thread::sleep_for(0.5s);
         callback();
         // post an event to refresh ui
         mDock.mScreen.PostEvent(ftxui::Event::Custom);
+        std::this_thread::sleep_for(0.5s);
     }
 
     void CoreMsg(const BroadcastMsg &msg) {

@@ -72,7 +72,8 @@ private:
     bool mIsSkip;
     int mCardsNumToDraw;
 
-private:
+// private:
+public:
     Container mContainer{Container::Horizontal()};
     Button mPlayButton{L"Choose a card to play"};
     Button mPassButton;

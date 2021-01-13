@@ -2,7 +2,9 @@
 
 #include <ftxui/component/container.hpp>
 #include <sailgame/uno/card.h>
+#include <sailgame/uno/msg_builder.h>
 #include <sailgame/common/util.h>
+#include <sailgame/common/core_msg_builder.h>
 #include "../component/handcards_selector.hpp"
 #include "../dom.hpp"
 #include "../../../../dock/core/ui_proxy.h"
@@ -12,10 +14,13 @@ namespace SailGame { namespace Uno {
 
 using namespace ftxui;
 using Common::Util;
+using Common::CoreMsgBuilder;
 
 class ChooseCardPanel : public Component, public Dock::UIProxyClient {
 public:
     std::function<void()> OnCancel;
+
+    std::function<void()> OnPlay;
 
     ChooseCardPanel() {
         Add(&mContainer);
@@ -37,6 +42,9 @@ public:
     }
 
     Element Render() {
+        if (!GetState().mGameState.IsMyTurn()) {
+            OnPlay();
+        }
         auto handcards = GetState().mSelfState.mHandcards;
         auto username = GetState().mPlayerStates[
             GetState().mGameState.mSelfPlayerIndex].mUsername;
@@ -58,10 +66,15 @@ public:
     void TryToPlay() {
         auto handcards = GetState().mSelfState.mHandcards;
         auto isUno = (handcards.Number() == 1);
-        if (handcards.At(mCursor).CanBePlayedAfter(
+        auto cardToPlay = handcards.At(mCursor);
+        if (cardToPlay.CanBePlayedAfter(
             GetState().mGameState.mLastPlayedCard, isUno))
         {
-            // mUIProxy->Play
+            /// TODO: consider wild card
+            mUIProxy->OperationInRoom(
+                CoreMsgBuilder::CreateOperationInRoomArgs(
+                    MsgBuilder::CreatePlay<UserOperation>(
+                        cardToPlay, cardToPlay.mColor)));
         } 
         else {
             // mHandcardsSelector.SetHintText()
@@ -69,11 +82,12 @@ public:
     }
 
 public:
-    int mCursor{-1};
+    int mCursor{0};
 
-private:
+public:
+// private:
     Container mContainer{Container::Vertical()};
     HandcardsSelector mHandcardsSelector;
-    Button mCancelButton;
+    Button mCancelButton{L"Cancel"};
 };
 }}

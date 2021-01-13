@@ -24,8 +24,10 @@ public:
         mPanelContainer.Add(&mPlayOrPassPanel);
         mPanelContainer.Add(&mChooseCardPanel);
 
+        mNotMyTurnPanel.OnMyTurn = [this] { mPlayOrPassPanel.TakeFocus(); };
         mPlayOrPassPanel.OnPlay = [this] { mChooseCardPanel.TakeFocus(); };
         mChooseCardPanel.OnCancel = [this] { mPlayOrPassPanel.TakeFocus(); };
+        mChooseCardPanel.OnPlay = [this] { mNotMyTurnPanel.TakeFocus(); };
     }
 
     virtual void SetUIProxy(UIProxy *uiProxy) override {

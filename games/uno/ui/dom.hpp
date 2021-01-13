@@ -47,10 +47,10 @@ public:
         int selfIndex) 
     {
         return vbox({
-            OtherPlayerBox(states[Util::Wrap(selfIndex - 2, 4)]),
+            OtherPlayerBox(states[Util::Wrap(selfIndex + 2, 4)]),
             hbox({
-                OtherPlayerBox(states[Util::Wrap(selfIndex - 1, 4)]),
                 OtherPlayerBox(states[Util::Wrap(selfIndex + 1, 4)]),
+                OtherPlayerBox(states[Util::Wrap(selfIndex - 1, 4)]),
             })
         });
     }
