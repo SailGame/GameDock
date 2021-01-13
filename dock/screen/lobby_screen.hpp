@@ -13,6 +13,7 @@
 
 #include "../component/non_border_button.hpp"
 #include "../util/util.hpp"
+#include "../core/ui_proxy.h"
 
 namespace SailGame { namespace Dock {
 
@@ -27,7 +28,7 @@ using SailGame::Common::Util;
 using SailGame::Dock::NonBorderButton;
 using SailGame::Dock::DockUtil;
 
-class LobbyScreen : public Component {
+class LobbyScreen : public Component, public UIProxyClient {
 public:
     std::function<void()> OnJoinRoom;
 
@@ -73,8 +74,6 @@ public:
             }
         };
     }
-
-    void SetUIProxy(UIProxy *uiProxy) { mUIProxy = uiProxy; }
 
     void Update() {
         DockUtil::MapVectorToMenuEntries(mRoomList, mRooms, 
@@ -134,7 +133,6 @@ public:
 
 public:
 // private:
-    UIProxy *mUIProxy;
     Container mContainer{Container::Vertical()};
     Container mSearchBar{Container::Horizontal()};
     Input mSearchInput;

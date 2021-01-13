@@ -4,16 +4,18 @@
 #include <ftxui/screen/string.hpp>
 #include <sailgame_pb/core/types.pb.h>
 #include <sailgame/common/util.h>
+#include <sailgame/common/types.h>
 #include <sailgame/common/state_machine.h>
 
 #include "../../games/uno/src/util.h"
 #include "../../games/uno/src/state_machine.h"
-#include "../../games/uno/src/game_screen.h"
+#include "../../games/uno/ui/game_screen.hpp"
 #include "../screen/game_screen.hpp"
 #include "../core/state_machine.h"
 
 namespace SailGame { namespace Dock {
 
+using Common::GameType;
 using Common::IStateMachine;
 using ::Core::Room;
 using ::Core::RoomDetails;
@@ -96,8 +98,9 @@ public:
         throw std::runtime_error("Unsupported game.");
     }
 
+    /// TODO: use gametype
     static std::shared_ptr<IStateMachine> GetStateMachineByGameName(
-        const std::string gameName)
+        const std::string &gameName)
     {
         if (gameName == "UNO") {
             return Uno::StateMachine::Create();
@@ -106,13 +109,21 @@ public:
         throw std::runtime_error("Unsupported game.");
     }
 
+    /// TODO: use gametype
     static std::shared_ptr<GameScreen> GetGameScreenByGameName(
-        const std::string gameName)
+        const std::string &gameName)
     {
         if (gameName == "UNO") {
             return Uno::GameScreen::Create();
         }
         /// TODO: support other games
+        throw std::runtime_error("Unsupported game.");
+    }
+
+    static GameType GetGameTypeByGameName(const std::string &gameName) {
+        if (gameName == "UNO") {
+            return GameType::Uno;
+        }
         throw std::runtime_error("Unsupported game.");
     }
 };

@@ -10,4 +10,9 @@ aux_source_directory(. CORE_SRCS)
 # and the primary template will always get invoked.
 # That's why we use OBJECT library here: always link all objects.
 add_library(uno_core OBJECT ${CORE_SRCS})
-target_link_libraries(uno_core PUBLIC uno_lib)
+target_link_libraries(uno_core PUBLIC 
+    uno_lib
+    ftxui::screen
+    ftxui::dom
+    ftxui::component
+)

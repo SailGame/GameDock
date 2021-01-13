@@ -31,16 +31,16 @@ public:
 
     bool IsMyTurn() const { return mCurrentPlayer == mSelfPlayerIndex; }
 
-   public:
+public:
     int mPlayerNum;
     StartGameSettings mGameSettings;
+    int mSelfPlayerIndex{-1};
     
     int mCurrentPlayer{-1};
-    int mSelfPlayerIndex{-1};
     bool mIsInClockwise{true};
-    int mTimeElapsed{0};
     Card mLastPlayedCard{};
     int mCardsNumToDraw{1};  // +2 and +4 can accumulate
+    int mTimeElapsed{0};
 };
 
 class SelfState {
@@ -62,6 +62,8 @@ public:
 class PlayerState {
 public:
     PlayerState() = default;
+
+    PlayerState(const std::string &username) : mUsername(username) {}
 
     void UpdateAfterDraw(int number);
     

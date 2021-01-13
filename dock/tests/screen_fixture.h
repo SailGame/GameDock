@@ -8,6 +8,8 @@
 #include <ftxui/screen/string.hpp>
 
 #include "../dock.h"
+#include "matcher.h"
+#include "../util/util.hpp"
 
 namespace SailGame { namespace Test {
 
@@ -18,6 +20,7 @@ using Common::NetworkInterface;
 using ::Core::BroadcastMsg;
 using ::Core::ErrorNumber;
 using ::Core::MockGameCoreStub;
+using ::Core::RoomDetails;
 using ftxui::to_string;
 using ftxui::to_wstring;
 using grpc::Status;
@@ -34,7 +37,14 @@ public:
 
     void SetUp() {
         spdlog::set_level(spdlog::level::err);
-        mThread = std::make_unique<std::thread>([this] {
+        // mTimerThread = std::make_unique<std::thread>([this] {
+        //     for (;;) {
+        //         using namespace std::chrono_literals;
+        //         std::this_thread::sleep_for(0.05s);
+        //         mDock.mScreen.PostEvent(ftxui::Event::Custom);
+        //     }
+        // });
+        mDockThread = std::make_unique<std::thread>([this] {
             mDock.Loop();
         });
     }
@@ -44,14 +54,33 @@ public:
         std::this_thread::sleep_for(1s);
         mDock.mScreen.ExitLoopClosure()();
         mDock.mUIProxy->Stop();
-        mThread->join();
+        mDockThread->join();
     }
 
-    void LoginSuccess(const std::string &token) {
+    void LoginSuccess(const std::string &token, 
+        const std::string &username = "test") 
+    {
         EXPECT_CALL(*mMockStub, ListenRaw(_, ListenArgsMatcher(token)))
             .Times(1)
             .WillOnce(Return(mMockStream));
-        mDock.mUIProxy->OnLoginSuccess(token);
+        mDock.mUIProxy->OnLoginSuccess(token, username);
+    }
+
+    void GameStart(const RoomDetails &roomDetails) {
+        mDock.mRoomScreen.TakeFocus();
+        CoreMsg(CoreMsgBuilder::CreateBroadcastMsgByRoomDetails(
+            0, 0, 0, roomDetails));
+        EXPECT_TRUE(mDock.mRoomScreen.AreAllUsersReady());
+        EXPECT_EQ(mDock.mUIProxy->mGameManager->GetGameType(), GameType::NoGame);
+        EXPECT_EQ(mDock.mGameScreen.GetGameType(), GameType::NoGame);
+        // next frame: all players are ready in room screen
+        UserEvent();
+        // next frame: game screen
+        UserEvent();
+        auto gameType = DockUtil::GetGameTypeByGameName(roomDetails.gamename());
+        EXPECT_EQ(mDock.mUIProxy->mGameManager->GetGameType(), gameType);
+        EXPECT_EQ(mDock.mGameScreen.GetGameType(), gameType);
+        EXPECT_TRUE(mDock.mGameScreen.Focused());
     }
 
     void UserEvent(const std::function<void()> &callback = []{}) {
@@ -77,7 +106,8 @@ protected:
     std::shared_ptr<MockGameCoreStub> mMockStub;
 
     Dock::Dock mDock;
-    std::unique_ptr<std::thread> mThread;
+    std::unique_ptr<std::thread> mDockThread;
+    std::unique_ptr<std::thread> mTimerThread;
 };
 
 }}

@@ -36,8 +36,9 @@ Dock::Dock(const std::shared_ptr<UIProxy> &uiProxy)
     mLoginScreen.OnLogin = [this](const auto& ret) {
         assert(ret.err() == ErrorNumber::OK);
         spdlog::info("login success");
-        mUIProxy->OnLoginSuccess(ret.token());
-        mLobbyScreen.mUsername = ret.account().username();
+        auto username = ret.account().username();
+        mUIProxy->OnLoginSuccess(ret.token(), username);
+        mLobbyScreen.mUsername = username;
         mLobbyScreen.mPoints = ret.account().points();
         mLobbyScreen.TakeFocus();
     };
@@ -59,7 +60,7 @@ Dock::Dock(const std::shared_ptr<UIProxy> &uiProxy)
     };
 
     mGameScreen.OnGameOver = [this] {
-        mUIProxy->SwitchToNewStateMachine(StateMachine::Create());
+        // mUIProxy->SwitchToNewStateMachine(StateMachine::Create());
         mGameScreen.ResetGameScreen();
         mRoomScreen.TakeFocus();
     };

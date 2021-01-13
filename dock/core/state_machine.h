@@ -14,15 +14,19 @@ using Common::GameType;
 
 class StateMachine : public IStateMachine {
 public:
-    StateMachine() = default;
+    StateMachine(const std::string &username) : mState(username) {}
 
-    static std::shared_ptr<IStateMachine> Create() {
-        return std::make_shared<StateMachine>();
+    static std::shared_ptr<IStateMachine> Create(const std::string &username) {
+        return std::make_shared<StateMachine>(username);
     }
 
     const IState &GetState() const override { return mState; }
 
     GameType GetType() const override { return GameType::NoGame; }
+
+    void InheritFrom(const IStateMachine &) override {
+        /// TODO: state machine switches from game to room
+    }
 
 protected:
     virtual void Transition(const BroadcastMsg &msg) override {

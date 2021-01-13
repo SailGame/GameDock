@@ -42,11 +42,13 @@ public:
         mGameManager->SetNewStateMachine(stateMachine);
     }
 
-    void OnLoginSuccess(const std::string &token) {
+    void OnLoginSuccess(const std::string &token, 
+        const std::string &username = "test") 
+    {
         assert(!mGameManager);
         mGameManager = std::make_shared<GameManager<false>>(
             EventLoop::Create(), 
-            SailGame::Dock::StateMachine::Create(), mNetworkInterface);
+            SailGame::Dock::StateMachine::Create(username), mNetworkInterface);
         // token cannot be captured by reference here
         // because the thread may start running after token gets destructed
         mGameManagerThread = std::make_unique<std::thread>([token, this] {
@@ -120,6 +122,14 @@ public:
     std::shared_ptr<GameManager<false>> mGameManager;
     std::unique_ptr<std::thread> mGameManagerThread;
     bool mIsTest{false};
+};
+
+class UIProxyClient {
+public:
+    virtual void SetUIProxy(UIProxy *uiProxy) { mUIProxy = uiProxy; }
+
+protected:
+    UIProxy *mUIProxy;
 };
 
 }}

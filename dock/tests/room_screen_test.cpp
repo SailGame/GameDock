@@ -88,18 +88,19 @@ TEST_F(RoomScreenFixture, GameStart) {
 
     // b gets ready, game start now
     roomDetails.mutable_user(1)->set_userstate(RoomUser::READY);
-    CoreMsg(
-        CoreMsgBuilder::CreateBroadcastMsgByRoomDetails(0, 0, 0, roomDetails));
-    EXPECT_TRUE(mDock.mRoomScreen.AreAllUsersReady());
-    EXPECT_EQ(mDock.mUIProxy->mGameManager->GetGameType(), GameType::NoGame);
-    EXPECT_EQ(mDock.mGameScreen.GetGameType(), GameType::NoGame);
-    // next frame: all players are ready in room screen
-    UserEvent();
-
-    // next frame: game screen
-    UserEvent();
-    EXPECT_EQ(mDock.mUIProxy->mGameManager->GetGameType(), GameType::Uno);
-    EXPECT_EQ(mDock.mGameScreen.GetGameType(), GameType::Uno);
-    EXPECT_TRUE(mDock.mGameScreen.Focused());
+    GameStart(roomDetails);
 }
+
+TEST_F(RoomScreenFixture, Tmp) {
+    RoomDetails roomDetails = CoreMsgBuilder::CreateRoomDetails(
+        "UNO", 102,
+        {
+            CoreMsgBuilder::CreateRoomUser("a", RoomUser::READY),
+            CoreMsgBuilder::CreateRoomUser("test", RoomUser::READY),
+        },
+        Uno::MsgBuilder::CreateStartGameSettings(true, true, false, false,
+                                                    15));
+    GameStart(roomDetails);
+}
+
 }}

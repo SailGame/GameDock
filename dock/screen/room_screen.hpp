@@ -20,7 +20,7 @@ using SailGame::Common::CoreMsgBuilder;
 using SailGame::Dock::DockUtil;
 using SailGame::Dock::State;
 
-class RoomScreen : public Component {
+class RoomScreen : public Component, public UIProxyClient {
 public:
     std::function<void()> OnExitRoom;
 
@@ -51,22 +51,19 @@ public:
         };
     }
 
-    void SetUIProxy(UIProxy *uiProxy) { mUIProxy = uiProxy; }
-
     void Update() {
         mReadyToggleButton.label = mIsReady ? L"Cancel" : L"Ready";
-        // Remember that details could be empty
-        // because state machine is updated asynchrously.
-        mDetails = GetState().mRoomDetails;
         // OnGameStart callback will switch state machine,
-        // so it should be invoked after updating mDetails
+        // so it should be invoked after reading details from state machine
         if (AreAllUsersReady()) {
             OnGameStart();
         }
     }
 
     Element Render() final {
-        spdlog::error("room render");
+        // Remember that details could be empty
+        // because state machine is updated asynchrously.
+        auto details = GetState().mRoomDetails;
         Update();
 
         auto doc = hbox({
@@ -79,7 +76,7 @@ public:
                 separator(),
                 // playerlist
                 DockUtil::MapVectorToVBox(
-                    mDetails.user(),
+                    details.user(),
                     &DockUtil::RoomUserToText
                 )
             }),
@@ -88,10 +85,10 @@ public:
                 text(L"Room Detail"),
                 separator(),
                 /// TODO: owner can change game and its settings
-                text(to_wstring(mDetails.gamename())),
-                text(to_wstring(mDetails.roomid())),
+                text(to_wstring(details.gamename())),
+                text(to_wstring(details.roomid())),
                 separator(),
-                DockUtil::ShowGameSettings(mDetails),
+                DockUtil::ShowGameSettings(details),
             })
         }) | border;
 
@@ -117,11 +114,9 @@ public:
 
 public:
     bool mIsReady{false};
-    RoomDetails mDetails;
 
-   public:
-    // private:
-    UIProxy *mUIProxy;
+public:
+// private:
     Container mContainer{Container::Horizontal()};
     Button mReadyToggleButton{L"Ready"};
     Button mExitRoomButton{L"Exit Room"};

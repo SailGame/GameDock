@@ -10,9 +10,10 @@ using ::Core::RoomDetails;
 
 class State : public IState {
 public:
-    State() = default;
+    State(const std::string &username) : mUsername(username) {}
 
 public:
+    std::string mUsername;
     RoomDetails mRoomDetails;
 };
 }}

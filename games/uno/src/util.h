@@ -18,7 +18,7 @@ using google::protobuf::Any;
 class UnoUtil {
 public:
     static Element ShowGameSettings(const Any &any) {
-        auto settings = Common::Util::UnpackGrpcAnyTo<StartGameSettings>(any);
+        auto settings = GetGameSettings(any);
         auto vBox = vbox({});
         auto boolToWstring = [](bool b) -> std::wstring {
             return b ? L"true" : L"false"; 
@@ -34,6 +34,10 @@ public:
         vBox->children.push_back(text(L"roundTime: " + 
             boolToWstring(settings.roundtime())));
         return vBox;
+    }
+
+    static StartGameSettings GetGameSettings(const Any &any) {
+        return Common::Util::UnpackGrpcAnyTo<StartGameSettings>(any);
     }
 };
 
