@@ -26,6 +26,7 @@ public:
 
         mNotMyTurnPanel.OnMyTurn = [this] { mPlayOrPassPanel.TakeFocus(); };
         mPlayOrPassPanel.OnPlay = [this] { mChooseCardPanel.TakeFocus(); };
+        mPlayOrPassPanel.OnPass = [this] { mNotMyTurnPanel.TakeFocus(); };
         mChooseCardPanel.OnCancel = [this] { mPlayOrPassPanel.TakeFocus(); };
         mChooseCardPanel.OnPlay = [this] { mNotMyTurnPanel.TakeFocus(); };
     }

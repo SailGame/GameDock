@@ -95,6 +95,8 @@ TEST_F(UnoScreenFixture, OnMyTurn) {
 TEST_F(UnoScreenFixture, PlayCard) {
     InitHandcardsT initHandcards = {"R1", "Y+2", "GR", "BS", "W", "+4", "+4"};
     GetGameStartMsg(MsgBuilder::CreateGameStart(initHandcards, "G2", 1));
+    // the first frame is always NotMyTurnPanel, so an extra UserEvent
+    // is needed to invoke NotMyTurnPanel's Render to re-render
     UserEvent();
     EXPECT_TRUE(GetScreen()->mPlayOrPassPanel.Focused());
 
@@ -111,6 +113,7 @@ TEST_F(UnoScreenFixture, PlayCard) {
     EXPECT_EQ(GetScreen()->mChooseCardPanel.mCursor, 2);
 
     auto opRet = CoreMsgBuilder::CreateOperationInRoomRet(ErrorNumber::OK);
+    /// TODO: use matcher
     EXPECT_CALL(*mMockStub, OperationInRoom(_, _, _))
         .Times(1)
         .WillOnce(DoAll(SetArgPointee<2>(opRet), Return(Status::OK)));
@@ -132,7 +135,28 @@ TEST_F(UnoScreenFixture, PlayCard) {
 }
 
 TEST_F(UnoScreenFixture, Skip) {
+    InitHandcardsT initHandcards = {"R1", "Y+2", "GR", "B0", "W", "+4", "+4"};
+    GetGameStartMsg(MsgBuilder::CreateGameStart(initHandcards, "BS", 1));
+    UserEvent();
+    EXPECT_TRUE(GetScreen()->mPlayOrPassPanel.Focused());
 
+    auto opRet = CoreMsgBuilder::CreateOperationInRoomRet(ErrorNumber::OK);
+    /// TODO: use matcher
+    EXPECT_CALL(*mMockStub, OperationInRoom(_, _, _))
+        .Times(1)
+        .WillOnce(DoAll(SetArgPointee<2>(opRet), Return(Status::OK)));
+    UserEvent(GetScreen()->mPlayOrPassPanel.mPassButton.on_click);
+    CoreMsg(CoreMsgBuilder::CreateBroadcastMsgByNotifyMsg(
+        0, 0, 0, MsgBuilder::CreateSkip()));
+    UserEvent();
+    EXPECT_EQ(GetState().mSelfState.mHandcards.Number(), 7);
+    EXPECT_FALSE(GetState().mPlayerStates[1].mDoPlayInLastRound);
+    EXPECT_EQ(GetState().mGameState.mLastPlayedCard, "B");
+    EXPECT_TRUE(GetState().mGameState.mIsInClockwise);
+    EXPECT_EQ(GetState().mGameState.mCurrentPlayer, 2);
+
+    EXPECT_TRUE(GetScreen()->mNotMyTurnPanel.Focused());
+    UserEvent();
 }
 
 TEST_F(UnoScreenFixture, DrawAndPlay) {

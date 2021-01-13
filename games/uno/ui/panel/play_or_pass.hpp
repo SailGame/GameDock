@@ -14,6 +14,8 @@ class PlayOrPassPanel : public Component, public Dock::UIProxyClient {
 public:
     std::function<void()> OnPlay;
 
+    std::function<void()> OnPass;
+
     PlayOrPassPanel() {
         Add(&mContainer);
         mContainer.Add(&mPlayButton);
@@ -24,6 +26,9 @@ public:
     }
 
     Element Render() {
+        if (!GetState().mGameState.IsMyTurn()) {
+            OnPass();
+        }
         UpdatePassButtonLabel();
         auto handcards = GetState().mSelfState.mHandcards;
         auto username = GetState().mPlayerStates[
@@ -48,7 +53,9 @@ public:
     void Pass() {
         // when Pass is invoked, mIsSkip and mCardsNumToDraw have been assigned
         if (mIsSkip) {
-            // uiproxy->skip
+            mUIProxy->OperationInRoom(
+                CoreMsgBuilder::CreateOperationInRoomArgs(
+                    MsgBuilder::CreateSkip<UserOperation>()));
         }
         else {
             // uiproxy->draw(cardnum)
