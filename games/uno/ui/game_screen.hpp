@@ -29,9 +29,16 @@ public:
         mPanelContainer.Add(&mSpecifyColorPanel);
 
         mNotMyTurnPanel.OnMyTurn = [this] { mPlayOrPassPanel.TakeFocus(); };
-        mPlayOrPassPanel.OnPlay = [this] { mChooseCardPanel.TakeFocus(); };
+        mPlayOrPassPanel.OnPlay = [this] {
+            /// TODO: these panels could do some initialization work 
+            /// before taking focus. should factor this logic out.
+            mChooseCardPanel.mHintText = L"";
+            mChooseCardPanel.TakeFocus();
+        };
         mPlayOrPassPanel.OnNextTurn = [this] { mNotMyTurnPanel.TakeFocus(); };
         mPlayOrPassPanel.OnHasChanceToPlayAfterDraw = [this] {
+            mPlayImmediatelyPanel.mHintText =
+                L"Whether to play the card just drawn?";
             mPlayImmediatelyPanel.TakeFocus();
         };
         mChooseCardPanel.OnCancel = [this] { mPlayOrPassPanel.TakeFocus(); };
@@ -52,9 +59,12 @@ public:
         };
         mSpecifyColorPanel.OnCancel = [this] {
             if (mIsFromChooseCard) {
+                mChooseCardPanel.mHintText = L"";
                 mChooseCardPanel.TakeFocus();
             }
             else {
+                mPlayImmediatelyPanel.mHintText =
+                    L"Whether to play the card just drawn?";
                 mPlayImmediatelyPanel.TakeFocus();
             }
         };

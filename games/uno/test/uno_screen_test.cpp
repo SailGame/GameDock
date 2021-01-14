@@ -108,7 +108,8 @@ TEST_F(UnoScreenFixture, PlayCard) {
     UserEvent(GetScreen()->mChooseCardPanel.mHandcardsSelector.OnMoveRight);
     EXPECT_EQ(GetScreen()->mChooseCardPanel.mCursor, 1);
 
-    /// TODO: add test case for illegal play
+    UserEvent(GetScreen()->mChooseCardPanel.mHandcardsSelector.OnPlay);
+    EXPECT_FALSE(GetScreen()->mChooseCardPanel.mHintText.empty());
 
     UserEvent(GetScreen()->mChooseCardPanel.mHandcardsSelector.OnMoveRight);
     EXPECT_EQ(GetScreen()->mChooseCardPanel.mCursor, 2);

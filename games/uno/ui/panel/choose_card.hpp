@@ -37,9 +37,18 @@ public:
         // but such possibility is too small, and considering that
         // we want event callbacks defined in constructor, mCursor is
         // not wrapped here.
-        mHandcardsSelector.OnMoveLeft = [this] { mCursor--; };
-        mHandcardsSelector.OnMoveRight = [this] { mCursor++; };
-        mHandcardsSelector.OnPlay = [this] { TryToPlay(); };
+        mHandcardsSelector.OnMoveLeft = [this] {
+            mHintText = L"";
+            mCursor--;
+        };
+        mHandcardsSelector.OnMoveRight = [this] { 
+            mHintText = L"";
+            mCursor++; 
+        };
+        mHandcardsSelector.OnPlay = [this] { 
+            mHintText = L"";
+            TryToPlay(); 
+        };
         mCancelButton.on_click = [this] { OnCancel(); };
     }
 
@@ -55,6 +64,7 @@ public:
         auto doc = vbox({
             Dom::PlayerBox(to_wstring(username), 
                 mHandcardsSelector.Render(handcards, mCursor)),
+            text(mHintText),
             mCancelButton.Render() | hcenter
         });
         auto selfBoxWidth = 42;
@@ -83,12 +93,13 @@ public:
             }
         } 
         else {
-            // mHandcardsSelector.SetHintText()
+            mHintText = L"You cannot play that card.";
         }
     }
 
 public:
     int mCursor{0};
+    std::wstring mHintText;
 
 public:
 // private:

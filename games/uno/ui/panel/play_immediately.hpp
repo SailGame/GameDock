@@ -41,7 +41,7 @@ public:
         auto doc = vbox({
             Dom::PlayerBox(to_wstring(username), 
                 Dom::ConvertHandcardsToVBox(handcards, cursor)),
-            text(L"Whether to play the card just drawn?"),
+            text(mHintText),
             hbox({
                 mYesButton.Render(),
                 mNoButton.Render()
@@ -74,7 +74,7 @@ public:
             }
         } 
         else {
-            // mHandcardsSelector.SetHintText()
+            mHintText = L"You cannot play that card.";
         }
     }
 
@@ -82,6 +82,9 @@ public:
         mUIProxy->OperationInRoom(CoreMsgBuilder::CreateOperationInRoomArgs(
             MsgBuilder::CreateSkip<UserOperation>()));
     }
+
+public:
+    std::wstring mHintText;
 
 public:
     Container mContainer{Container::Horizontal()};
