@@ -73,14 +73,16 @@ public:
         EXPECT_TRUE(mDock.mRoomScreen.AreAllUsersReady());
         EXPECT_EQ(mDock.mUIProxy->mGameManager->GetGameType(), GameType::NoGame);
         EXPECT_EQ(mDock.mGameScreen.GetGameType(), GameType::NoGame);
+
         // next frame: all players are ready in room screen
         UserEvent();
-        // next frame: game screen
-        UserEvent();
+        EXPECT_TRUE(mDock.mGameScreen.Focused());
         auto gameType = DockUtil::GetGameTypeByGameName(roomDetails.gamename());
         EXPECT_EQ(mDock.mUIProxy->mGameManager->GetGameType(), gameType);
         EXPECT_EQ(mDock.mGameScreen.GetGameType(), gameType);
-        EXPECT_TRUE(mDock.mGameScreen.Focused());
+
+        // next frame: game screen
+        UserEvent();
     }
 
     void UserEvent(const std::function<void()> &callback = []{}) {
@@ -102,13 +104,22 @@ public:
         while (mDock.mUIProxy->mGameManager->HasEventToProcess()) {}
     }
 
+    void Refresh() {
+        using namespace std::chrono_literals;
+        // update focus in Render()
+        mDock.mScreen.PostEvent(ftxui::Event::Custom);
+        std::this_thread::sleep_for(0.5s);
+        // re-Render to show the update
+        mDock.mScreen.PostEvent(ftxui::Event::Custom);
+        std::this_thread::sleep_for(0.5s);
+    }
+
 protected:
     MockClientReader<BroadcastMsg> *mMockStream;
     std::shared_ptr<MockGameCoreStub> mMockStub;
 
     Dock::Dock mDock;
     std::unique_ptr<std::thread> mDockThread;
-    std::unique_ptr<std::thread> mTimerThread;
 };
 
 }}

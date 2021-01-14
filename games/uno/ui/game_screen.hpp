@@ -29,16 +29,9 @@ public:
         mPanelContainer.Add(&mSpecifyColorPanel);
 
         mNotMyTurnPanel.OnMyTurn = [this] { mPlayOrPassPanel.TakeFocus(); };
-        mPlayOrPassPanel.OnPlay = [this] {
-            /// TODO: these panels could do some initialization work 
-            /// before taking focus. should factor this logic out.
-            mChooseCardPanel.mHintText = L"";
-            mChooseCardPanel.TakeFocus();
-        };
+        mPlayOrPassPanel.OnPlay = [this] { mChooseCardPanel.TakeFocus(); };
         mPlayOrPassPanel.OnNextTurn = [this] { mNotMyTurnPanel.TakeFocus(); };
-        mPlayOrPassPanel.OnHasChanceToPlayAfterDraw = [this] {
-            mPlayImmediatelyPanel.mHintText =
-                L"Whether to play the card just drawn?";
+        mPlayOrPassPanel.OnHasChanceToPlayAfterDraw = [this] { 
             mPlayImmediatelyPanel.TakeFocus();
         };
         mChooseCardPanel.OnCancel = [this] { mPlayOrPassPanel.TakeFocus(); };
@@ -58,13 +51,10 @@ public:
             mSpecifyColorPanel.TakeFocus();
         };
         mSpecifyColorPanel.OnCancel = [this] {
-            if (mIsFromChooseCard) {
-                mChooseCardPanel.mHintText = L"";
-                mChooseCardPanel.TakeFocus();
+            if (mIsFromChooseCard) { 
+                mChooseCardPanel.TakeFocus(); 
             }
             else {
-                mPlayImmediatelyPanel.mHintText =
-                    L"Whether to play the card just drawn?";
                 mPlayImmediatelyPanel.TakeFocus();
             }
         };
@@ -90,7 +80,7 @@ public:
         auto selfIndex = GetState().mGameState.mSelfPlayerIndex;
         auto doc = vbox({
             Dom::OtherPlayersDoc(GetState().mPlayerStates, selfIndex),
-            mPanelContainer.Render()
+            mPanelContainer.Render() | size(WIDTH, EQUAL, 60) | hcenter
         });
         return doc | size(WIDTH, EQUAL, 80) | border | center;
     }

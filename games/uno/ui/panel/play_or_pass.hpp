@@ -5,12 +5,13 @@
 
 #include "../../../../dock/core/ui_proxy.h"
 #include "../../src/state.h"
+#include "uno_panel.hpp"
 
 namespace SailGame { namespace Uno {
 
 using namespace ftxui;
 
-class PlayOrPassPanel : public Component, public Dock::UIProxyClient {
+class PlayOrPassPanel : public UnoPanel {
 public:
     std::function<void()> OnPlay;
 
@@ -57,14 +58,10 @@ public:
                 mPassButton.Render()
             }) | hcenter
         });
-        auto selfBoxWidth = 42;
-        return doc | size(WIDTH, EQUAL, selfBoxWidth) | hcenter;
+        return doc;
     }
 
-    WholeState GetState() const {
-        return dynamic_cast<const WholeState &>(mUIProxy->GetState());
-    }
-
+private:
     void Pass() {
         if (GetState().mGameState.mLastPlayedCard.mText == CardText::SKIP) {
             mUIProxy->OperationInRoom(

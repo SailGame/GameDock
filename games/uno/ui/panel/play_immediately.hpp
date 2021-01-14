@@ -8,13 +8,14 @@
 #include "../../../../dock/core/ui_proxy.h"
 #include "../../src/state.h"
 #include "../dom.hpp"
+#include "uno_panel.hpp"
 
 namespace SailGame { namespace Uno {
 
 using namespace ftxui;
 using Common::CoreMsgBuilder;
 
-class PlayImmediatelyPanel : public Component, public Dock::UIProxyClient {
+class PlayImmediatelyPanel : public UnoPanel {
 public:
     std::function<void()> OnNextTurn;
 
@@ -47,14 +48,15 @@ public:
                 mNoButton.Render()
             }) | hcenter
         });
-        auto selfBoxWidth = 42;
-        return doc | size(WIDTH, EQUAL, selfBoxWidth) | hcenter;
+        return doc;
     }
 
-    WholeState GetState() const {
-        return dynamic_cast<const WholeState &>(mUIProxy->GetState());
+    void TakeFocus() override {
+        mHintText = L"Whether to play the card just drawn?";
+        Component::TakeFocus();
     }
-
+    
+private:
     void Play() {
         auto index = GetState().mSelfState.mIndexOfNewlyDrawn;
         auto handcards = GetState().mSelfState.mHandcards;

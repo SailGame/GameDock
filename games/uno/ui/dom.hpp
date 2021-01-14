@@ -64,10 +64,10 @@ public:
         auto end = std::min(start + cardsPerRow, handcards.Number());
         for (auto i = start; i < end; i++) {
             auto prefix = (i == cursor) ? L">" : L" ";
-            hBox->children.push_back(
-                /// TODO: attach color
-                text(prefix + to_wstring(handcards.At(i).ToString()) + L" "));
-        } 
+            hBox->children.push_back(text(prefix));
+            hBox->children.push_back(ConvertCardToFtxText(handcards.At(i)));
+            hBox->children.push_back(text(L" "));
+        }
         hBox = hBox | hcenter;
         return hBox;
     }
@@ -86,6 +86,17 @@ public:
         return vBox | size(WIDTH, EQUAL, selfBoxWidth) | hcenter;
     }
 
+    static Element ConvertCardToFtxText(Card card) {
+        auto color = Color::Red;
+        switch (card.mColor) {
+            case CardColor::RED: color = Color::Red; break;
+            case CardColor::YELLOW: color = Color::Yellow; break;
+            case CardColor::GREEN: color = Color::Green; break;
+            case CardColor::BLUE: color = Color::Blue; break;
+            default: return text(to_wstring(card.ToString()));
+        }
+        return text(to_wstring(card.ToString())) | ftxui::color(color);
+    }
 };
 
 }}

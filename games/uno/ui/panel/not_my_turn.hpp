@@ -6,12 +6,13 @@
 #include "../../../../dock/core/ui_proxy.h"
 #include "../../src/state.h"
 #include "../dom.hpp"
+#include "uno_panel.hpp"
 
 namespace SailGame { namespace Uno {
 
 using namespace ftxui;
 
-class NotMyTurnPanel : public Component, public Dock::UIProxyClient {
+class NotMyTurnPanel : public UnoPanel {
 public:
     std::function<void()> OnMyTurn;
 
@@ -27,12 +28,7 @@ public:
 
         auto doc = Dom::PlayerBox(to_wstring(username), 
             Dom::ConvertHandcardsToVBox(handcards));
-        auto selfBoxWidth = 42;
-        return doc | size(WIDTH, EQUAL, selfBoxWidth) | hcenter;
-    }
-
-    WholeState GetState() const {
-        return dynamic_cast<const WholeState &>(mUIProxy->GetState());
+        return doc;
     }
 };
 

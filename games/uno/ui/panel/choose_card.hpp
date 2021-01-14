@@ -9,6 +9,7 @@
 #include "../dom.hpp"
 #include "../../../../dock/core/ui_proxy.h"
 #include "../../src/state.h"
+#include "uno_panel.hpp"
 
 namespace SailGame { namespace Uno {
 
@@ -16,7 +17,7 @@ using namespace ftxui;
 using Common::Util;
 using Common::CoreMsgBuilder;
 
-class ChooseCardPanel : public Component, public Dock::UIProxyClient {
+class ChooseCardPanel : public UnoPanel {
 public:
     std::function<void()> OnCancel;
 
@@ -67,14 +68,15 @@ public:
             text(mHintText),
             mCancelButton.Render() | hcenter
         });
-        auto selfBoxWidth = 42;
-        return doc | size(WIDTH, EQUAL, selfBoxWidth) | hcenter;
+        return doc;
     }
 
-    WholeState GetState() const {
-        return dynamic_cast<const WholeState &>(mUIProxy->GetState());
+    void TakeFocus() override {
+        mHintText = L"";
+        Component::TakeFocus();
     }
 
+private:
     void TryToPlay() {
         auto handcards = GetState().mSelfState.mHandcards;
         auto isUno = (handcards.Number() == 1);

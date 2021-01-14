@@ -15,7 +15,7 @@ using namespace ftxui;
 using Common::CoreMsgBuilder;
 using ::Uno::CardColor;
 
-class SpecifyColorPanel : public Component, public Dock::UIProxyClient {
+class SpecifyColorPanel : public UnoPanel {
 public:
     std::function<void()> OnCancel;
 
@@ -56,14 +56,10 @@ public:
                 mCancelButton.Render()
             }) | hcenter
         });
-        auto selfBoxWidth = 42;
-        return doc | size(WIDTH, EQUAL, selfBoxWidth) | hcenter;
+        return doc;
     }
 
-    WholeState GetState() const {
-        return dynamic_cast<const WholeState &>(mUIProxy->GetState());
-    }
-
+private:
     void Specify(CardColor nextColor) {
         // here the card can be played certainly
         auto cardToPlay = GetState().mSelfState.mHandcards.At(mCursor);
