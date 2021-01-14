@@ -7,6 +7,8 @@
 #include "panel/choose_card.hpp"
 #include "panel/play_or_pass.hpp"
 #include "panel/not_my_turn.hpp"
+#include "panel/play_immediately.hpp"
+#include "panel/specify_color.hpp"
 #include "dom.hpp"
 
 namespace SailGame { namespace Uno {
@@ -23,12 +25,40 @@ public:
         mPanelContainer.Add(&mNotMyTurnPanel);
         mPanelContainer.Add(&mPlayOrPassPanel);
         mPanelContainer.Add(&mChooseCardPanel);
+        mPanelContainer.Add(&mPlayImmediatelyPanel);
+        mPanelContainer.Add(&mSpecifyColorPanel);
 
         mNotMyTurnPanel.OnMyTurn = [this] { mPlayOrPassPanel.TakeFocus(); };
         mPlayOrPassPanel.OnPlay = [this] { mChooseCardPanel.TakeFocus(); };
-        mPlayOrPassPanel.OnPass = [this] { mNotMyTurnPanel.TakeFocus(); };
+        mPlayOrPassPanel.OnNextTurn = [this] { mNotMyTurnPanel.TakeFocus(); };
+        mPlayOrPassPanel.OnHasChanceToPlayAfterDraw = [this] {
+            mPlayImmediatelyPanel.TakeFocus();
+        };
         mChooseCardPanel.OnCancel = [this] { mPlayOrPassPanel.TakeFocus(); };
-        mChooseCardPanel.OnPlay = [this] { mNotMyTurnPanel.TakeFocus(); };
+        mChooseCardPanel.OnPlayWildCard = [this] {
+            mSpecifyColorPanel.mCursor = mChooseCardPanel.mCursor;
+            mIsFromChooseCard = true;
+            mSpecifyColorPanel.TakeFocus();
+        };
+        mChooseCardPanel.OnNextTurn = [this] { mNotMyTurnPanel.TakeFocus(); };
+        mPlayImmediatelyPanel.OnNextTurn = [this] {
+            mNotMyTurnPanel.TakeFocus();
+        };
+        mPlayImmediatelyPanel.OnPlayWildCard = [this] {
+            mSpecifyColorPanel.mCursor =
+                GetState().mSelfState.mIndexOfNewlyDrawn;
+            mIsFromChooseCard = false;
+            mSpecifyColorPanel.TakeFocus();
+        };
+        mSpecifyColorPanel.OnCancel = [this] {
+            if (mIsFromChooseCard) {
+                mChooseCardPanel.TakeFocus();
+            }
+            else {
+                mPlayImmediatelyPanel.TakeFocus();
+            }
+        };
+        mSpecifyColorPanel.OnNextTurn = [this] { mNotMyTurnPanel.TakeFocus(); };
     }
 
     virtual void SetUIProxy(UIProxy *uiProxy) override {
@@ -36,6 +66,8 @@ public:
         mNotMyTurnPanel.SetUIProxy(mUIProxy);
         mPlayOrPassPanel.SetUIProxy(mUIProxy);
         mChooseCardPanel.SetUIProxy(mUIProxy);
+        mPlayImmediatelyPanel.SetUIProxy(mUIProxy);
+        mSpecifyColorPanel.SetUIProxy(mUIProxy);
     }
 
     static std::shared_ptr<Dock::GameScreen> Create() {
@@ -57,12 +89,17 @@ public:
         return dynamic_cast<const WholeState &>(mUIProxy->GetState());
     }
 
-public:
-    
+private:
+    // indicate whether SpecifyColorPanel is switched from ChooseCardPanel
+    // or PlayImmediatelyPanel, to return correctly after cancel.
+    bool mIsFromChooseCard;
+
 public:
     Container mPanelContainer{Container::Tab(nullptr)};
     NotMyTurnPanel mNotMyTurnPanel;
     PlayOrPassPanel mPlayOrPassPanel;
     ChooseCardPanel mChooseCardPanel;
+    PlayImmediatelyPanel mPlayImmediatelyPanel;
+    SpecifyColorPanel mSpecifyColorPanel;
 };
 }}

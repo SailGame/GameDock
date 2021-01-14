@@ -14,7 +14,9 @@ class PlayOrPassPanel : public Component, public Dock::UIProxyClient {
 public:
     std::function<void()> OnPlay;
 
-    std::function<void()> OnPass;
+    std::function<void()> OnNextTurn;
+
+    std::function<void()> OnHasChanceToPlayAfterDraw;
 
     PlayOrPassPanel() {
         Add(&mContainer);
@@ -26,9 +28,22 @@ public:
     }
 
     Element Render() {
+        // cannot invoke OnNextTurn in Pass() method because
+        // when Pass() is invoked, client hasn't received the 
+        // broadcast msg that indicates self operation, which means
+        // mCurrentPlayer is still himself, if invoking OnNextTurn 
+        // under such condition, focus will turn to NotMyTurn and then
+        // back to PlayOrPass immediately.
+        // So invoke OnNextTurn in Render() method.
         if (!GetState().mGameState.IsMyTurn()) {
-            OnPass();
+            OnNextTurn();
         }
+        if (mHandcardsNumInLastFrame < 
+            GetState().mSelfState.mHandcards.Number()) 
+        {
+            HandleDrawRsp();
+        }
+        mHandcardsNumInLastFrame = GetState().mSelfState.mHandcards.Number();
         UpdatePassButtonLabel();
         auto handcards = GetState().mSelfState.mHandcards;
         auto username = GetState().mPlayerStates[
@@ -51,33 +66,44 @@ public:
     }
 
     void Pass() {
-        // when Pass is invoked, mIsSkip and mCardsNumToDraw have been assigned
-        if (mIsSkip) {
+        if (GetState().mGameState.mLastPlayedCard.mText == CardText::SKIP) {
             mUIProxy->OperationInRoom(
                 CoreMsgBuilder::CreateOperationInRoomArgs(
                     MsgBuilder::CreateSkip<UserOperation>()));
         }
         else {
-            // uiproxy->draw(cardnum)
+            auto number = GetState().mGameState.mCardsNumToDraw;
+            mUIProxy->OperationInRoom(
+                CoreMsgBuilder::CreateOperationInRoomArgs(
+                    MsgBuilder::CreateDraw<UserOperation>(number)));
+        }
+    }
+
+    void HandleDrawRsp() {
+        if (GetState().mSelfState.mHasChanceToPlayAfterDraw) {
+            OnHasChanceToPlayAfterDraw();
+        }
+        else {
+            mUIProxy->OperationInRoom(
+                CoreMsgBuilder::CreateOperationInRoomArgs(
+                    MsgBuilder::CreateSkip<UserOperation>()));
         }
     }
 
     void UpdatePassButtonLabel() {
-        mIsSkip = 
-            (GetState().mGameState.mLastPlayedCard.mText == CardText::SKIP);
-        if (mIsSkip) {
+        if (GetState().mGameState.mLastPlayedCard.mText == CardText::SKIP) {
             mPassButton.label = L"Skip this turn";
         }
         else {
-            mCardsNumToDraw = GetState().mGameState.mCardsNumToDraw;
-            mPassButton.label = L"Draw " + to_wstring(mCardsNumToDraw)
-                + (mCardsNumToDraw == 1 ? L" card" : L"cards");
+            auto number = GetState().mGameState.mCardsNumToDraw;
+            mPassButton.label = L"Draw " + to_wstring(number)
+                + (number == 1 ? L" card" : L"cards");
         }
     }
 
 private:
-    bool mIsSkip;
-    int mCardsNumToDraw;
+    // used to detect DrawRsp msg
+    int mHandcardsNumInLastFrame;
 
 // private:
 public:

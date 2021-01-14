@@ -73,18 +73,6 @@ void StateMachine::Transition(const Draw &msg)
     mState.mGameState.UpdateAfterDraw();
 }
 
-// OperationInRoomArgs StateMachine::Transition(const DrawEvent &event)
-// {
-//     assert(mState.mGameState.mCurrentPlayer == mState.mGameState.mSelfPlayerIndex);
-//     auto number = mState.mGameState.mCardsNumToDraw;
-//     mState.mPlayerStates[mState.mGameState.mCurrentPlayer].UpdateAfterDraw(
-//         number);
-
-//     mState.mGameState.UpdateAfterDraw();
-//     return CoreMsgBuilder::CreateOperationInRoomArgs(
-//         MsgBuilder::CreateDraw(number));
-// }
-
 void StateMachine::Transition(const DrawRsp &msg)
 {
     assert(mState.mGameState.IsMyTurn());
@@ -103,35 +91,19 @@ void StateMachine::Transition(const Skip &msg)
     mState.mGameState.UpdateAfterSkip();
 }
 
-// OperationInRoomArgs StateMachine::Transition(const SkipEvent &event)
-// {
-//     assert(mState.mGameState.mCurrentPlayer == mState.mGameState.mSelfPlayerIndex);
-//     mState.mSelfState.UpdateAfterSkip();
-//     mState.mPlayerStates[mState.mGameState.mCurrentPlayer].UpdateAfterSkip();
-//     mState.mGameState.UpdateAfterSkip();
-//     return CoreMsgBuilder::CreateOperationInRoomArgs(MsgBuilder::CreateSkip());
-// }
-
 void StateMachine::Transition(const Play &msg)
 {
-    auto card = msg.card();
+    Card card = msg.card();
     if (mState.mGameState.IsMyTurn()) {
         mState.mSelfState.UpdateAfterPlay(card);
     }
+    // if card is not wild, nextColor is certainly the same with card's color
+    // otherwise, nextColor indicates the next color.
+    // NOTE: color should be attached after updating SelfState because 
+    // we need to erase the card just played from handcards when updating SelfState
+    card.mColor = msg.nextcolor();
     mState.mPlayerStates[mState.mGameState.mCurrentPlayer].UpdateAfterPlay(card);
     mState.mGameState.UpdateAfterPlay(card);
 }
-
-// OperationInRoomArgs StateMachine::Transition(const PlayEvent &event)
-// {
-//     assert(mState.mGameState.mCurrentPlayer == mState.mGameState.mSelfPlayerIndex);
-//     auto card = event.mCard;
-//     mState.mSelfState.UpdateAfterPlay(card);
-//     card.mColor = event.mNextColor;
-//     mState.mPlayerStates[mState.mGameState.mCurrentPlayer].UpdateAfterPlay(card);
-//     mState.mGameState.UpdateAfterPlay(card);
-//     return CoreMsgBuilder::CreateOperationInRoomArgs(
-//         MsgBuilder::CreatePlay(event.mCard, event.mNextColor));
-// }
 
 }}
