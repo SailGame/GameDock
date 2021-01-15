@@ -5,10 +5,9 @@
 #include <sailgame/uno/msg_builder.h>
 #include <sailgame/common/util.h>
 #include <sailgame/common/core_msg_builder.h>
+
 #include "../component/handcards_selector.hpp"
 #include "../dom.hpp"
-#include "../../../../dock/core/ui_proxy.h"
-#include "../../src/state.h"
 #include "uno_panel.hpp"
 
 namespace SailGame { namespace Uno {

@@ -10,6 +10,7 @@
 #include "../dock.h"
 #include "matcher.h"
 #include "../util/util.hpp"
+#include "../core/game_attr_fac.h"
 
 namespace SailGame { namespace Test {
 
@@ -77,7 +78,8 @@ public:
         // next frame: all players are ready in room screen
         UserEvent();
         EXPECT_TRUE(mDock.mGameScreen.Focused());
-        auto gameType = DockUtil::GetGameTypeByGameName(roomDetails.gamename());
+        auto gameType = GameAttrFactory::GetGameTypeByGameName(
+            roomDetails.gamename());
         EXPECT_EQ(mDock.mUIProxy->mGameManager->GetGameType(), gameType);
         EXPECT_EQ(mDock.mGameScreen.GetGameType(), gameType);
 

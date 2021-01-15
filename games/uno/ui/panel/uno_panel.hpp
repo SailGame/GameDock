@@ -3,7 +3,7 @@
 #include <ftxui/component/container.hpp>
 
 #include "../../../../dock/core/ui_proxy.h"
-#include "../../src/state.h"
+#include "../../core/state.h"
 
 namespace SailGame { namespace Uno {
 

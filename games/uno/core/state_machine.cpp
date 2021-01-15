@@ -14,6 +14,26 @@ namespace SailGame { namespace Uno {
 
 using Common::CoreMsgBuilder;
 using Common::Util;
+using ::Uno::StartGameSettings;
+
+void StateMachine::SwitchFrom(const IStateMachine &stateMachine)
+{
+    auto roomState =
+        dynamic_cast<const Dock::State &>(stateMachine.GetState());
+    auto roomDetails = roomState.mRoomDetails;
+    for (auto roomUser : roomDetails.user()) {
+        mState.mPlayerStates.emplace_back(roomUser.username());
+    }
+    mState.mGameState.mPlayerNum = roomDetails.user_size();
+    mState.mGameState.mGameSettings =
+        Common::Util::UnpackGrpcAnyTo<StartGameSettings>(
+            roomDetails.gamesetting());
+    for (auto i = 0; i < roomDetails.user_size(); i++) {
+        if (roomState.mUsername == roomDetails.user(i).username()) {
+            mState.mGameState.mSelfPlayerIndex = i;
+        }
+    }
+}
 
 void StateMachine::Transition(const BroadcastMsg &msg)
 {
@@ -87,6 +107,9 @@ void StateMachine::Transition(const DrawRsp &msg)
 
 void StateMachine::Transition(const Skip &msg)
 {
+    if (mState.mGameState.IsMyTurn()) {
+        mState.mSelfState.UpdateAfterSkip();
+    }
     mState.mPlayerStates[mState.mGameState.mCurrentPlayer].UpdateAfterSkip();
     mState.mGameState.UpdateAfterSkip();
 }

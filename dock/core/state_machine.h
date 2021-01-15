@@ -24,7 +24,7 @@ public:
 
     GameType GetType() const override { return GameType::NoGame; }
 
-    void InheritFrom(const IStateMachine &) override {
+    void SwitchFrom(const IStateMachine &) override {
         /// TODO: state machine switches from game to room
     }
 

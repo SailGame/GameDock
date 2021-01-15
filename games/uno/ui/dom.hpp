@@ -4,12 +4,14 @@
 #include <ftxui/screen/string.hpp>
 #include <sailgame/uno/card.h>
 #include <sailgame/common/util.h>
+#include <google/protobuf/any.pb.h>
 
-#include "../src/state.h"
+#include "../core/state.h"
 
 namespace SailGame { namespace Uno {
 
 using namespace ftxui;
+using google::protobuf::Any;
 using Common::Util;
 
 class Dom {
@@ -96,6 +98,25 @@ public:
             default: return text(to_wstring(card.ToString()));
         }
         return text(to_wstring(card.ToString())) | ftxui::color(color);
+    }
+
+    static Element ShowGameSettings(const Any &any) {
+        auto settings = Common::Util::UnpackGrpcAnyTo<StartGameSettings>(any);
+        auto vBox = vbox({});
+        auto boolToWstring = [](bool b) -> std::wstring {
+            return b ? L"true" : L"false"; 
+        };
+        vBox->children.push_back(text(L"isDraw2Consumed: " + 
+            boolToWstring(settings.isdraw2consumed())));
+        vBox->children.push_back(text(L"canSkipRespond: " + 
+            boolToWstring(settings.canskiprespond())));
+        vBox->children.push_back(text(L"hasWildSwapHandsCard: " + 
+            boolToWstring(settings.haswildswaphandscard())));
+        vBox->children.push_back(text(L"canDoubtDraw4: " + 
+            boolToWstring(settings.candoubtdraw4())));
+        vBox->children.push_back(text(L"roundTime: " + 
+            boolToWstring(settings.roundtime())));
+        return vBox;
     }
 };
 

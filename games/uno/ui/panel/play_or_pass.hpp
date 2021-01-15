@@ -3,8 +3,6 @@
 #include <ftxui/component/container.hpp>
 #include <ftxui/component/button.hpp>
 
-#include "../../../../dock/core/ui_proxy.h"
-#include "../../src/state.h"
 #include "uno_panel.hpp"
 
 namespace SailGame { namespace Uno {

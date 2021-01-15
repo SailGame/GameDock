@@ -5,8 +5,6 @@
 #include <ftxui/screen/string.hpp>
 #include <sailgame/common/core_msg_builder.h>
 
-#include "../../../../dock/core/ui_proxy.h"
-#include "../../src/state.h"
 #include "../dom.hpp"
 #include "uno_panel.hpp"
 

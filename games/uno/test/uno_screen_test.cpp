@@ -3,7 +3,7 @@
 #include <sailgame/uno/msg_builder.h>
 
 #include "../../../dock/tests/screen_fixture.h"
-#include "../src/state.h"
+#include "../core/state.h"
 #include "matcher.h"
 
 namespace SailGame { namespace Test {

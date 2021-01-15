@@ -9,7 +9,6 @@
 #include <sailgame/common/util.h>
 #include <sailgame/common/state_machine.h>
 #include <sailgame/uno/card.h>
-// #include "util.h"
 
 namespace SailGame { namespace Uno {
 
@@ -83,8 +82,7 @@ public:
 
 class WholeState : public IState {
 public:
-    // WholeState(const BasicState &basicState) : BasicState(basicState) {}
-    // ~WholeState() = default;
+    WholeState() = default;
 
 public:
     GameState mGameState;

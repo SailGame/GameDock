@@ -11,9 +11,10 @@
 #include <sailgame_pb/core/error.pb.h>
 #include <sailgame/common/util.h>
 
+#include "../core/ui_proxy.h"
 #include "../component/non_border_button.hpp"
 #include "../util/util.hpp"
-#include "../core/ui_proxy.h"
+#include "../util/dom.hpp"
 
 namespace SailGame { namespace Dock {
 
@@ -76,8 +77,8 @@ public:
     }
 
     void Update() {
-        DockUtil::MapVectorToMenuEntries(mRoomList, mRooms, 
-            &DockUtil::RoomToString);
+        Dom::MapVectorToMenuEntries(mRoomList, mRooms, 
+            &Dom::RoomToString);
     }
 
     Element Render() final {
@@ -110,11 +111,11 @@ public:
                         text(to_wstring(mDetails.gamename())),
                         text(to_wstring(mDetails.roomid())),
                         separator(),
-                        DockUtil::MapVectorToVBox(
+                        Dom::MapVectorToVBox(
                             DockUtil::GetUsernamesFromRoomDetails(mDetails),
-                            &DockUtil::UserNameToText
+                            &Dom::UserNameToText
                         ),
-                        DockUtil::ShowGameSettings(mDetails),
+                        Dom::ShowGameSettings(mDetails),
                         mJoinRoomButton.Render()
                 })) | size(WIDTH, GREATER_THAN, 25)
             })

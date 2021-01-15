@@ -5,7 +5,6 @@
 #include <sailgame/common/game_manager.h>
 
 #include "dock/dock.h"
-#include "dock/core/ui_proxy.h"
 
 using SailGame::Common::EventLoop;
 using SailGame::Common::GameManager;

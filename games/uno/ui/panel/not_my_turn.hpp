@@ -3,8 +3,6 @@
 #include <ftxui/component/container.hpp>
 #include <ftxui/screen/string.hpp>
 
-#include "../../../../dock/core/ui_proxy.h"
-#include "../../src/state.h"
 #include "../dom.hpp"
 #include "uno_panel.hpp"
 

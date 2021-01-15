@@ -5,9 +5,6 @@
 #include <spdlog/spdlog.h>
 #include <ftxui/component/screen_interactive.hpp>
 #include <ftxui/dom/elements.hpp>
-#include <ftxui/screen/screen.hpp>
-
-#include "core/ui_proxy.h"
 
 #include "screen/lobby_screen.hpp"
 #include "screen/login_screen.hpp"

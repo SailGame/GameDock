@@ -7,7 +7,7 @@
 #include <sailgame/common/core_msg_builder.h>
 
 #include "../core/ui_proxy.h"
-#include "../core/state.h"
+#include "../util/dom.hpp"
 
 namespace SailGame { namespace Dock {
 
@@ -17,7 +17,6 @@ using ::Core::Ready;
 using ::Core::RoomDetails;
 using ::Core::RoomUser;
 using SailGame::Common::CoreMsgBuilder;
-using SailGame::Dock::DockUtil;
 using SailGame::Dock::State;
 
 class RoomScreen : public Component, public UIProxyClient {
@@ -75,9 +74,9 @@ public:
                 }),
                 separator(),
                 // playerlist
-                DockUtil::MapVectorToVBox(
+                Dom::MapVectorToVBox(
                     details.user(),
-                    &DockUtil::RoomUserToText
+                    &Dom::RoomUserToText
                 )
             }),
             separator(),
@@ -88,7 +87,7 @@ public:
                 text(to_wstring(details.gamename())),
                 text(to_wstring(details.roomid())),
                 separator(),
-                DockUtil::ShowGameSettings(details),
+                Dom::ShowGameSettings(details),
             })
         }) | border;
 

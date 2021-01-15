@@ -2,8 +2,9 @@
 
 #include <ftxui/component/container.hpp>
 #include <sailgame/common/types.h>
+
 #include "../../../dock/screen/game_screen.hpp"
-#include "../src/state.h"
+#include "../core/state.h"
 #include "panel/choose_card.hpp"
 #include "panel/play_or_pass.hpp"
 #include "panel/not_my_turn.hpp"
@@ -76,7 +77,7 @@ public:
 
     virtual GameType GetGameType() const override { return GameType::Uno; }
 
-    Element Render() {
+    Element Render() override {
         auto selfIndex = GetState().mGameState.mSelfPlayerIndex;
         auto doc = vbox({
             Dom::OtherPlayersDoc(GetState().mPlayerStates, selfIndex),

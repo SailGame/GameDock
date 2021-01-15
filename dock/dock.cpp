@@ -1,22 +1,11 @@
 #include "dock.h"
 
-#include <thread>
-#include <ftxui/component/menu.hpp>
-#include <ftxui/component/screen_interactive.hpp>
-#include <ftxui/screen/screen.hpp>
-#include <ftxui/screen/string.hpp>
-#include <sailgame/common/network_interface.h>
-#include <sailgame/common/core_msg_builder.h>
 #include <sailgame_pb/core/types.pb.h>
-
-#include "../games/uno/src/state_machine.h"
 
 namespace SailGame { namespace Dock {
 
 using namespace ftxui;
 using ::Core::ErrorNumber;
-using SailGame::Common::CoreMsgBuilder;
-using SailGame::Common::NetworkInterface;
 
 Dock::Dock(const std::shared_ptr<UIProxy> &uiProxy)
     : mUIProxy(uiProxy)
@@ -50,12 +39,12 @@ Dock::Dock(const std::shared_ptr<UIProxy> &uiProxy)
     mRoomScreen.OnGameStart = [this] {
         auto gameName = dynamic_cast<const State &>(mUIProxy->GetState())
             .mRoomDetails.gamename();
-        
+
         mUIProxy->SwitchToNewStateMachine(
-            DockUtil::GetStateMachineByGameName(gameName));
+            GameAttrFactory::Create(gameName)->GetStateMachine());
 
         mGameScreen.SwitchToNewGameScreen(
-            DockUtil::GetGameScreenByGameName(gameName));
+            GameAttrFactory::Create(gameName)->GetGameScreen());
         mGameScreen.TakeFocus();
     };
 
