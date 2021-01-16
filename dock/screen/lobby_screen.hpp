@@ -13,6 +13,7 @@
 
 #include "../core/ui_proxy.h"
 #include "../component/non_border_button.hpp"
+#include "../component/text_center_button.hpp"
 #include "../util/util.hpp"
 #include "../util/dom.hpp"
 
@@ -84,45 +85,50 @@ public:
     Element Render() final {
         Update();
 
+        auto topBar = hbox({
+            text(L"username: "),
+            text(to_wstring(mUsername)),
+            filler(),
+            text(L"points: "),
+            text(to_wstring(mPoints))
+        });
+
+        auto roomList = vbox({
+            text(L"Room List"),
+            separator(),
+            mRoomList.Render() 
+        }) | flex | width(20);
+
+        auto roomDetail = vbox({
+            text(L"Room Detail"),
+            separator(),
+            text(to_wstring(mDetails.gamename())),
+            text(to_wstring(mDetails.roomid())),
+            separator(),
+            Dom::MapVectorToVBox(
+                DockUtil::GetUsernamesFromRoomDetails(mDetails),
+                &Dom::UserNameToText
+            ),
+            separator(),
+            Dom::ShowGameSettings(mDetails),
+            mJoinRoomButton.Render()
+        }) | xflex;
+
         auto doc = vbox({
-            hbox({
-                text(L"username: "),
-                text(to_wstring(mUsername)),
-                filler(),
-                text(L"points: "),
-                text(to_wstring(mPoints))
-            }),
+            topBar,
             separator(),
             mSearchBar.Render(),
             separator(),
             hbox({
-                vbox({
-                    text(L"Room List"),
-                    separator(),
-                    mRoomList.Render() 
-                }) | size(HEIGHT, GREATER_THAN, 18)
-                | size(WIDTH, GREATER_THAN, 20),
+                roomList,
                 separator(),
                 (mDetails.gamename().empty() ?
                     text(L"choose a room to view details") :
-                    vbox({
-                        text(L"Room Detail"),
-                        separator(),
-                        text(to_wstring(mDetails.gamename())),
-                        text(to_wstring(mDetails.roomid())),
-                        separator(),
-                        Dom::MapVectorToVBox(
-                            DockUtil::GetUsernamesFromRoomDetails(mDetails),
-                            &Dom::UserNameToText
-                        ),
-                        Dom::ShowGameSettings(mDetails),
-                        mJoinRoomButton.Render()
-                })) | size(WIDTH, GREATER_THAN, 25)
-            })
-        }) | border;
+                    roomDetail)
+            }) | yflex
+        });
 
-        return doc | 
-            center;
+        return doc | range(80, 25) | border | center;
     }
 
 /// XXX: aggregate this states as one
@@ -141,7 +147,7 @@ public:
     Container mRoomDisplayArea{Container::Horizontal()};
     Menu mRoomList;
     Container mRoomDetail{Container::Vertical()};
-    Button mJoinRoomButton{L"Join"};
+    TextCenterButton mJoinRoomButton{L"Join"};
 };
 
 }}

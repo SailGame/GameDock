@@ -1,8 +1,8 @@
 #include <sailgame_pb/core/types.pb.h>
 #include <ftxui/screen/string.hpp>
 
-#include "matcher.h"
-#include "screen_fixture.h"
+#include "../matcher.h"
+#include "../screen_fixture.h"
 
 namespace SailGame { namespace Test {
 
@@ -26,7 +26,8 @@ TEST_F(LoginScreenFixture, LoginSuccess) {
     auto points = 21;
     mDock.mLoginScreen.mUsernameInput.content = to_wstring(username);
     mDock.mLoginScreen.mPasswordInput.content = to_wstring(password);
-    UserEvent([]{});
+    UserEvent();
+
     auto loginRet = CoreMsgBuilder::CreateLoginRet(ErrorNumber::OK, token, 
         CoreMsgBuilder::CreateAccount(username, points));
     EXPECT_CALL(*mMockStub, Login(_, LoginArgsMatcher(username, password), _))
@@ -47,7 +48,8 @@ TEST_F(LoginScreenFixture, LoginFailure) {
     std::string password = "errorpassword";
     mDock.mLoginScreen.mUsernameInput.content = to_wstring(username);
     mDock.mLoginScreen.mPasswordInput.content = to_wstring(password);
-    UserEvent([]{});
+    UserEvent();
+    
     // what token and account will return if error number is not ok?
     auto loginRet = CoreMsgBuilder::CreateLoginRet(ErrorNumber::UnkownError, 
         "", CoreMsgBuilder::CreateAccount("", 0));

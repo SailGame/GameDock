@@ -1,6 +1,7 @@
 #pragma once
 
 #include <ftxui/component/container.hpp>
+#include <ftxui/component/button.hpp>
 #include <sailgame/uno/card.h>
 #include <sailgame/uno/msg_builder.h>
 #include <sailgame/common/util.h>

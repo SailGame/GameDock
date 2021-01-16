@@ -37,7 +37,7 @@ public:
     {}
 
     void SetUp() {
-        spdlog::set_level(spdlog::level::err);
+        // spdlog::set_level(spdlog::level::err);
         // mTimerThread = std::make_unique<std::thread>([this] {
         //     for (;;) {
         //         using namespace std::chrono_literals;

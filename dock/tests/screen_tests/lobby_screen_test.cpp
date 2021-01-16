@@ -3,8 +3,8 @@
 #include <ftxui/screen/string.hpp>
 #include <google/protobuf/util/message_differencer.h>
 
-#include "matcher.h"
-#include "screen_fixture.h"
+#include "../matcher.h"
+#include "../screen_fixture.h"
 
 namespace SailGame { namespace Test {
 

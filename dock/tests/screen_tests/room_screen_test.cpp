@@ -2,8 +2,8 @@
 #include <ftxui/screen/string.hpp>
 #include <google/protobuf/util/message_differencer.h>
 
-#include "matcher.h"
-#include "screen_fixture.h"
+#include "../matcher.h"
+#include "../screen_fixture.h"
 
 namespace SailGame { namespace Test {
 
@@ -81,6 +81,9 @@ TEST_F(RoomScreenFixture, GameStart) {
     RoomDetails roomDetails = CoreMsgBuilder::CreateRoomDetails("UNO", 102, {
         CoreMsgBuilder::CreateRoomUser("a", RoomUser::READY),
         CoreMsgBuilder::CreateRoomUser("b", RoomUser::PREPARING),
+        CoreMsgBuilder::CreateRoomUser("c", RoomUser::READY),
+        // by default, `my` username is `test` 
+        CoreMsgBuilder::CreateRoomUser("test", RoomUser::READY),
     }, Uno::MsgBuilder::CreateStartGameSettings(true, true, false, false, 15));
     CoreMsg(
         CoreMsgBuilder::CreateBroadcastMsgByRoomDetails(0, 0, 0, roomDetails));
@@ -88,18 +91,6 @@ TEST_F(RoomScreenFixture, GameStart) {
 
     // b gets ready, game start now
     roomDetails.mutable_user(1)->set_userstate(RoomUser::READY);
-    GameStart(roomDetails);
-}
-
-TEST_F(RoomScreenFixture, Tmp) {
-    RoomDetails roomDetails = CoreMsgBuilder::CreateRoomDetails(
-        "UNO", 102,
-        {
-            CoreMsgBuilder::CreateRoomUser("a", RoomUser::READY),
-            CoreMsgBuilder::CreateRoomUser("test", RoomUser::READY),
-        },
-        Uno::MsgBuilder::CreateStartGameSettings(true, true, false, false,
-                                                    15));
     GameStart(roomDetails);
 }
 

@@ -6,6 +6,12 @@
 
 #include "../core/game_attr_fac.h"
 
+namespace ftxui {
+Decorator range(int width, int height);
+Decorator width(int value);
+Decorator height(int value);
+}
+
 namespace SailGame { namespace Dock {
 
 using namespace ftxui;

@@ -6,6 +6,7 @@
 #include <ftxui/component/container.hpp>
 
 #include "../core/ui_proxy.h"
+#include "../component/text_center_button.hpp"
 
 namespace SailGame { namespace Dock {
 
@@ -38,20 +39,15 @@ public:
     }
 
     Element Render() final {
-        auto document =
-            vbox({
-                text(L"Login"),
-                separator(),
-                mUsernameInput.Render(),
-                mPasswordInput.Render(),
-                mLoginButton.Render(),
-            }) |
-            border;
+        auto doc = vbox({
+            text(L"Login") | hcenter,
+            separator(),
+            mUsernameInput.Render(),
+            mPasswordInput.Render(),
+            mLoginButton.Render(),
+        }) | range(40, 10) | center;
 
-        return document | 
-            size(HEIGHT, GREATER_THAN, 18) | 
-            size(WIDTH, GREATER_THAN, 18) |
-            center;
+        return doc | range(80, 25) | border | center;
     }
 
 public:
@@ -59,7 +55,7 @@ public:
     Container mContainer{Container::Vertical()};
     Input mUsernameInput;
     Input mPasswordInput;
-    Button mLoginButton{L"Login"};
+    TextCenterButton mLoginButton{L"Login"};
 };
 
 }}

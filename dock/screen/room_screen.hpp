@@ -65,33 +65,52 @@ public:
         auto details = GetState().mRoomDetails;
         Update();
 
-        auto doc = hbox({
-            vbox({
-                hbox({
-                    mReadyToggleButton.Render(),
-                    filler(),
-                    mExitRoomButton.Render()
-                }),
-                separator(),
-                // playerlist
-                Dom::MapVectorToVBox(
-                    details.user(),
-                    &Dom::RoomUserToText
-                )
+        auto topBar = hbox({
+            text(L"roomId: "),
+            text(to_wstring(details.roomid())),
+            filler(),
+            text(L"game: "),
+            text(to_wstring(details.gamename()))
+        });
+
+        auto playerList = vbox({
+            text(L"Player List"),
+            separator(),
+            Dom::MapVectorToVBox(
+                details.user(),
+                &Dom::RoomUserToText
+            )
+        }) | flex | width(25);
+
+        auto roomDetail = vbox({
+            text(L"Room Detail"),
+            separator(),
+            /// TODO: owner can change game and its settings
+            text(to_wstring(details.gamename())),
+            text(to_wstring(details.roomid())),
+            separator(),
+            Dom::ShowGameSettings(details),
+        }) | xflex;
+
+        auto doc = vbox({
+            topBar,
+            separator(),
+            hbox({
+                filler(),
+                mReadyToggleButton.Render(),
+                filler(),
+                mExitRoomButton.Render(),
+                filler()
             }),
             separator(),
-            vbox({
-                text(L"Room Detail"),
+            hbox({
+                playerList,
                 separator(),
-                /// TODO: owner can change game and its settings
-                text(to_wstring(details.gamename())),
-                text(to_wstring(details.roomid())),
-                separator(),
-                Dom::ShowGameSettings(details),
-            })
-        }) | border;
+                roomDetail                    
+            }) | yflex
+        });
 
-        return doc | center;
+        return doc | range(80, 25) | border | center;
     }
 
     State GetState() const {
