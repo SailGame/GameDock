@@ -10,15 +10,13 @@ namespace SailGame { namespace Dock {
 using namespace ftxui;
 using Common::GameType;
 
-class GameScreen : public Component, public UIProxyClient {
+class GameScreen : public ComponentWithUIProxy {
 public:
     std::function<void()> OnGameOver;
 
     GameScreen() = default;
 
-    virtual GameType GetGameType() const { 
-        return GameType::NoGame;
-    }
+    virtual GameType GetGameType() const = 0;
 
     void RegisterGameOverCallback(const std::function<void()> &callback) {
         OnGameOver = callback;

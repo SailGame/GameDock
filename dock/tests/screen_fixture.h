@@ -73,11 +73,11 @@ public:
             0, 0, 0, roomDetails));
         EXPECT_TRUE(mDock.mRoomScreen.AreAllUsersReady());
         EXPECT_EQ(mDock.mUIProxy->mGameManager->GetGameType(), GameType::NoGame);
-        EXPECT_EQ(mDock.mPolyGameScreen.GetComponent()->GetGameType(),
-                  GameType::NoGame);
+        EXPECT_FALSE(mDock.mPolyGameScreen.HasComponent());
 
         // next frame: all players are ready in room screen
         UserEvent();
+        EXPECT_TRUE(mDock.mPolyGameScreen.HasComponent());
         EXPECT_TRUE(mDock.mPolyGameScreen.GetComponent()->Focused());
         auto gameType = GameAttrFactory::GetGameTypeByGameName(
             roomDetails.gamename());

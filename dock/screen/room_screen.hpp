@@ -22,7 +22,7 @@ using ::Core::RoomUser;
 using SailGame::Common::CoreMsgBuilder;
 using SailGame::Dock::State;
 
-class RoomScreen : public Component, public UIProxyClient {
+class RoomScreen : public ComponentWithUIProxy {
 public:
     std::function<void()> OnExitRoom;
 

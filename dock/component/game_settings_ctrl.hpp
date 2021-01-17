@@ -16,7 +16,7 @@ using Common::Util;
 using Common::GameType;
 using google::protobuf::Any;
 
-class GameSettingsController : public Component, public UIProxyClient {
+class GameSettingsController : public ComponentWithUIProxy {
 public:
     GameSettingsController() {
         Add(&mTabContainer);

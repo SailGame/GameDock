@@ -15,7 +15,7 @@ using namespace ftxui;
 using ::Core::ErrorNumber;
 using ::Core::LoginRet;
 
-class LoginScreen : public Component, public UIProxyClient {
+class LoginScreen : public ComponentWithUIProxy {
 public:
     std::function<void(const LoginRet &)> OnLogin;
 

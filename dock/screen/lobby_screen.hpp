@@ -30,7 +30,7 @@ using SailGame::Common::Util;
 using SailGame::Dock::NonBorderButton;
 using SailGame::Dock::DockUtil;
 
-class LobbyScreen : public Component, public UIProxyClient {
+class LobbyScreen : public ComponentWithUIProxy {
 public:
     std::function<void()> OnJoinRoom;
 

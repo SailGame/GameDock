@@ -9,7 +9,7 @@ namespace SailGame { namespace Uno {
 
 using namespace ftxui;
 
-class UnoPanel : public Component, public Dock::UIProxyClient {
+class UnoPanel : public Dock::ComponentWithUIProxy {
 public:
     UnoPanel() = default;
 

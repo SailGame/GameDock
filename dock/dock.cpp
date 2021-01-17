@@ -20,7 +20,7 @@ Dock::Dock(const std::shared_ptr<UIProxy> &uiProxy)
     mRoomScreen.SetUIProxy(mUIProxy.get());
     mPolyGameScreen.SetUIProxy(mUIProxy.get());
 
-    mPolyGameScreen.SetComponent(std::make_shared<GameScreen>());
+    // mPolyGameScreen.SetComponent(std::make_shared<GameScreen>());
 
     // navigation between screens
     mLoginScreen.OnLogin = [this](const auto& ret) {

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <memory>
+#include <ftxui/component/component.hpp>
 #include <sailgame/common/game_manager.h>
 #include <sailgame/common/network_interface.h>
 #include <sailgame/common/core_msg_builder.h>
@@ -130,6 +131,10 @@ public:
 
 protected:
     UIProxy *mUIProxy;
+};
+
+class ComponentWithUIProxy : public ftxui::Component, public UIProxyClient {
+
 };
 
 }}

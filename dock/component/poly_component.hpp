@@ -11,7 +11,7 @@ using namespace ftxui;
 
 // T is Component and UIProxyClient
 template<typename T>
-class PolyComponent : public Component, public UIProxyClient {
+class PolyComponent : public ComponentWithUIProxy {
 public:
     ~PolyComponent() override = default;
 
