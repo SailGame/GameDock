@@ -8,6 +8,9 @@
 
 #include "../core/ui_proxy.h"
 #include "../util/dom.hpp"
+#include "../component/game_settings_ctrl.hpp"
+#include "../component/poly_component.hpp"
+#include "../component/empty_component.hpp"
 
 namespace SailGame { namespace Dock {
 
@@ -27,8 +30,21 @@ public:
 
     RoomScreen() {
         Add(&mContainer);
-        mContainer.Add(&mReadyToggleButton);
-        mContainer.Add(&mExitRoomButton);
+        mContainer.Add(&mButtonsContainer);
+        mContainer.Add(&mGameSettingsContainer);
+
+        mButtonsContainer.Add(&mReadyToggleButton);
+        mButtonsContainer.Add(&mExitRoomButton);
+
+        mGameSettingsContainer.Add(&mGameSettingsController);
+        mGameSettingsContainer.Add(&mSettingButtonsContainer);
+
+        mSettingButtonsContainer.Add(&mEmptyComponent);
+        mSettingButtonsContainer.Add(&mSetButton);
+        mSettingButtonsContainer.Add(&mSaveOrCancelButtonsContainer);
+
+        mSaveOrCancelButtonsContainer.Add(&mSaveChangeButton);
+        mSaveOrCancelButtonsContainer.Add(&mCancelChangeButton);
 
         mReadyToggleButton.on_click = [this] {
             if (!mIsReady) {
@@ -48,10 +64,60 @@ public:
                 OnExitRoom();
             }
         };
+
+        mSetButton.on_click = [this] {
+            mSettingButtonsContainer.SetActiveChild(
+                &mSaveOrCancelButtonsContainer);
+            mGameSettingsController.Invoke(
+                &GameSettingsController::ControlMode);
+        };
+
+        mSaveChangeButton.on_click = [this] {
+            auto results = mGameSettingsController.Invoke(
+                &GameSettingsController::GetControlResults);
+            auto roomId = GetState().mRoomDetails.roomid();
+            auto gameName = GetState().mRoomDetails.gamename();
+            auto roomPassword = "";
+            mUIProxy->ControlRoom(CoreMsgBuilder::CreateControlRoomArgs(
+                roomId, gameName, roomPassword, results));
+            mSetButton.TakeFocus();
+            mGameSettingsController.Invoke(
+                &GameSettingsController::ReadOnlyMode);
+        };
+
+        mCancelChangeButton.on_click = [this] {
+            mSetButton.TakeFocus();
+            mGameSettingsController.Invoke(
+                &GameSettingsController::ReadOnlyMode);
+        };
+    }
+
+    virtual void SetUIProxy(UIProxy *uiProxy) override {
+        UIProxyClient::SetUIProxy(uiProxy);
+        mGameSettingsController.SetUIProxy(uiProxy);
     }
 
     void Update() {
         mReadyToggleButton.label = mIsReady ? L"Cancel" : L"Ready";
+        if (GetState().IsOwner()) {
+        // if (true) {
+            if (mEmptyComponent.Active()) {
+                // cannot write like mSetButton.TakeFocus()
+                // because when the user is granted ownership, 
+                // his focus could be elsewhere.
+                mSettingButtonsContainer.SetActiveChild(&mSetButton);
+            }
+        }
+
+        if (!GetState().mRoomDetails.gamename().empty() &&
+            !mGameSettingsController.HasComponent()) 
+        {
+            /// TODO: switch GameSettingsController if change game
+            mGameSettingsController.SetComponent(
+                GameAttrFactory::Create(GetState().mRoomDetails.gamename())
+                    ->GetGameSettingsController());
+        }
+
         // OnGameStart callback will switch state machine,
         // so it should be invoked after reading details from state machine
         if (AreAllUsersReady()) {
@@ -78,18 +144,15 @@ public:
             separator(),
             Dom::MapVectorToVBox(
                 details.user(),
-                &Dom::RoomUserToText
+                &Dom::RoomUserToHBox
             )
         }) | flex | width(25);
 
         auto roomDetail = vbox({
             text(L"Room Detail"),
             separator(),
-            /// TODO: owner can change game and its settings
-            text(to_wstring(details.gamename())),
-            text(to_wstring(details.roomid())),
-            separator(),
-            Dom::ShowGameSettings(details),
+            text(L"Game settings") | bold,
+            mGameSettingsContainer.Render()
         }) | xflex;
 
         auto doc = vbox({
@@ -135,9 +198,17 @@ public:
 
 public:
 // private:
-    Container mContainer{Container::Horizontal()};
+    Container mContainer{Container::Vertical()};
+    Container mButtonsContainer{Container::Horizontal()};
     Button mReadyToggleButton{L"Ready"};
     Button mExitRoomButton{L"Exit Room"};
+    Container mGameSettingsContainer{Container::Vertical()};
+    PolyComponent<GameSettingsController> mGameSettingsController;
+    Container mSettingButtonsContainer{Container::Tab(nullptr)};
+    EmptyComponent mEmptyComponent;
+    Button mSetButton{L"Change settings"};
+    Container mSaveOrCancelButtonsContainer{Container::Horizontal()};
+    Button mSaveChangeButton{L"Save"};
+    Button mCancelChangeButton{L"Cancel"};
 };
-
 }}

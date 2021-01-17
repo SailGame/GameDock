@@ -10,16 +10,17 @@ using ::Core::ErrorNumber;
 Dock::Dock(const std::shared_ptr<UIProxy> &uiProxy)
     : mUIProxy(uiProxy)
 {
-    Add(&mScreenContainer);
     mScreenContainer.Add(&mLoginScreen);
     mScreenContainer.Add(&mLobbyScreen);
     mScreenContainer.Add(&mRoomScreen);
-    mScreenContainer.Add(&mGameScreen);
+    mScreenContainer.Add(&mPolyGameScreen);
 
     mLoginScreen.SetUIProxy(mUIProxy.get());
     mLobbyScreen.SetUIProxy(mUIProxy.get());
     mRoomScreen.SetUIProxy(mUIProxy.get());
-    mGameScreen.SetUIProxy(mUIProxy.get());
+    mPolyGameScreen.SetUIProxy(mUIProxy.get());
+
+    mPolyGameScreen.SetComponent(std::make_shared<GameScreen>());
 
     // navigation between screens
     mLoginScreen.OnLogin = [this](const auto& ret) {
@@ -43,22 +44,20 @@ Dock::Dock(const std::shared_ptr<UIProxy> &uiProxy)
         mUIProxy->SwitchToNewStateMachine(
             GameAttrFactory::Create(gameName)->GetStateMachine());
 
-        mGameScreen.SwitchToNewGameScreen(
+        mPolyGameScreen.SetComponent(
             GameAttrFactory::Create(gameName)->GetGameScreen());
-        mGameScreen.TakeFocus();
-    };
-
-    mGameScreen.OnGameOver = [this] {
-        // mUIProxy->SwitchToNewStateMachine(StateMachine::Create());
-        mGameScreen.ResetGameScreen();
-        mRoomScreen.TakeFocus();
+        mPolyGameScreen.Invoke(&GameScreen::RegisterGameOverCallback, [this] {
+            mPolyGameScreen.ResetComponent();
+            mRoomScreen.TakeFocus();
+        });
+        mPolyGameScreen.TakeFocus();
     };
 }
 
 Dock::~Dock() {}
 
 void Dock::Loop() {
-    mScreen.Loop(this);
+    mScreen.Loop(&mScreenContainer);
 }
 
 }}

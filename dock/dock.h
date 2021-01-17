@@ -10,18 +10,18 @@
 #include "screen/login_screen.hpp"
 #include "screen/room_screen.hpp"
 #include "screen/game_screen.hpp"
+#include "component/poly_component.hpp"
 
 namespace SailGame { namespace Dock {
 
 using SailGame::Dock::UIProxy;
 
-class Dock : public ftxui::Component {
+class Dock {
 public:
     Dock(const std::shared_ptr<UIProxy> &uiProxy);
 
     ~Dock();
 
-    // FtxUI
     void Loop();
 
 // private:
@@ -33,7 +33,7 @@ public:
     LoginScreen mLoginScreen;
     LobbyScreen mLobbyScreen;
     RoomScreen mRoomScreen;
-    GameScreen mGameScreen;
+    PolyComponent<GameScreen> mPolyGameScreen;
 };
 
 }}

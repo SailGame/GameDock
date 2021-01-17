@@ -100,22 +100,21 @@ public:
         return text(to_wstring(card.ToString())) | ftxui::color(color);
     }
 
-    static Element ShowGameSettings(const Any &any) {
-        auto settings = Common::Util::UnpackGrpcAnyTo<StartGameSettings>(any);
+    static Element ShowGameSettings(const StartGameSettings &settings) {
         auto vBox = vbox({});
         auto boolToWstring = [](bool b) -> std::wstring {
             return b ? L"true" : L"false"; 
         };
-        vBox->children.push_back(text(L"isDraw2Consumed: " + 
+        vBox->children.push_back(text(L"isDraw2Consumed       : " + 
             boolToWstring(settings.isdraw2consumed())));
-        vBox->children.push_back(text(L"canSkipRespond: " + 
+        vBox->children.push_back(text(L"canSkipRespond        : " + 
             boolToWstring(settings.canskiprespond())));
-        vBox->children.push_back(text(L"hasWildSwapHandsCard: " + 
+        vBox->children.push_back(text(L"hasWildSwapHandsCard  : " + 
             boolToWstring(settings.haswildswaphandscard())));
-        vBox->children.push_back(text(L"canDoubtDraw4: " + 
+        vBox->children.push_back(text(L"canDoubtDraw4         : " + 
             boolToWstring(settings.candoubtdraw4())));
-        vBox->children.push_back(text(L"roundTime: " + 
-            boolToWstring(settings.roundtime())));
+        vBox->children.push_back(text(L"roundTime             : " + 
+            to_wstring(settings.roundtime())));
         return vBox;
     }
 };

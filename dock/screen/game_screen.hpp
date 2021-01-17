@@ -14,27 +14,14 @@ class GameScreen : public Component, public UIProxyClient {
 public:
     std::function<void()> OnGameOver;
 
-    GameScreen() {}
-
-    virtual Element Render() { return mGameScreen->Render(); }
+    GameScreen() = default;
 
     virtual GameType GetGameType() const { 
-        return mGameScreen ? mGameScreen->GetGameType() : GameType::NoGame;
+        return GameType::NoGame;
     }
 
-    void SwitchToNewGameScreen(const std::shared_ptr<GameScreen> &gameScreen) {
-        mGameScreen = gameScreen;
-        mGameScreen->SetUIProxy(mUIProxy);
+    void RegisterGameOverCallback(const std::function<void()> &callback) {
+        OnGameOver = callback;
     }
-
-    void ResetGameScreen() {
-        mGameScreen.reset();
-    }
-
-    virtual ~GameScreen() = default;
-
-public:
-    std::shared_ptr<GameScreen> mGameScreen;
-
 };
 }}

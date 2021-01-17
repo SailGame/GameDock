@@ -102,15 +102,22 @@ public:
         auto roomDetail = vbox({
             text(L"Room Detail"),
             separator(),
-            text(to_wstring(mDetails.gamename())),
-            text(to_wstring(mDetails.roomid())),
+            hbox({
+                text(L"Game: ") | bold,
+                text(to_wstring(mDetails.gamename())) | flex,
+                text(L"RoomId: ") | bold,
+                text(to_wstring(mDetails.roomid())) | flex,
+            }),
             separator(),
+            text(L"Players in the room") | bold,
             Dom::MapVectorToVBox(
                 DockUtil::GetUsernamesFromRoomDetails(mDetails),
                 &Dom::UserNameToText
             ),
             separator(),
+            text(L"Game settings") | bold,
             Dom::ShowGameSettings(mDetails),
+            separator(),
             mJoinRoomButton.Render()
         }) | xflex;
 

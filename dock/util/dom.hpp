@@ -25,8 +25,8 @@ public:
         if (details.gamename().empty()) {
             return text(L"empty");
         }
-        return GameAttrFactory::Create(GameAttrFactory::GetGameTypeByGameName(
-            details.gamename()))->ShowGameSettings(details.gamesetting());
+        return GameAttrFactory::Create(details.gamename())
+            ->ShowGameSettings(details.gamesetting());
     }
 
     template<typename ElemT, typename FuncT>
@@ -63,6 +63,13 @@ public:
     static Element RoomUserToText(const RoomUser &roomUser) {
         return text(to_wstring(roomUser.username()) + L"    " +
             RoomUserStateToString(roomUser.userstate()));
+    }
+
+    static Element RoomUserToHBox(const RoomUser &roomUser) {
+        return hbox({
+            text(to_wstring(roomUser.username())) | flex,
+            text(RoomUserStateToString(roomUser.userstate()))
+        });
     }
 
     static std::wstring RoomUserStateToString(RoomUser::RoomUserState state) {

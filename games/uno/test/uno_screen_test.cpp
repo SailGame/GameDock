@@ -54,7 +54,7 @@ public:
 
     std::shared_ptr<Uno::GameScreen> GetScreen() {
         return std::dynamic_pointer_cast<Uno::GameScreen>(
-            mDock.mGameScreen.mGameScreen);
+            mDock.mPolyGameScreen.GetComponent());
     }
 
 protected:
