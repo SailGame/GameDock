@@ -88,10 +88,8 @@ private:
                 OnPlayWildCard();
             }
             else {
-                mUIProxy->OperationInRoom(
-                    CoreMsgBuilder::CreateOperationInRoomArgs(
-                        MsgBuilder::CreatePlay<UserOperation>(
-                            cardToPlay, cardToPlay.mColor)));
+                mUIProxy->OperationInRoom(MsgBuilder::CreatePlay<UserOperation>(
+                    cardToPlay, cardToPlay.mColor));
             }
         } 
         else {

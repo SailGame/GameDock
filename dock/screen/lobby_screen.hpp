@@ -32,49 +32,35 @@ using SailGame::Dock::DockUtil;
 
 class LobbyScreen : public ComponentWithUIProxy {
 public:
-    std::function<void()> OnJoinRoom;
+    std::function<void(int)> OnJoinRoom;
 
     LobbyScreen() {
         Add(&mContainer);
-        mContainer.Add(&mSearchBar);
+        mContainer.Add(&mOpBar);
         mContainer.Add(&mRoomDisplayArea);
 
-        mSearchBar.Add(&mSearchInput);
-        mSearchBar.Add(&mSearchButton);
+        mOpBar.Add(&mSearchInput);
+        mOpBar.Add(&mSearchButton);
+        mOpBar.Add(&mCreateButton);
+        mOpBar.Add(&mQueryAccountInput);
+        mOpBar.Add(&mQueryAccountButton);
 
         mRoomDisplayArea.Add(&mRoomList);
         mRoomDisplayArea.Add(&mRoomDetail);
 
         mRoomDetail.Add(&mJoinRoomButton);
 
-        mSearchInput.placeholder = L"input game name";
-        mSearchButton.on_click = [this] {
-            mRooms = Util::ConvertGrpcRepeatedPtrFieldToVector(
-                mUIProxy->ListRoom(CoreMsgBuilder::CreateListRoomArgs(
-                    to_string(mSearchInput.content)
-                )).room()
-            );
-            if (!mRooms.empty()) {
-                mRoomList.selected = 0;
-                mDetails = mUIProxy->QueryRoom(
-                    CoreMsgBuilder::CreateQueryRoomArgs(
-                        mRooms[0].roomid())).room();
-            }
-        };
+        mSearchInput.placeholder = L"game name or room id";
+        mSearchButton.on_click = [this] { SearchRoom(); };
 
-        mRoomList.on_change = [this] {
-            mDetails = mUIProxy->QueryRoom(CoreMsgBuilder::CreateQueryRoomArgs(
-                mRooms[mRoomList.selected].roomid())).room();
-        };
+        mCreateButton.on_click = [this] { CreateRoom(); };
 
-        mJoinRoomButton.on_click = [this] {
-            auto roomId = mRooms[mRoomList.selected].roomid();
-            auto ret = mUIProxy->JoinRoom(CoreMsgBuilder::CreateJoinRoomArgs(
-                roomId));
-            if (ret.err() == ErrorNumber::OK) {
-                OnJoinRoom();
-            }
-        };
+        mQueryAccountInput.placeholder = L"username";
+        mQueryAccountButton.on_click = [this] { QueryAccount(); };
+
+        mRoomList.on_change = [this] { QueryRoom(mRoomList.selected); };
+
+        mJoinRoomButton.on_click = [this] { JoinRoom(); };
     }
 
     void Update() {
@@ -121,21 +107,88 @@ public:
             mJoinRoomButton.Render()
         }) | xflex;
 
+        auto roomElement = hbox({
+            roomList,
+            separator(),
+            (mDetails.gamename().empty() ?
+                text(L"choose a room to view details") :
+                roomDetail)
+        }) | yflex;
+
+        auto accountElement = vbox({
+            text(L"username  : " + to_wstring(mAccount.username())),
+            text(L"points    : " + to_wstring(mAccount.points()))
+        }) | xflex;
+
         auto doc = vbox({
             topBar,
             separator(),
-            mSearchBar.Render(),
-            separator(),
+            // mOpBar.Render(),
             hbox({
-                roomList,
-                separator(),
-                (mDetails.gamename().empty() ?
-                    text(L"choose a room to view details") :
-                    roomDetail)
-            }) | yflex
+                mSearchInput.Render() | width(25), mSearchButton.Render(), 
+                text(L" "), separator(), text(L" "),
+                mCreateButton.Render(), 
+                text(L" "), separator(), text(L" "),
+                mQueryAccountInput.Render() | width(14), mQueryAccountButton.Render()
+            }),
+            separator(),
+            mShowRoomList ? roomElement : accountElement
         });
 
         return doc | range(80, 25) | border | center;
+    }
+
+private:
+    void SearchRoom() {
+        mShowRoomList = true;
+        // if search input is int
+        /// TODO: query room
+        // if search input is string
+        auto ret = mUIProxy->ListRoom(to_string(mSearchInput.content));
+        assert(ret.err() == ErrorNumber::OK);
+        mRooms = Util::ConvertGrpcRepeatedPtrFieldToVector(ret.room());
+        if (!mRooms.empty()) {
+            mRoomList.selected = 0;
+            QueryRoom(0);
+        }
+    }
+
+    void CreateRoom() {
+        auto ret = mUIProxy->CreateRoom();
+        assert(ret.err() == ErrorNumber::OK);
+        auto roomId = ret.roomid();
+        // after creating room, user will join it automatically
+        // auto joinRet =
+        //     mUIProxy->JoinRoom(CoreMsgBuilder::CreateJoinRoomArgs(roomId));
+        // assert(joinRet.err() == ErrorNumber::OK);
+        OnJoinRoom(roomId);
+        /// TODO: for now set game to UNO, in the future make it configurable
+        auto ctrlRet = mUIProxy->ControlRoom(roomId, "UNO", "",
+            Uno::MsgBuilder::CreateStartGameSettings(
+                true, true, false, false, 15));
+        spdlog::info("err: {}", ctrlRet.err());
+        assert(ctrlRet.err() == ErrorNumber::OK);
+    }
+
+    void QueryAccount() {
+        mShowRoomList = false;
+        auto ret = mUIProxy->QueryAccount(to_string(mQueryAccountInput.content));
+        assert(ret.err() == ErrorNumber::OK);
+        mAccount = ret.account();
+    }
+
+    void QueryRoom(int roomIndex) {
+        auto ret = mUIProxy->QueryRoom(mRooms[roomIndex].roomid());
+        assert(ret.err() == ErrorNumber::OK);
+        mDetails = ret.room();
+    }
+
+    void JoinRoom() {
+        auto roomId = mRooms[mRoomList.selected].roomid();
+        auto ret =
+            mUIProxy->JoinRoom(roomId);
+        assert(ret.err() == ErrorNumber::OK);
+        OnJoinRoom(roomId);
     }
 
 /// XXX: aggregate this states as one
@@ -144,13 +197,18 @@ public:
     int mPoints{0};
     std::vector<Room> mRooms;
     RoomDetails mDetails;
+    // if true, left sidebar will show roomlist, otherwise show account info
+    bool mShowRoomList{true};
+    Account mAccount;
 
 public:
-// private:
     Container mContainer{Container::Vertical()};
-    Container mSearchBar{Container::Horizontal()};
+    Container mOpBar{Container::Horizontal()};
     Input mSearchInput;
-    NonBorderButton mSearchButton{L"Search"};
+    NonBorderButton mSearchButton{L"Search Room"};
+    NonBorderButton mCreateButton{L"Create Room"};
+    Input mQueryAccountInput;
+    NonBorderButton mQueryAccountButton{L"Query Account"};
     Container mRoomDisplayArea{Container::Horizontal()};
     Menu mRoomList;
     Container mRoomDetail{Container::Vertical()};

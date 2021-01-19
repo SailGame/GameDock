@@ -7,8 +7,8 @@
 #include "dock/dock.h"
 
 using SailGame::Common::EventLoop;
-using SailGame::Common::GameManager;
-using SailGame::Common::NetworkInterface;
+using SailGame::Common::INetworkInterface;
+using SailGame::Common::ClientNetworkInterface;
 using SailGame::Dock::Dock;
 using SailGame::Dock::UIProxy;
 
@@ -19,8 +19,8 @@ int main(int argc, const char* argv[]) {
     spdlog::info("hello, game dock!");
 
     auto uiProxy = UIProxy::Create(
-        NetworkInterface<false>::Create(
-            NetworkInterface<false>::CreateStub("localhost:50051")));
+        ClientNetworkInterface::Create(
+            INetworkInterface::CreateStub("localhost:50051")));
     Dock dock(uiProxy);
     dock.Loop();
 }

@@ -29,9 +29,8 @@ public:
         mUsernameInput.placeholder = L"username";
         mPasswordInput.placeholder = L"password";
         mLoginButton.on_click = [this] {
-            auto ret = mUIProxy->Login(CoreMsgBuilder::CreateLoginArgs(
-                to_string(mUsernameInput.content), 
-                to_string(mPasswordInput.content)));
+            auto ret = mUIProxy->Login(to_string(mUsernameInput.content), 
+                to_string(mPasswordInput.content));
             if (ret.err() == ErrorNumber::OK) {
                 OnLogin(ret);
             }

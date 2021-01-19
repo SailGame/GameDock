@@ -67,10 +67,8 @@ private:
                 OnPlayWildCard();
             }
             else {
-                mUIProxy->OperationInRoom(
-                    CoreMsgBuilder::CreateOperationInRoomArgs(
-                        MsgBuilder::CreatePlay<UserOperation>(
-                            cardToPlay, cardToPlay.mColor)));
+                mUIProxy->OperationInRoom(MsgBuilder::CreatePlay<UserOperation>(
+                    cardToPlay, cardToPlay.mColor));
             }
         } 
         else {
@@ -79,8 +77,7 @@ private:
     }
 
     void Skip() {
-        mUIProxy->OperationInRoom(CoreMsgBuilder::CreateOperationInRoomArgs(
-            MsgBuilder::CreateSkip<UserOperation>()));
+        mUIProxy->OperationInRoom(MsgBuilder::CreateSkip<UserOperation>());
     }
 
 public:

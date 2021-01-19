@@ -62,10 +62,8 @@ private:
     void Specify(CardColor nextColor) {
         // here the card can be played certainly
         auto cardToPlay = GetState().mSelfState.mHandcards.At(mCursor);
-        mUIProxy->OperationInRoom(
-            CoreMsgBuilder::CreateOperationInRoomArgs(
-                MsgBuilder::CreatePlay<UserOperation>(
-                    cardToPlay, nextColor)));
+        mUIProxy->OperationInRoom(MsgBuilder::CreatePlay<UserOperation>(
+            cardToPlay, nextColor));
     }
 
 public:

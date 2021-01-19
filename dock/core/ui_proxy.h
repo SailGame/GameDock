@@ -1,6 +1,7 @@
 #pragma once
 
 #include <memory>
+#include <spdlog/spdlog.h>
 #include <ftxui/component/component.hpp>
 #include <sailgame/common/game_manager.h>
 #include <sailgame/common/network_interface.h>
@@ -11,45 +12,46 @@
 #include <sailgame/uno/msg_builder.h>
 
 #include "state_machine.h"
+#include "../util/logger.h"
 
 namespace SailGame { namespace Dock {
 
 using Common::CoreMsgBuilder;
 using Common::EventLoop;
-using Common::GameManager;
-using Common::NetworkInterface;
+using Common::ClientGameManager;
+using Common::ClientNetworkInterface;
 using Common::IState;
-using Common::IStateMachine;
-using Common::NetworkInterface;
+using Common::ClientStateMachine;
 using namespace ::Core;
 
 class UIProxy {
 public:
-    UIProxy(const std::shared_ptr<NetworkInterface<false>> &networkInterface,
+    UIProxy(const std::shared_ptr<ClientNetworkInterface> &networkInterface,
         bool isTest = false)
         : mNetworkInterface(networkInterface), mIsTest(isTest) {}
     
     static std::shared_ptr<UIProxy> Create(
-        const std::shared_ptr<NetworkInterface<false>> &networkInterface,
+        const std::shared_ptr<ClientNetworkInterface> &networkInterface,
         bool isTest = false) 
     {
         return std::make_shared<UIProxy>(networkInterface, isTest);
     }
 
     void SwitchToNewStateMachine(
-        const std::shared_ptr<IStateMachine> &stateMachine)
+        const std::shared_ptr<ClientStateMachine> &stateMachine)
     {
         assert(mGameManager);
-        mGameManager->SetNewStateMachine(stateMachine);
+        mGameManager->SwitchStateMachine(stateMachine);
     }
 
     void OnLoginSuccess(const std::string &token, 
         const std::string &username = "test") 
     {
         assert(!mGameManager);
-        mGameManager = std::make_shared<GameManager<false>>(
+        mGameManager = std::make_shared<ClientGameManager>(
             EventLoop::Create(), 
             SailGame::Dock::StateMachine::Create(username), mNetworkInterface);
+        spdlog::info("Game Manager created.");
         // token cannot be captured by reference here
         // because the thread may start running after token gets destructed
         mGameManagerThread = std::make_unique<std::thread>([token, this] {
@@ -62,6 +64,7 @@ public:
                 mGameManager->Start();
             }
         });
+        spdlog::info("Game Manager Thread started.");
     }
 
     void Stop() {
@@ -71,56 +74,101 @@ public:
             mGameManagerThread->join();
         }
     }
+    
+    const IState &GetState() const { return mGameManager->GetState(); };
 
-    LoginRet Login(const LoginArgs &args) {
-        return mNetworkInterface->Login(args);
+    void SetState(const IState &state) { mGameManager->SetState(state); }
+
+#define RpcMethodHelper(RpcName) \
+    Logger::Log(args); \
+    auto ret = mNetworkInterface->RpcName(args); \
+    Logger::Log(ret); \
+    return ret;
+
+#define RpcMethod(RpcName) \
+    auto args = CoreMsgBuilder::Create##RpcName##Args(); \
+    RpcMethodHelper(RpcName);
+
+#define RpcMethod_P1(RpcName, p1) \
+    auto args = CoreMsgBuilder::Create##RpcName##Args(p1); \
+    RpcMethodHelper(RpcName);
+
+#define RpcMethod_P2(RpcName, p1, p2) \
+    auto args = CoreMsgBuilder::Create##RpcName##Args(p1, p2); \
+    RpcMethodHelper(RpcName);
+
+#define RpcMethod_P3(RpcName, p1, p2, p3) \
+    auto args = CoreMsgBuilder::Create##RpcName##Args(p1, p2, p3); \
+    RpcMethodHelper(RpcName);
+
+#define RpcMethod_P4(RpcName, p1, p2, p3, p4) \
+    auto args = CoreMsgBuilder::Create##RpcName##Args(p1, p2, p3, p4); \
+    RpcMethodHelper(RpcName);
+
+    LoginRet Login(const std::string &username, const std::string &password) {
+        RpcMethod_P2(Login, username, password);
     }
 
-    QueryAccountRet QueryAccount(const QueryAccountArgs &args) {
-        return mNetworkInterface->QueryAccount(args);
+    QueryAccountRet QueryAccount(const std::string &username) {
+        RpcMethod_P1(QueryAccount, username);
     }
 
-    CreateRoomRet CreateRoom(const CreateRoomArgs &args) {
-        return mNetworkInterface->CreateRoom(args);
+    QueryAccountRet QueryAccount() {
+        RpcMethod(QueryAccount);
     }
 
-    ControlRoomRet ControlRoom(const ControlRoomArgs &args) {
-        return mNetworkInterface->ControlRoom(args);
+    CreateRoomRet CreateRoom() {
+        RpcMethod(CreateRoom);
     }
 
-    ListRoomRet ListRoom(const ListRoomArgs &args) {
-        return mNetworkInterface->ListRoom(args);
+    template<typename GameSettingsT>
+    ControlRoomRet ControlRoom(int roomId, 
+        const std::string &gameName, const std::string &roomPassword,
+        const GameSettingsT &custom) {
+        RpcMethod_P4(ControlRoom, roomId, gameName, roomPassword, custom);
     }
 
-    JoinRoomRet JoinRoom(const JoinRoomArgs &args) {
-        return mNetworkInterface->JoinRoom(args);
+    ListRoomRet ListRoom(const std::string &gameName) {
+        RpcMethod_P1(ListRoom, gameName);
     }
 
-    ExitRoomRet ExitRoom(const ExitRoomArgs &args) {
-        return mNetworkInterface->ExitRoom(args);
+    JoinRoomRet JoinRoom(int roomId) {
+        RpcMethod_P1(JoinRoom, roomId);
     }
 
-    QueryRoomRet QueryRoom(const QueryRoomArgs &args) {
-        return mNetworkInterface->QueryRoom(args);
+    ExitRoomRet ExitRoom() {
+        RpcMethod(ExitRoom);
     }
 
-    OperationInRoomRet OperationInRoom(
-        const OperationInRoomArgs &args) {
-            return mNetworkInterface->OperationInRoom(args);
-        }
-
-    MessageRet Message(const MessageArgs &args) {
-        return mNetworkInterface->Message(args);
+    QueryRoomRet QueryRoom(int roomId) {
+        RpcMethod_P1(QueryRoom, roomId);
     }
 
-    const IState &GetState() const {
-        return mGameManager->GetState();
-    };
+    OperationInRoomRet OperationInRoom(Ready ready) {
+        RpcMethod_P1(OperationInRoom, ready);
+    }
+
+    template<typename UserOperationT>
+    OperationInRoomRet OperationInRoom(const UserOperationT &custom) {
+        RpcMethod_P1(OperationInRoom, custom);
+    }
+
+    MessageRet Message(const std::string &message, const std::string &dstUser,
+        int dstRoom) {
+        RpcMethod_P3(Message, message, dstUser, dstRoom);
+    }
+
+#undef RpcMethodHelper
+#undef RpcMethod
+#undef RpcMethod_P1
+#undef RpcMethod_P2
+#undef RpcMethod_P3
+#undef RpcMethod_P4
 
 // private:
 public:
-    std::shared_ptr<NetworkInterface<false>> mNetworkInterface;
-    std::shared_ptr<GameManager<false>> mGameManager;
+    std::shared_ptr<ClientNetworkInterface> mNetworkInterface;
+    std::shared_ptr<ClientGameManager> mGameManager;
     std::unique_ptr<std::thread> mGameManagerThread;
     bool mIsTest{false};
 };
@@ -133,6 +181,7 @@ protected:
     UIProxy *mUIProxy;
 };
 
+/// TODO: use a concrete one for each game including no-game
 class ComponentWithUIProxy : public ftxui::Component, public UIProxyClient {
 
 };

@@ -17,7 +17,7 @@ namespace SailGame { namespace Test {
 using namespace testing;
 using namespace Dock;
 using Common::CoreMsgBuilder;
-using Common::NetworkInterface;
+using Common::ClientNetworkInterface;
 using ::Core::BroadcastMsg;
 using ::Core::ErrorNumber;
 using ::Core::MockGameCoreStub;
@@ -33,7 +33,7 @@ public:
         : mMockStream(new MockClientReader<BroadcastMsg>()),
         mMockStub(std::make_shared<MockGameCoreStub>()),
         mDock(UIProxy::Create(
-            NetworkInterface<false>::Create(mMockStub), true))
+            ClientNetworkInterface::Create(mMockStub), true))
     {}
 
     void SetUp() {

@@ -13,18 +13,23 @@ namespace SailGame { namespace Uno {
 
 using Common::GameType;
 using Common::IStateMachine;
+using Common::ClientStateMachine;
 using namespace ::Core;
 using namespace ::Uno;
 
-class StateMachine : public IStateMachine {
+class StateMachine : public ClientStateMachine {
 public:
     StateMachine() = default;
 
-    static std::shared_ptr<IStateMachine> Create() {
+    static std::shared_ptr<ClientStateMachine> Create() {
         return std::make_shared<StateMachine>();
     }
 
     const IState &GetState() const override { return mState; }
+
+    void SetState(const IState &state) override { 
+        mState = dynamic_cast<const WholeState &>(state);
+    }
 
     GameType GetType() const override { return GameType::Uno; }
 

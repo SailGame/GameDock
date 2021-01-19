@@ -62,15 +62,12 @@ public:
 private:
     void Pass() {
         if (GetState().mGameState.mLastPlayedCard.mText == CardText::SKIP) {
-            mUIProxy->OperationInRoom(
-                CoreMsgBuilder::CreateOperationInRoomArgs(
-                    MsgBuilder::CreateSkip<UserOperation>()));
+            mUIProxy->OperationInRoom(MsgBuilder::CreateSkip<UserOperation>());
         }
         else {
             auto number = GetState().mGameState.mCardsNumToDraw;
             mUIProxy->OperationInRoom(
-                CoreMsgBuilder::CreateOperationInRoomArgs(
-                    MsgBuilder::CreateDraw<UserOperation>(number)));
+                MsgBuilder::CreateDraw<UserOperation>(number));
         }
     }
 
@@ -79,9 +76,7 @@ private:
             OnHasChanceToPlayAfterDraw();
         }
         else {
-            mUIProxy->OperationInRoom(
-                CoreMsgBuilder::CreateOperationInRoomArgs(
-                    MsgBuilder::CreateSkip<UserOperation>()));
+            mUIProxy->OperationInRoom(MsgBuilder::CreateSkip<UserOperation>());
         }
     }
 

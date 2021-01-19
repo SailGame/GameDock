@@ -13,7 +13,7 @@
 
 namespace SailGame { namespace Uno {
 
-using Common::IStateMachine;
+using Common::ClientStateMachine;
 using Common::Util;
 using Dock::IGameAttr;
 using ftxui::Element;
@@ -22,7 +22,7 @@ using ::Uno::StartGameSettings;
 
 class GameAttr : public IGameAttr {
 public:
-    virtual std::shared_ptr<IStateMachine> GetStateMachine() override {
+    virtual std::shared_ptr<ClientStateMachine> GetStateMachine() override {
         return StateMachine::Create();
     }
 

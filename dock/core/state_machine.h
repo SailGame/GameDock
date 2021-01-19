@@ -9,18 +9,23 @@ namespace SailGame { namespace Dock {
 using ::Core::BroadcastMsg;
 using ::Core::RoomDetails;
 using Common::IStateMachine;
+using Common::ClientStateMachine;
 using Common::IState;
 using Common::GameType;
 
-class StateMachine : public IStateMachine {
+class StateMachine : public ClientStateMachine {
 public:
     StateMachine(const std::string &username) : mState(username) {}
 
-    static std::shared_ptr<IStateMachine> Create(const std::string &username) {
+    static std::shared_ptr<ClientStateMachine> Create(const std::string &username) {
         return std::make_shared<StateMachine>(username);
     }
 
     const IState &GetState() const override { return mState; }
+
+    virtual void SetState(const IState &state) {
+        mState = dynamic_cast<const State &>(state);
+    }
 
     GameType GetType() const override { return GameType::NoGame; }
 

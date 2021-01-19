@@ -48,18 +48,16 @@ public:
 
         mReadyToggleButton.on_click = [this] {
             if (!mIsReady) {
-                mUIProxy->OperationInRoom(
-                    CoreMsgBuilder::CreateOperationInRoomArgs(Ready::READY));
+                mUIProxy->OperationInRoom(Ready::READY);
             }
             else {
-                mUIProxy->OperationInRoom(
-                    CoreMsgBuilder::CreateOperationInRoomArgs(Ready::CANCEL));
+                mUIProxy->OperationInRoom(Ready::CANCEL);
             }
             mIsReady = !mIsReady;
         };
 
         mExitRoomButton.on_click = [this] {
-            auto ret = mUIProxy->ExitRoom(CoreMsgBuilder::CreateExitRoomArgs());
+            auto ret = mUIProxy->ExitRoom();
             if (ret.err() == ErrorNumber::OK) {
                 OnExitRoom();
             }
@@ -78,8 +76,7 @@ public:
             auto roomId = GetState().mRoomDetails.roomid();
             auto gameName = GetState().mRoomDetails.gamename();
             auto roomPassword = "";
-            mUIProxy->ControlRoom(CoreMsgBuilder::CreateControlRoomArgs(
-                roomId, gameName, roomPassword, results));
+            mUIProxy->ControlRoom(roomId, gameName, roomPassword, results);
             mSetButton.TakeFocus();
             mGameSettingsController.Invoke(
                 &GameSettingsController::ReadOnlyMode);

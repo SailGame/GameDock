@@ -33,7 +33,15 @@ Dock::Dock(const std::shared_ptr<UIProxy> &uiProxy)
         mLobbyScreen.TakeFocus();
     };
 
-    mLobbyScreen.OnJoinRoom = [this] { mRoomScreen.TakeFocus(); };
+    mLobbyScreen.OnJoinRoom = [this](int roomId) {
+        auto ret =
+            mUIProxy->QueryRoom(roomId);
+        assert(ret.err() == ErrorNumber::OK);
+        auto state = dynamic_cast<const State &>(mUIProxy->GetState());
+        state.mRoomDetails = ret.room();
+        mUIProxy->SetState(state);
+        mRoomScreen.TakeFocus();
+    };
 
     mRoomScreen.OnExitRoom = [this] { mLobbyScreen.TakeFocus(); };
 
