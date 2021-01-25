@@ -1,6 +1,7 @@
 #pragma once
 
 #include <iostream>
+#include <memory>
 #include <vector>
 #include <spdlog/spdlog.h>
 #include <ftxui/component/screen_interactive.hpp>
@@ -22,7 +23,7 @@ public:
 
     ~Dock();
 
-    void Loop();
+    void Loop(bool useRefersher = true);
 
 // private:
 public:

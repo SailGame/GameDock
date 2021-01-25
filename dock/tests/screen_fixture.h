@@ -47,7 +47,7 @@ public:
         //     }
         // });
         mDockThread = std::make_unique<std::thread>([this] {
-            mDock.Loop();
+            mDock.Loop(false);
         });
     }
 
@@ -73,11 +73,11 @@ public:
         CoreMsg(CoreMsgBuilder::CreateBroadcastMsgByRoomDetails(
             0, 0, 0, roomDetails));
         // EXPECT_TRUE(mDock.mRoomScreen.AreAllUsersReady());
-        EXPECT_EQ(mDock.mUIProxy->mGameManager->GetGameType(), GameType::NoGame);
-        EXPECT_FALSE(mDock.mPolyGameScreen.HasComponent());
+        // EXPECT_EQ(mDock.mUIProxy->mGameManager->GetGameType(), GameType::NoGame);
+        // EXPECT_FALSE(mDock.mPolyGameScreen.HasComponent());
 
         // next frame: all players are ready in room screen
-        UserEvent();
+        // UserEvent();
         EXPECT_TRUE(mDock.mPolyGameScreen.HasComponent());
         EXPECT_TRUE(mDock.mPolyGameScreen.GetComponent()->Focused());
         auto gameType = Util::GetGameTypeByGameName(roomDetails.gamename());

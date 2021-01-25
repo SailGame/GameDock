@@ -90,7 +90,11 @@ TEST_F(RoomScreenFixture, GameStart) {
     UserEvent();
 
     // b gets ready, game start now
-    roomDetails.mutable_user(1)->set_userstate(RoomUser::READY);
+    // note that when all users are ready, Core will automatically 
+    // change user state to PLAYING
+    for (auto i = 0; i < 4; i++) {
+        roomDetails.mutable_user(i)->set_userstate(RoomUser::PLAYING);
+    }
     GameStart(roomDetails);
 }
 

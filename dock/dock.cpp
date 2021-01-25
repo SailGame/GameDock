@@ -66,15 +66,18 @@ Dock::Dock(const std::shared_ptr<UIProxy> &uiProxy)
 
 Dock::~Dock() {}
 
-void Dock::Loop() {
+void Dock::Loop(bool useRefersher) {
     /// XXX: where to join
-    std::thread refersher([&] {
-        while (true) {
-            using namespace std::chrono_literals;
-            std::this_thread::sleep_for(0.05s);
-            mScreen.PostEvent(Event::Custom);
-        }
-    });
+    std::unique_ptr<std::thread> refersher;
+    if (useRefersher) {
+        refersher = std::make_unique<std::thread>([&] {
+            while (true) {
+                using namespace std::chrono_literals;
+                std::this_thread::sleep_for(0.05s);
+                mScreen.PostEvent(Event::Custom);
+            }
+        });
+    }
     mScreen.Loop(&mScreenContainer);
 }
 
