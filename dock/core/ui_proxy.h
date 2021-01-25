@@ -88,38 +88,19 @@ public:
 
     void SetState(const IState &state) { mGameManager->SetState(state); }
 
-#define RpcMethodHelper(RpcName)                 \
-    Logger::Log(args);                           \
-    auto ret = mNetworkInterface->RpcName(args); \
-    Logger::Log(ret);                            \
+#define RpcMethod(RpcName, para...)                          \
+    auto args = CoreMsgBuilder::Create##RpcName##Args(para); \
+    Logger::Log(args);                                       \
+    auto ret = mNetworkInterface->RpcName(args);             \
+    Logger::Log(ret);                                        \
     return ret;
 
-#define RpcMethod(RpcName)                               \
-    auto args = CoreMsgBuilder::Create##RpcName##Args(); \
-    RpcMethodHelper(RpcName);
-
-#define RpcMethod_P1(RpcName, p1)                          \
-    auto args = CoreMsgBuilder::Create##RpcName##Args(p1); \
-    RpcMethodHelper(RpcName);
-
-#define RpcMethod_P2(RpcName, p1, p2)                          \
-    auto args = CoreMsgBuilder::Create##RpcName##Args(p1, p2); \
-    RpcMethodHelper(RpcName);
-
-#define RpcMethod_P3(RpcName, p1, p2, p3)                          \
-    auto args = CoreMsgBuilder::Create##RpcName##Args(p1, p2, p3); \
-    RpcMethodHelper(RpcName);
-
-#define RpcMethod_P4(RpcName, p1, p2, p3, p4)                          \
-    auto args = CoreMsgBuilder::Create##RpcName##Args(p1, p2, p3, p4); \
-    RpcMethodHelper(RpcName);
-
     LoginRet Login(const std::string &username, const std::string &password) {
-        RpcMethod_P2(Login, username, password);
+        RpcMethod(Login, username, password);
     }
 
     QueryAccountRet QueryAccount(const std::string &username) {
-        RpcMethod_P1(QueryAccount, username);
+        RpcMethod(QueryAccount, username);
     }
 
     QueryAccountRet QueryAccount() { RpcMethod(QueryAccount); }
@@ -130,39 +111,34 @@ public:
     ControlRoomRet ControlRoom(int roomId, const std::string &gameName,
                                const std::string &roomPassword,
                                const GameSettingsT &custom) {
-        RpcMethod_P4(ControlRoom, roomId, gameName, roomPassword, custom);
+        RpcMethod(ControlRoom, roomId, gameName, roomPassword, custom);
     }
 
     ListRoomRet ListRoom(const std::string &gameName) {
-        RpcMethod_P1(ListRoom, gameName);
+        RpcMethod(ListRoom, gameName);
     }
 
-    JoinRoomRet JoinRoom(int roomId) { RpcMethod_P1(JoinRoom, roomId); }
+    JoinRoomRet JoinRoom(int roomId) { RpcMethod(JoinRoom, roomId); }
 
     ExitRoomRet ExitRoom() { RpcMethod(ExitRoom); }
 
-    QueryRoomRet QueryRoom(int roomId) { RpcMethod_P1(QueryRoom, roomId); }
+    QueryRoomRet QueryRoom(int roomId) { RpcMethod(QueryRoom, roomId); }
 
     OperationInRoomRet OperationInRoom(Ready ready) {
-        RpcMethod_P1(OperationInRoom, ready);
+        RpcMethod(OperationInRoom, ready);
     }
 
     template <typename UserOperationT>
     OperationInRoomRet OperationInRoom(const UserOperationT &custom) {
-        RpcMethod_P1(OperationInRoom, custom);
+        RpcMethod(OperationInRoom, custom);
     }
 
     MessageRet Message(const std::string &message, const std::string &dstUser,
                        int dstRoom) {
-        RpcMethod_P3(Message, message, dstUser, dstRoom);
+        RpcMethod(Message, message, dstUser, dstRoom);
     }
 
-#undef RpcMethodHelper
 #undef RpcMethod
-#undef RpcMethod_P1
-#undef RpcMethod_P2
-#undef RpcMethod_P3
-#undef RpcMethod_P4
 
     // private:
 public:
