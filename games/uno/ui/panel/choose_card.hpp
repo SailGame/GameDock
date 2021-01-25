@@ -55,7 +55,7 @@ public:
         mCancelButton.on_click = [this] { OnCancel(); };
     }
 
-    Element Render() {
+    void Update() {
         if (GetState().mGameState.mGameEnds) {
             assert(GetState().mSelfState.mHandcards.Number() == 0);
             assert(GetState().mGameState.mCurrentPlayer ==
@@ -65,6 +65,10 @@ public:
         if (!GetState().mGameState.IsMyTurn()) {
             OnNextTurn();
         }
+    }
+
+    Element Render() {
+        Update();
         auto handcards = GetState().mSelfState.mHandcards;
         auto username = GetState().mPlayerStates[
             GetState().mGameState.mSelfPlayerIndex].mUsername;

@@ -18,13 +18,17 @@ public:
 
     NotMyTurnPanel() = default;
 
-    Element Render() {
+    void Update() {
         if (GetState().mGameState.mGameEnds) {
             OnGameOver();
         }
         if (GetState().mGameState.IsMyTurn()) {
             OnMyTurn();
         }
+    }
+
+    Element Render() {
+        Update();
         auto handcards = GetState().mSelfState.mHandcards;
         auto username = GetState().mPlayerStates[
             GetState().mGameState.mSelfPlayerIndex].mUsername;

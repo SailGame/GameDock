@@ -28,10 +28,14 @@ public:
         mNoButton.on_click = [this] { Skip(); };
     }
 
-    Element Render() {
+    void Update() {
         if (!GetState().mGameState.IsMyTurn()) {
             OnNextTurn();
         }
+    }
+
+    Element Render() {
+        Update();
         auto handcards = GetState().mSelfState.mHandcards;
         auto username = GetState().mPlayerStates[
             GetState().mGameState.mSelfPlayerIndex].mUsername;

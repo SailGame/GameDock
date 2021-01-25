@@ -26,7 +26,7 @@ public:
         mPassButton.on_click = [this] { Pass(); };
     }
 
-    Element Render() {
+    void Update() {
         // cannot invoke OnNextTurn in Pass() method because
         // when Pass() is invoked, client hasn't received the 
         // broadcast msg that indicates self operation, which means
@@ -44,6 +44,10 @@ public:
         }
         mHandcardsNumInLastFrame = GetState().mSelfState.mHandcards.Number();
         UpdatePassButtonLabel();
+    }
+
+    Element Render() {
+        Update();
         auto handcards = GetState().mSelfState.mHandcards;
         auto username = GetState().mPlayerStates[
             GetState().mGameState.mSelfPlayerIndex].mUsername;
