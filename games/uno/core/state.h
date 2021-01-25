@@ -9,7 +9,7 @@
 #include <map>
 #include <vector>
 
-#include "../../../../dock/core/state.h"
+#include "../../../dock/core/state.h"
 
 namespace SailGame { namespace Uno {
 

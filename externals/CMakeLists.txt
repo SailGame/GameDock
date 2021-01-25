@@ -2,6 +2,6 @@
 add_subdirectory(googletest)
 add_subdirectory(spdlog)
 set(BUILD_UNO_LIB ON)
-set(IMPORT_GRPC_BY_FETCHCONTENT ON)
-set(GRPC_FETCHCONTENT_VERSION 1.32.0)
+# set(IMPORT_GRPC_BY_FETCHCONTENT ON)
+# set(GRPC_FETCHCONTENT_VERSION 1.32.0)
 add_subdirectory(CommonLib)

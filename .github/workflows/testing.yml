@@ -17,6 +17,8 @@ jobs:
       matrix:
         os: [ubuntu-20.04]
         build_type: [debug, release]
+    env:
+      MY_INSTALL_DIR: ~/.local
 
     steps:
     - uses: actions/checkout@v1
@@ -26,6 +28,14 @@ jobs:
     - name: Set up dependencies
       run: |
         sudo apt install -y protobuf-compiler libprotobuf-dev
+        mkdir -p $MY_INSTALL_DIR
+        git clone --recurse-submodules -b v1.34.1 https://github.com/grpc/grpc
+        cd grpc
+        mkdir -p cmake/build
+        pushd cmake/build
+        cmake -DgRPC_INSTALL=ON -DgRPC_BUILD_TESTS=ON -DCMAKE_INSTALL_PREFIX=$MY_INSTALL_DIR -DBENCHMARK_ENABLE_TESTING=OFF ../..
+        make -j 8
+        make install
 
     - name: Create Build Environment
       working-directory: ${{runner.workspace}}
@@ -35,7 +45,8 @@ jobs:
     - name: Configure CMake
       shell: bash
       working-directory: ${{runner.workspace}}/build/
-      run: cmake $GITHUB_WORKSPACE -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
+      run: |
+        cmake $GITHUB_WORKSPACE -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} -DCMAKE_PREFIX_PATH=$MY_INSTALL_DIR
 
     - name: Cache externals
       uses: actions/cache@v2
