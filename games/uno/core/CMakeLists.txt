@@ -15,4 +15,5 @@ target_link_libraries(uno_core PUBLIC
     ftxui::screen
     ftxui::dom
     ftxui::component
+    spdlog::spdlog
 )

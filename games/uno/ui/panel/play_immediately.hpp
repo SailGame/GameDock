@@ -6,14 +6,14 @@
 #include <sailgame/common/core_msg_builder.h>
 
 #include "../dom.hpp"
-#include "uno_panel.hpp"
+#include "../component.h"
 
 namespace SailGame { namespace Uno {
 
 using namespace ftxui;
 using Common::CoreMsgBuilder;
 
-class PlayImmediatelyPanel : public UnoPanel {
+class PlayImmediatelyPanel : public UnoComponent {
 public:
     std::function<void()> OnNextTurn;
 

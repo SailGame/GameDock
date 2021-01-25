@@ -9,7 +9,7 @@
 
 #include "../component/handcards_selector.hpp"
 #include "../dom.hpp"
-#include "uno_panel.hpp"
+#include "../component.h"
 
 namespace SailGame { namespace Uno {
 
@@ -17,11 +17,13 @@ using namespace ftxui;
 using Common::Util;
 using Common::CoreMsgBuilder;
 
-class ChooseCardPanel : public UnoPanel {
+class ChooseCardPanel : public UnoComponent {
 public:
     std::function<void()> OnCancel;
 
     std::function<void()> OnNextTurn;
+
+    std::function<void()> OnGameOver;
 
     std::function<void()> OnPlayWildCard;
 
@@ -54,13 +56,20 @@ public:
     }
 
     Element Render() {
+        if (GetState().mGameState.mGameEnds) {
+            assert(GetState().mSelfState.mHandcards.Number() == 0);
+            assert(GetState().mGameState.mCurrentPlayer ==
+                   GetState().mGameState.mSelfPlayerIndex);
+            OnGameOver();
+        }
         if (!GetState().mGameState.IsMyTurn()) {
             OnNextTurn();
         }
         auto handcards = GetState().mSelfState.mHandcards;
         auto username = GetState().mPlayerStates[
             GetState().mGameState.mSelfPlayerIndex].mUsername;
-        mCursor = Util::Wrap(mCursor, handcards.Number());
+        mCursor = (handcards.Number() == 0 ? -1
+            : Util::Wrap(mCursor, handcards.Number()));
 
         auto doc = vbox({
             Dom::PlayerBox(to_wstring(username), 
@@ -73,7 +82,8 @@ public:
 
     void TakeFocus() override {
         mHintText = L"";
-        Component::TakeFocus();
+        mHandcardsSelector.TakeFocus();
+        // Component::TakeFocus();
     }
 
 private:

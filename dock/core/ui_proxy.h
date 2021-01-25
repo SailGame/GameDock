@@ -22,10 +22,15 @@ using Common::ClientGameManager;
 using Common::ClientNetworkInterface;
 using Common::IState;
 using Common::ClientStateMachine;
+using Common::GameType;
 using namespace ::Core;
 
 class UIProxy {
 public:
+    std::function<void(GameType)> OnGameStart;
+
+    std::function<void()> OnGameOver;
+
     UIProxy(const std::shared_ptr<ClientNetworkInterface> &networkInterface,
         bool isTest = false)
         : mNetworkInterface(networkInterface), mIsTest(isTest) {}
@@ -50,8 +55,15 @@ public:
         assert(!mGameManager);
         mGameManager = std::make_shared<ClientGameManager>(
             EventLoop::Create(), 
-            SailGame::Dock::StateMachine::Create(username), mNetworkInterface);
+            SailGame::Dock::StateMachine::Create(), mNetworkInterface);
         spdlog::info("Game Manager created.");
+        State state;
+        state.mUsername = username;
+        mGameManager->SetState(state);
+
+        std::dynamic_pointer_cast<StateMachine>(mGameManager->GetStateMachine())
+            ->OnGameStart = [this](GameType game) { OnGameStart(game); };
+
         // token cannot be captured by reference here
         // because the thread may start running after token gets destructed
         mGameManagerThread = std::make_unique<std::thread>([token, this] {
@@ -179,11 +191,6 @@ public:
 
 protected:
     UIProxy *mUIProxy;
-};
-
-/// TODO: use a concrete one for each game including no-game
-class ComponentWithUIProxy : public ftxui::Component, public UIProxyClient {
-
 };
 
 }}

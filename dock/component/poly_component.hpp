@@ -3,7 +3,7 @@
 #include <ftxui/component/component.hpp>
 #include <functional>
 
-#include "../core/ui_proxy.h"
+#include "../core/component.h"
 
 namespace SailGame { namespace Dock {
 
@@ -11,7 +11,7 @@ using namespace ftxui;
 
 // T is Component and UIProxyClient
 template<typename T>
-class PolyComponent : public ComponentWithUIProxy {
+class PolyComponent : public DockComponent {
 public:
     ~PolyComponent() override = default;
 

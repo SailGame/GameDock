@@ -7,7 +7,7 @@
 #include <sailgame_pb/uno/uno.pb.h>
 
 #include "state.h"
-#include "../../../dock/core/state_machine.h"
+#include "../../../dock/core/common.h"
 
 namespace SailGame { namespace Uno {
 
@@ -33,7 +33,9 @@ public:
 
     GameType GetType() const override { return GameType::Uno; }
 
-    void SwitchFrom(const IStateMachine &stateMachine) override;
+    void SwitchFrom(const ClientStateMachine &stateMachine) override;
+
+    Dock::State SwitchToRoom() const override;
 
 protected:
     virtual void Transition(const BroadcastMsg &msg) override;

@@ -3,13 +3,13 @@
 #include <ftxui/component/container.hpp>
 #include <ftxui/component/button.hpp>
 
-#include "uno_panel.hpp"
+#include "../component.h"
 
 namespace SailGame { namespace Uno {
 
 using namespace ftxui;
 
-class PlayOrPassPanel : public UnoPanel {
+class PlayOrPassPanel : public UnoComponent {
 public:
     std::function<void()> OnPlay;
 
@@ -37,7 +37,7 @@ public:
         if (!GetState().mGameState.IsMyTurn()) {
             OnNextTurn();
         }
-        if (mHandcardsNumInLastFrame < 
+        if (mHandcardsNumInLastFrame != -1 && mHandcardsNumInLastFrame < 
             GetState().mSelfState.mHandcards.Number()) 
         {
             HandleDrawRsp();
@@ -87,13 +87,13 @@ private:
         else {
             auto number = GetState().mGameState.mCardsNumToDraw;
             mPassButton.label = L"Draw " + to_wstring(number)
-                + (number == 1 ? L" card" : L"cards");
+                + (number == 1 ? L" card" : L" cards");
         }
     }
 
 private:
     // used to detect DrawRsp msg
-    int mHandcardsNumInLastFrame;
+    int mHandcardsNumInLastFrame{-1};
 
 // private:
 public:

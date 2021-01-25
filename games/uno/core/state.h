@@ -10,6 +10,8 @@
 #include <sailgame/common/state_machine.h>
 #include <sailgame/uno/card.h>
 
+#include "../../../../dock/core/state.h"
+
 namespace SailGame { namespace Uno {
 
 using Common::IState;
@@ -43,6 +45,7 @@ public:
     Card mLastPlayedCard{};
     int mCardsNumToDraw{1};  // +2 and +4 can accumulate
     int mTimeElapsed{0};
+    bool mGameEnds{false};
 };
 
 class SelfState {
@@ -88,5 +91,6 @@ public:
     GameState mGameState;
     SelfState mSelfState;
     std::vector<PlayerState> mPlayerStates;  // use playerIndex as index
+    Dock::State mRoomState;
 };
 }}

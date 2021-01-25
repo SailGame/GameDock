@@ -8,7 +8,9 @@
 #include <sailgame/common/core_msg_builder.h>
 #include <sailgame/uno/msg_builder.h>
 
+#include <spdlog/spdlog.h>
 #include "state_machine.h"
+#include "logger.h"
 
 namespace SailGame { namespace Uno {
 
@@ -16,11 +18,11 @@ using Common::CoreMsgBuilder;
 using Common::Util;
 using ::Uno::StartGameSettings;
 
-void StateMachine::SwitchFrom(const IStateMachine &stateMachine)
+void StateMachine::SwitchFrom(const ClientStateMachine &stateMachine)
 {
-    auto roomState =
+    mState.mRoomState =
         dynamic_cast<const Dock::State &>(stateMachine.GetState());
-    auto roomDetails = roomState.mRoomDetails;
+    auto roomDetails = mState.mRoomState.mRoomDetails;
     for (auto roomUser : roomDetails.user()) {
         mState.mPlayerStates.emplace_back(roomUser.username());
     }
@@ -29,11 +31,13 @@ void StateMachine::SwitchFrom(const IStateMachine &stateMachine)
         Common::Util::UnpackGrpcAnyTo<StartGameSettings>(
             roomDetails.gamesetting());
     for (auto i = 0; i < roomDetails.user_size(); i++) {
-        if (roomState.mUsername == roomDetails.user(i).username()) {
+        if (mState.mRoomState.mUsername == roomDetails.user(i).username()) {
             mState.mGameState.mSelfPlayerIndex = i;
         }
     }
 }
+
+Dock::State StateMachine::SwitchToRoom() const { return mState.mRoomState; }
 
 void StateMachine::Transition(const BroadcastMsg &msg)
 {
@@ -66,6 +70,8 @@ void StateMachine::Transition(const NotifyMsg &msg)
 
 void StateMachine::Transition(const GameStart &msg)
 {
+    Logger::Log(msg);
+    Logger::LogState(mState);
     auto &gameState = mState.mGameState;
     gameState.mCurrentPlayer = msg.firstplayer();
     gameState.mIsInClockwise =
@@ -73,28 +79,37 @@ void StateMachine::Transition(const GameStart &msg)
     gameState.mLastPlayedCard = Card{msg.flippedcard()};
 
     auto &selfState = mState.mSelfState;
-    for (auto card : msg.inithandcards()) {
-        selfState.mHandcards.Draw(Card{card});
-    }
+    /// XXX: for test
+    selfState.mHandcards.Draw(msg.inithandcards(0));
+    // for (auto card : msg.inithandcards()) {
+    //     selfState.mHandcards.Draw(Card{card});
+    // }
 
-    auto initHandcardsNum = 7;
+    auto initHandcardsNum = 1;
+    // auto initHandcardsNum = 7;
     for (auto &playerState : mState.mPlayerStates) {
         playerState.mRemainingHandCardsNum = initHandcardsNum;
     }
+    Logger::LogState(mState);
 }
 
 void StateMachine::Transition(const Draw &msg)
 {
+    Logger::Log(msg);
+    Logger::LogState(mState);
     assert(mState.mGameState.mCardsNumToDraw == msg.number());
     mState.mPlayerStates[mState.mGameState.mCurrentPlayer].UpdateAfterDraw(
         msg.number());
 
     // GameState should update in the last because it may change current player.
     mState.mGameState.UpdateAfterDraw();
+    Logger::LogState(mState);
 }
 
 void StateMachine::Transition(const DrawRsp &msg)
 {
+    Logger::Log(msg);
+    Logger::LogState(mState);
     assert(mState.mGameState.IsMyTurn());
     auto grpcCards = Common::Util::ConvertGrpcRepeatedPtrFieldToVector(msg.cards());
 
@@ -103,19 +118,25 @@ void StateMachine::Transition(const DrawRsp &msg)
         cards.emplace_back(card);
     }
     mState.mSelfState.UpdateAfterDrawRsp(cards);
+    Logger::LogState(mState);
 }
 
 void StateMachine::Transition(const Skip &msg)
 {
+    Logger::Log(msg);
+    Logger::LogState(mState);
     if (mState.mGameState.IsMyTurn()) {
         mState.mSelfState.UpdateAfterSkip();
     }
     mState.mPlayerStates[mState.mGameState.mCurrentPlayer].UpdateAfterSkip();
     mState.mGameState.UpdateAfterSkip();
+    Logger::LogState(mState);
 }
 
 void StateMachine::Transition(const Play &msg)
 {
+    Logger::Log(msg);
+    Logger::LogState(mState);
     Card card = msg.card();
     if (mState.mGameState.IsMyTurn()) {
         mState.mSelfState.UpdateAfterPlay(card);
@@ -125,8 +146,13 @@ void StateMachine::Transition(const Play &msg)
     // NOTE: color should be attached after updating SelfState because 
     // we need to erase the card just played from handcards when updating SelfState
     card.mColor = msg.nextcolor();
-    mState.mPlayerStates[mState.mGameState.mCurrentPlayer].UpdateAfterPlay(card);
+    auto &curPlayer = mState.mPlayerStates[mState.mGameState.mCurrentPlayer];
+    curPlayer.UpdateAfterPlay(card);
+    if (curPlayer.mRemainingHandCardsNum == 0) {
+        mState.mGameState.mGameEnds = true;
+    }
     mState.mGameState.UpdateAfterPlay(card);
+    Logger::LogState(mState);
 }
 
 }}

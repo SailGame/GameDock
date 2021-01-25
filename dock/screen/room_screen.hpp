@@ -6,7 +6,7 @@
 #include <sailgame_pb/core/types.pb.h>
 #include <sailgame/common/core_msg_builder.h>
 
-#include "../core/ui_proxy.h"
+#include "../core/component.h"
 #include "../util/dom.hpp"
 #include "../component/game_settings_ctrl.hpp"
 #include "../component/poly_component.hpp"
@@ -22,11 +22,9 @@ using ::Core::RoomUser;
 using SailGame::Common::CoreMsgBuilder;
 using SailGame::Dock::State;
 
-class RoomScreen : public ComponentWithUIProxy {
+class RoomScreen : public DockComponent {
 public:
     std::function<void()> OnExitRoom;
-
-    std::function<void()> OnGameStart;
 
     RoomScreen() {
         Add(&mContainer);
@@ -46,47 +44,15 @@ public:
         mSaveOrCancelButtonsContainer.Add(&mSaveChangeButton);
         mSaveOrCancelButtonsContainer.Add(&mCancelChangeButton);
 
-        mReadyToggleButton.on_click = [this] {
-            if (!mIsReady) {
-                mUIProxy->OperationInRoom(Ready::READY);
-            }
-            else {
-                mUIProxy->OperationInRoom(Ready::CANCEL);
-            }
-            mIsReady = !mIsReady;
-        };
+        mReadyToggleButton.on_click = [this] { ToggleReady(); };
 
-        mExitRoomButton.on_click = [this] {
-            auto ret = mUIProxy->ExitRoom();
-            if (ret.err() == ErrorNumber::OK) {
-                OnExitRoom();
-            }
-        };
+        mExitRoomButton.on_click = [this] { ExitRoom(); };
 
-        mSetButton.on_click = [this] {
-            mSettingButtonsContainer.SetActiveChild(
-                &mSaveOrCancelButtonsContainer);
-            mGameSettingsController.Invoke(
-                &GameSettingsController::ControlMode);
-        };
+        mSetButton.on_click = [this] { EnterControlMode(); };
 
-        mSaveChangeButton.on_click = [this] {
-            auto results = mGameSettingsController.Invoke(
-                &GameSettingsController::GetControlResults);
-            auto roomId = GetState().mRoomDetails.roomid();
-            auto gameName = GetState().mRoomDetails.gamename();
-            auto roomPassword = "";
-            mUIProxy->ControlRoom(roomId, gameName, roomPassword, results);
-            mSetButton.TakeFocus();
-            mGameSettingsController.Invoke(
-                &GameSettingsController::ReadOnlyMode);
-        };
+        mSaveChangeButton.on_click = [this] { ControlRoom(); };
 
-        mCancelChangeButton.on_click = [this] {
-            mSetButton.TakeFocus();
-            mGameSettingsController.Invoke(
-                &GameSettingsController::ReadOnlyMode);
-        };
+        mCancelChangeButton.on_click = [this] { QuitControlMode(); };
     }
 
     virtual void SetUIProxy(UIProxy *uiProxy) override {
@@ -114,19 +80,18 @@ public:
                 GameAttrFactory::Create(GetState().mRoomDetails.gamename())
                     ->GetGameSettingsController());
         }
-
-        // OnGameStart callback will switch state machine,
-        // so it should be invoked after reading details from state machine
-        if (AreAllUsersReady()) {
-            OnGameStart();
-        }
     }
 
     Element Render() final {
         // Remember that details could be empty
         // because state machine is updated asynchrously.
-        auto details = GetState().mRoomDetails;
-        Update();
+        RoomDetails details;
+        try {
+            details = GetState().mRoomDetails;
+            Update();
+        } catch (...) {
+            return hbox();
+        }
 
         auto topBar = hbox({
             text(L"roomId: "),
@@ -173,28 +138,54 @@ public:
         return doc | range(80, 25) | border | center;
     }
 
-    State GetState() const {
-        return dynamic_cast<const State &>(mUIProxy->GetState());
+    virtual void TakeFocus() override {
+        mIsReady = false;
+        SailGameComponent::TakeFocus();
     }
 
-    bool AreAllUsersReady() const {
-        auto roomUsers = GetState().mRoomDetails.user();
-        if (roomUsers.empty()) {
-            return false;
+private:
+    void ToggleReady() {
+        if (!mIsReady) {
+            mUIProxy->OperationInRoom(Ready::READY);
         }
-        for (const auto &roomUser : roomUsers) {
-            if (roomUser.userstate() != RoomUser::READY) {
-                return false;
-            }
+        else {
+            mUIProxy->OperationInRoom(Ready::CANCEL);
         }
-        return true;
+        mIsReady = !mIsReady;
+    }
+
+    void ExitRoom() {
+        auto ret = mUIProxy->ExitRoom();
+        assert(ret.err() == ErrorNumber::OK);
+        OnExitRoom();
+    }
+
+    void EnterControlMode() {
+        mSettingButtonsContainer.SetActiveChild(&mSaveOrCancelButtonsContainer);
+        mGameSettingsController.Invoke(&GameSettingsController::ControlMode);
+    }
+
+    void ControlRoom() {
+        auto results = mGameSettingsController.Invoke(
+            &GameSettingsController::GetControlResults);
+        auto roomId = GetState().mRoomDetails.roomid();
+        auto gameName = GetState().mRoomDetails.gamename();
+        auto roomPassword = "";
+        mUIProxy->ControlRoom(roomId, gameName, roomPassword, results);
+        mSetButton.TakeFocus();
+        mGameSettingsController.Invoke(
+            &GameSettingsController::ReadOnlyMode);
+    }
+
+    void QuitControlMode() {
+        mSetButton.TakeFocus();
+        mGameSettingsController.Invoke(&GameSettingsController::ReadOnlyMode);
     }
 
 public:
     bool mIsReady{false};
 
 public:
-// private:
     Container mContainer{Container::Vertical()};
     Container mButtonsContainer{Container::Horizontal()};
     Button mReadyToggleButton{L"Ready"};

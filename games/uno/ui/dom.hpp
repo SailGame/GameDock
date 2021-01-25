@@ -46,15 +46,22 @@ public:
     }
 
     static Element OtherPlayersDoc(const std::vector<PlayerState> &states, 
-        int selfIndex) 
+        int selfIndex, Card lastPlayedCard) 
     {
+        // assume there are only 2 players
         return vbox({
-            OtherPlayerBox(states[Util::Wrap(selfIndex + 2, 4)]),
-            hbox({
-                OtherPlayerBox(states[Util::Wrap(selfIndex + 1, 4)]),
-                OtherPlayerBox(states[Util::Wrap(selfIndex - 1, 4)]),
-            })
+            OtherPlayerBox(states[Util::Wrap(selfIndex - 1, 2)]),
+            ConvertCardToFtxText(lastPlayedCard) | hcenter
         });
+
+        /// TODO: support multi-player
+        // return vbox({
+        //     OtherPlayerBox(states[Util::Wrap(selfIndex + 2, 4)]),
+        //     hbox({
+        //         OtherPlayerBox(states[Util::Wrap(selfIndex + 1, 4)]),
+        //         OtherPlayerBox(states[Util::Wrap(selfIndex - 1, 4)]),
+        //     })
+        // });
     }
 
     static Element ConvertCardRowToHBox(const Handcards &handcards, 

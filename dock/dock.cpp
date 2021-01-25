@@ -34,37 +34,47 @@ Dock::Dock(const std::shared_ptr<UIProxy> &uiProxy)
     };
 
     mLobbyScreen.OnJoinRoom = [this](int roomId) {
-        auto ret =
-            mUIProxy->QueryRoom(roomId);
+        auto ret = mUIProxy->QueryRoom(roomId);
         assert(ret.err() == ErrorNumber::OK);
         auto state = dynamic_cast<const State &>(mUIProxy->GetState());
+        /// XXX: for now, ret from Core doesn't include gameSetting
         state.mRoomDetails = ret.room();
+        state.mRoomDetails.mutable_gamesetting()->PackFrom(
+            Uno::MsgBuilder::CreateStartGameSettings(
+                true, true, false, false, 15));
         mUIProxy->SetState(state);
         mRoomScreen.TakeFocus();
     };
 
     mRoomScreen.OnExitRoom = [this] { mLobbyScreen.TakeFocus(); };
 
-    mRoomScreen.OnGameStart = [this] {
-        auto gameName = dynamic_cast<const State &>(mUIProxy->GetState())
-            .mRoomDetails.gamename();
-
+    mUIProxy->OnGameStart = [this](GameType game) {
         mUIProxy->SwitchToNewStateMachine(
-            GameAttrFactory::Create(gameName)->GetStateMachine());
-
+            GameAttrFactory::Create(game)->GetStateMachine());
         mPolyGameScreen.SetComponent(
-            GameAttrFactory::Create(gameName)->GetGameScreen());
+            GameAttrFactory::Create(game)->GetGameScreen());
+        mPolyGameScreen.TakeFocus();
+        
         mPolyGameScreen.Invoke(&GameScreen::RegisterGameOverCallback, [this] {
+            spdlog::info("Game Over callback invoked");
+            mUIProxy->SwitchToNewStateMachine(StateMachine::Create());
             mPolyGameScreen.ResetComponent();
             mRoomScreen.TakeFocus();
         });
-        mPolyGameScreen.TakeFocus();
     };
 }
 
 Dock::~Dock() {}
 
 void Dock::Loop() {
+    /// XXX: where to join
+    std::thread refersher([&] {
+        while (true) {
+            using namespace std::chrono_literals;
+            std::this_thread::sleep_for(0.05s);
+            mScreen.PostEvent(Event::Custom);
+        }
+    });
     mScreen.Loop(&mScreenContainer);
 }
 

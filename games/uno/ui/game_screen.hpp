@@ -10,7 +10,9 @@
 #include "panel/not_my_turn.hpp"
 #include "panel/play_immediately.hpp"
 #include "panel/specify_color.hpp"
+#include "panel/game_over.hpp"
 #include "dom.hpp"
+#include "component.h"
 
 namespace SailGame { namespace Uno {
 
@@ -28,8 +30,10 @@ public:
         mPanelContainer.Add(&mChooseCardPanel);
         mPanelContainer.Add(&mPlayImmediatelyPanel);
         mPanelContainer.Add(&mSpecifyColorPanel);
+        mPanelContainer.Add(&mGameOverPanel);
 
         mNotMyTurnPanel.OnMyTurn = [this] { mPlayOrPassPanel.TakeFocus(); };
+        mNotMyTurnPanel.OnGameOver = [this] { mGameOverPanel.TakeFocus(); };
         mPlayOrPassPanel.OnPlay = [this] { mChooseCardPanel.TakeFocus(); };
         mPlayOrPassPanel.OnNextTurn = [this] { mNotMyTurnPanel.TakeFocus(); };
         mPlayOrPassPanel.OnHasChanceToPlayAfterDraw = [this] { 
@@ -41,6 +45,7 @@ public:
             mIsFromChooseCard = true;
             mSpecifyColorPanel.TakeFocus();
         };
+        mChooseCardPanel.OnGameOver = [this] { mGameOverPanel.TakeFocus(); };
         mChooseCardPanel.OnNextTurn = [this] { mNotMyTurnPanel.TakeFocus(); };
         mPlayImmediatelyPanel.OnNextTurn = [this] {
             mNotMyTurnPanel.TakeFocus();
@@ -60,6 +65,8 @@ public:
             }
         };
         mSpecifyColorPanel.OnNextTurn = [this] { mNotMyTurnPanel.TakeFocus(); };
+        mSpecifyColorPanel.OnGameOver = [this] { mGameOverPanel.TakeFocus(); };
+        mGameOverPanel.OnReturn = [this] { OnGameOver(); };
     }
 
     virtual void SetUIProxy(UIProxy *uiProxy) override {
@@ -69,6 +76,7 @@ public:
         mChooseCardPanel.SetUIProxy(mUIProxy);
         mPlayImmediatelyPanel.SetUIProxy(mUIProxy);
         mSpecifyColorPanel.SetUIProxy(mUIProxy);
+        mGameOverPanel.SetUIProxy(mUIProxy);
     }
 
     static std::shared_ptr<Dock::GameScreen> Create() {
@@ -79,8 +87,10 @@ public:
 
     Element Render() override {
         auto selfIndex = GetState().mGameState.mSelfPlayerIndex;
+        auto lastPlayedCard = GetState().mGameState.mLastPlayedCard;
         auto doc = vbox({
-            Dom::OtherPlayersDoc(GetState().mPlayerStates, selfIndex),
+            Dom::OtherPlayersDoc(
+                GetState().mPlayerStates, selfIndex, lastPlayedCard),
             mPanelContainer.Render() | size(WIDTH, EQUAL, 60) | hcenter
         });
         return doc | size(WIDTH, EQUAL, 80) | border | center;
@@ -102,5 +112,6 @@ public:
     ChooseCardPanel mChooseCardPanel;
     PlayImmediatelyPanel mPlayImmediatelyPanel;
     SpecifyColorPanel mSpecifyColorPanel;
+    GameOverPanel mGameOverPanel;
 };
 }}

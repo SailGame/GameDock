@@ -6,7 +6,7 @@
 #include <sailgame/common/util.h>
 #include <sailgame/common/types.h>
 
-#include "../core/ui_proxy.h"
+#include "../core/component.h"
 #include "empty_component.hpp"
 
 namespace SailGame { namespace Dock {

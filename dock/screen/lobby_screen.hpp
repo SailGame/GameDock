@@ -11,7 +11,7 @@
 #include <sailgame_pb/core/error.pb.h>
 #include <sailgame/common/util.h>
 
-#include "../core/ui_proxy.h"
+#include "../core/component.h"
 #include "../component/non_border_button.hpp"
 #include "../component/text_center_button.hpp"
 #include "../util/util.hpp"
@@ -30,7 +30,7 @@ using SailGame::Common::Util;
 using SailGame::Dock::NonBorderButton;
 using SailGame::Dock::DockUtil;
 
-class LobbyScreen : public ComponentWithUIProxy {
+class LobbyScreen : public DockComponent {
 public:
     std::function<void(int)> OnJoinRoom;
 
@@ -58,7 +58,7 @@ public:
         mQueryAccountInput.placeholder = L"username";
         mQueryAccountButton.on_click = [this] { QueryAccount(); };
 
-        mRoomList.on_change = [this] { QueryRoom(mRoomList.selected); };
+        mRoomList.on_change = [this] { QueryRoomByIndex(mRoomList.selected); };
 
         mJoinRoomButton.on_click = [this] { JoinRoom(); };
     }
@@ -141,15 +141,18 @@ public:
 private:
     void SearchRoom() {
         mShowRoomList = true;
-        // if search input is int
-        /// TODO: query room
-        // if search input is string
-        auto ret = mUIProxy->ListRoom(to_string(mSearchInput.content));
-        assert(ret.err() == ErrorNumber::OK);
-        mRooms = Util::ConvertGrpcRepeatedPtrFieldToVector(ret.room());
-        if (!mRooms.empty()) {
-            mRoomList.selected = 0;
-            QueryRoom(0);
+        auto content = to_string(mSearchInput.content);
+        if (auto roomId = DockUtil::TryToGetRoomId(content); roomId != -1) {
+            QueryRoomByRoomId(roomId);
+        }
+        else {
+            auto ret = mUIProxy->ListRoom(content);
+            assert(ret.err() == ErrorNumber::OK);
+            mRooms = Util::ConvertGrpcRepeatedPtrFieldToVector(ret.room());
+            if (!mRooms.empty()) {
+                mRoomList.selected = 0;
+                QueryRoomByIndex(0);
+            }
         }
     }
 
@@ -157,36 +160,45 @@ private:
         auto ret = mUIProxy->CreateRoom();
         assert(ret.err() == ErrorNumber::OK);
         auto roomId = ret.roomid();
-        // after creating room, user will join it automatically
-        // auto joinRet =
-        //     mUIProxy->JoinRoom(CoreMsgBuilder::CreateJoinRoomArgs(roomId));
-        // assert(joinRet.err() == ErrorNumber::OK);
-        OnJoinRoom(roomId);
+
         /// TODO: for now set game to UNO, in the future make it configurable
         auto ctrlRet = mUIProxy->ControlRoom(roomId, "UNO", "",
             Uno::MsgBuilder::CreateStartGameSettings(
                 true, true, false, false, 15));
-        spdlog::info("err: {}", ctrlRet.err());
         assert(ctrlRet.err() == ErrorNumber::OK);
+
+        auto joinRet = mUIProxy->JoinRoom(roomId);
+        assert(joinRet.err() == ErrorNumber::OK);
+
+        OnJoinRoom(roomId);
     }
 
     void QueryAccount() {
         mShowRoomList = false;
+        /// XXX: QueryAccount hasn't been supported by Core
         auto ret = mUIProxy->QueryAccount(to_string(mQueryAccountInput.content));
         assert(ret.err() == ErrorNumber::OK);
         mAccount = ret.account();
     }
 
-    void QueryRoom(int roomIndex) {
-        auto ret = mUIProxy->QueryRoom(mRooms[roomIndex].roomid());
+    void QueryRoomByRoomId(int roomId) {
+        auto ret = mUIProxy->QueryRoom(roomId);
         assert(ret.err() == ErrorNumber::OK);
         mDetails = ret.room();
+        /// XXX: Core bug
+        mDetails.mutable_gamesetting()->PackFrom(
+            Uno::MsgBuilder::CreateStartGameSettings(
+                true, true, false, false, 15));
+    }
+
+    void QueryRoomByIndex(int roomIndex) {
+        QueryRoomByRoomId(mRooms[roomIndex].roomid());
     }
 
     void JoinRoom() {
-        auto roomId = mRooms[mRoomList.selected].roomid();
-        auto ret =
-            mUIProxy->JoinRoom(roomId);
+        // auto roomId = mRooms[mRoomList.selected].roomid();
+        auto roomId = mDetails.roomid();
+        auto ret = mUIProxy->JoinRoom(roomId);
         assert(ret.err() == ErrorNumber::OK);
         OnJoinRoom(roomId);
     }

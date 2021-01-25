@@ -5,7 +5,7 @@
 #include <sailgame/common/core_msg_builder.h>
 #include <sailgame_pb/uno/uno.pb.h>
 
-#include "uno_panel.hpp"
+#include "../component.h"
 #include "../dom.hpp"
 
 namespace SailGame { namespace Uno {
@@ -14,11 +14,13 @@ using namespace ftxui;
 using Common::CoreMsgBuilder;
 using ::Uno::CardColor;
 
-class SpecifyColorPanel : public UnoPanel {
+class SpecifyColorPanel : public UnoComponent {
 public:
     std::function<void()> OnCancel;
 
     std::function<void()> OnNextTurn;
+
+    std::function<void()> OnGameOver;
 
     SpecifyColorPanel() {
         Add(&mContainer);
@@ -36,6 +38,12 @@ public:
     }
 
     Element Render() {
+        if (GetState().mGameState.mGameEnds) {
+            assert(GetState().mSelfState.mHandcards.Number() == 0);
+            assert(GetState().mGameState.mCurrentPlayer ==
+                   GetState().mGameState.mSelfPlayerIndex);
+            OnGameOver();
+        }
         if (!GetState().mGameState.IsMyTurn()) {
             OnNextTurn();
         }

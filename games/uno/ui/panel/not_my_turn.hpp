@@ -4,19 +4,24 @@
 #include <ftxui/screen/string.hpp>
 
 #include "../dom.hpp"
-#include "uno_panel.hpp"
+#include "../component.h"
 
 namespace SailGame { namespace Uno {
 
 using namespace ftxui;
 
-class NotMyTurnPanel : public UnoPanel {
+class NotMyTurnPanel : public UnoComponent {
 public:
     std::function<void()> OnMyTurn;
+
+    std::function<void()> OnGameOver;
 
     NotMyTurnPanel() = default;
 
     Element Render() {
+        if (GetState().mGameState.mGameEnds) {
+            OnGameOver();
+        }
         if (GetState().mGameState.IsMyTurn()) {
             OnMyTurn();
         }

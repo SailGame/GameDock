@@ -5,7 +5,7 @@
 #include <ftxui/component/input.hpp>
 #include <ftxui/component/container.hpp>
 
-#include "../core/ui_proxy.h"
+#include "../core/component.h"
 #include "../component/text_center_button.hpp"
 
 namespace SailGame { namespace Dock {
@@ -15,7 +15,7 @@ using namespace ftxui;
 using ::Core::ErrorNumber;
 using ::Core::LoginRet;
 
-class LoginScreen : public ComponentWithUIProxy {
+class LoginScreen : public DockComponent {
 public:
     std::function<void(const LoginRet &)> OnLogin;
 
@@ -50,7 +50,6 @@ public:
     }
 
 public:
-// private:
     Container mContainer{Container::Vertical()};
     Input mUsernameInput;
     Input mPasswordInput;
