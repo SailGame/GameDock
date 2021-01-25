@@ -7,9 +7,7 @@ namespace SailGame { namespace Dock {
 using namespace ftxui;
 using ::Core::ErrorNumber;
 
-Dock::Dock(const std::shared_ptr<UIProxy> &uiProxy)
-    : mUIProxy(uiProxy)
-{
+Dock::Dock(const std::shared_ptr<UIProxy> &uiProxy) : mUIProxy(uiProxy) {
     mScreenContainer.Add(&mLoginScreen);
     mScreenContainer.Add(&mLobbyScreen);
     mScreenContainer.Add(&mRoomScreen);
@@ -23,7 +21,7 @@ Dock::Dock(const std::shared_ptr<UIProxy> &uiProxy)
     // mPolyGameScreen.SetComponent(std::make_shared<GameScreen>());
 
     // navigation between screens
-    mLoginScreen.OnLogin = [this](const auto& ret) {
+    mLoginScreen.OnLogin = [this](const auto &ret) {
         assert(ret.err() == ErrorNumber::OK);
         spdlog::info("login success");
         auto username = ret.account().username();
@@ -40,8 +38,8 @@ Dock::Dock(const std::shared_ptr<UIProxy> &uiProxy)
         /// XXX: for now, ret from Core doesn't include gameSetting
         state.mRoomDetails = ret.room();
         state.mRoomDetails.mutable_gamesetting()->PackFrom(
-            Uno::MsgBuilder::CreateStartGameSettings(
-                true, true, false, false, 15));
+            Uno::MsgBuilder::CreateStartGameSettings(true, true, false, false,
+                                                     15));
         mUIProxy->SetState(state);
         mRoomScreen.TakeFocus();
     };
@@ -54,7 +52,7 @@ Dock::Dock(const std::shared_ptr<UIProxy> &uiProxy)
         mPolyGameScreen.SetComponent(
             GameAttrFactory::Create(game)->GetGameScreen());
         mPolyGameScreen.TakeFocus();
-        
+
         mPolyGameScreen.Invoke(&GameScreen::RegisterGameOverCallback, [this] {
             spdlog::info("Game Over callback invoked");
             mUIProxy->SwitchToNewStateMachine(StateMachine::Create());
@@ -81,4 +79,4 @@ void Dock::Loop(bool useRefersher) {
     mScreen.Loop(&mScreenContainer);
 }
 
-}}
+}}  // namespace SailGame::Dock

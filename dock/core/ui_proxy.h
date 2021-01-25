@@ -1,28 +1,28 @@
 #pragma once
 
-#include <memory>
-#include <spdlog/spdlog.h>
-#include <ftxui/component/component.hpp>
+#include <sailgame/common/core_msg_builder.h>
 #include <sailgame/common/game_manager.h>
 #include <sailgame/common/network_interface.h>
-#include <sailgame/common/core_msg_builder.h>
-#include <sailgame_pb/core/types.pb.h>
-#include <sailgame_pb/core/error.pb.h>
-
 #include <sailgame/uno/msg_builder.h>
+#include <sailgame_pb/core/error.pb.h>
+#include <sailgame_pb/core/types.pb.h>
+#include <spdlog/spdlog.h>
 
-#include "state_machine.h"
+#include <ftxui/component/component.hpp>
+#include <memory>
+
 #include "../util/logger.h"
+#include "state_machine.h"
 
 namespace SailGame { namespace Dock {
 
-using Common::CoreMsgBuilder;
-using Common::EventLoop;
 using Common::ClientGameManager;
 using Common::ClientNetworkInterface;
-using Common::IState;
 using Common::ClientStateMachine;
+using Common::CoreMsgBuilder;
+using Common::EventLoop;
 using Common::GameType;
+using Common::IState;
 using namespace ::Core;
 
 class UIProxy {
@@ -32,30 +32,27 @@ public:
     std::function<void()> OnGameOver;
 
     UIProxy(const std::shared_ptr<ClientNetworkInterface> &networkInterface,
-        bool isTest = false)
+            bool isTest = false)
         : mNetworkInterface(networkInterface), mIsTest(isTest) {}
-    
+
     static std::shared_ptr<UIProxy> Create(
         const std::shared_ptr<ClientNetworkInterface> &networkInterface,
-        bool isTest = false) 
-    {
+        bool isTest = false) {
         return std::make_shared<UIProxy>(networkInterface, isTest);
     }
 
     void SwitchToNewStateMachine(
-        const std::shared_ptr<ClientStateMachine> &stateMachine)
-    {
+        const std::shared_ptr<ClientStateMachine> &stateMachine) {
         assert(mGameManager);
         mGameManager->SwitchStateMachine(stateMachine);
     }
 
-    void OnLoginSuccess(const std::string &token, 
-        const std::string &username = "test") 
-    {
+    void OnLoginSuccess(const std::string &token,
+                        const std::string &username = "test") {
         assert(!mGameManager);
         mGameManager = std::make_shared<ClientGameManager>(
-            EventLoop::Create(), 
-            SailGame::Dock::StateMachine::Create(), mNetworkInterface);
+            EventLoop::Create(), SailGame::Dock::StateMachine::Create(),
+            mNetworkInterface);
         spdlog::info("Game Manager created.");
         State state;
         state.mUsername = username;
@@ -69,10 +66,10 @@ public:
         mGameManagerThread = std::make_unique<std::thread>([token, this] {
             if (!mIsTest) {
                 mGameManager->StartWithToken(token);
-            }
-            else {
+            } else {
                 CoreMsgBuilder::SetToken(token);
-                // if test, NetworkInterface should Connect instead of AsyncListen
+                // if test, NetworkInterface should Connect instead of
+                // AsyncListen
                 mGameManager->Start();
             }
         });
@@ -86,34 +83,34 @@ public:
             mGameManagerThread->join();
         }
     }
-    
+
     const IState &GetState() const { return mGameManager->GetState(); };
 
     void SetState(const IState &state) { mGameManager->SetState(state); }
 
-#define RpcMethodHelper(RpcName) \
-    Logger::Log(args); \
+#define RpcMethodHelper(RpcName)                 \
+    Logger::Log(args);                           \
     auto ret = mNetworkInterface->RpcName(args); \
-    Logger::Log(ret); \
+    Logger::Log(ret);                            \
     return ret;
 
-#define RpcMethod(RpcName) \
+#define RpcMethod(RpcName)                               \
     auto args = CoreMsgBuilder::Create##RpcName##Args(); \
     RpcMethodHelper(RpcName);
 
-#define RpcMethod_P1(RpcName, p1) \
+#define RpcMethod_P1(RpcName, p1)                          \
     auto args = CoreMsgBuilder::Create##RpcName##Args(p1); \
     RpcMethodHelper(RpcName);
 
-#define RpcMethod_P2(RpcName, p1, p2) \
+#define RpcMethod_P2(RpcName, p1, p2)                          \
     auto args = CoreMsgBuilder::Create##RpcName##Args(p1, p2); \
     RpcMethodHelper(RpcName);
 
-#define RpcMethod_P3(RpcName, p1, p2, p3) \
+#define RpcMethod_P3(RpcName, p1, p2, p3)                          \
     auto args = CoreMsgBuilder::Create##RpcName##Args(p1, p2, p3); \
     RpcMethodHelper(RpcName);
 
-#define RpcMethod_P4(RpcName, p1, p2, p3, p4) \
+#define RpcMethod_P4(RpcName, p1, p2, p3, p4)                          \
     auto args = CoreMsgBuilder::Create##RpcName##Args(p1, p2, p3, p4); \
     RpcMethodHelper(RpcName);
 
@@ -125,18 +122,14 @@ public:
         RpcMethod_P1(QueryAccount, username);
     }
 
-    QueryAccountRet QueryAccount() {
-        RpcMethod(QueryAccount);
-    }
+    QueryAccountRet QueryAccount() { RpcMethod(QueryAccount); }
 
-    CreateRoomRet CreateRoom() {
-        RpcMethod(CreateRoom);
-    }
+    CreateRoomRet CreateRoom() { RpcMethod(CreateRoom); }
 
-    template<typename GameSettingsT>
-    ControlRoomRet ControlRoom(int roomId, 
-        const std::string &gameName, const std::string &roomPassword,
-        const GameSettingsT &custom) {
+    template <typename GameSettingsT>
+    ControlRoomRet ControlRoom(int roomId, const std::string &gameName,
+                               const std::string &roomPassword,
+                               const GameSettingsT &custom) {
         RpcMethod_P4(ControlRoom, roomId, gameName, roomPassword, custom);
     }
 
@@ -144,29 +137,23 @@ public:
         RpcMethod_P1(ListRoom, gameName);
     }
 
-    JoinRoomRet JoinRoom(int roomId) {
-        RpcMethod_P1(JoinRoom, roomId);
-    }
+    JoinRoomRet JoinRoom(int roomId) { RpcMethod_P1(JoinRoom, roomId); }
 
-    ExitRoomRet ExitRoom() {
-        RpcMethod(ExitRoom);
-    }
+    ExitRoomRet ExitRoom() { RpcMethod(ExitRoom); }
 
-    QueryRoomRet QueryRoom(int roomId) {
-        RpcMethod_P1(QueryRoom, roomId);
-    }
+    QueryRoomRet QueryRoom(int roomId) { RpcMethod_P1(QueryRoom, roomId); }
 
     OperationInRoomRet OperationInRoom(Ready ready) {
         RpcMethod_P1(OperationInRoom, ready);
     }
 
-    template<typename UserOperationT>
+    template <typename UserOperationT>
     OperationInRoomRet OperationInRoom(const UserOperationT &custom) {
         RpcMethod_P1(OperationInRoom, custom);
     }
 
     MessageRet Message(const std::string &message, const std::string &dstUser,
-        int dstRoom) {
+                       int dstRoom) {
         RpcMethod_P3(Message, message, dstUser, dstRoom);
     }
 
@@ -177,7 +164,7 @@ public:
 #undef RpcMethod_P3
 #undef RpcMethod_P4
 
-// private:
+    // private:
 public:
     std::shared_ptr<ClientNetworkInterface> mNetworkInterface;
     std::shared_ptr<ClientGameManager> mGameManager;
@@ -193,4 +180,4 @@ protected:
     UIProxy *mUIProxy;
 };
 
-}}
+}}  // namespace SailGame::Dock

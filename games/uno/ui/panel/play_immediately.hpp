@@ -1,12 +1,13 @@
 #pragma once
 
-#include <ftxui/component/container.hpp>
-#include <ftxui/component/button.hpp>
-#include <ftxui/screen/string.hpp>
 #include <sailgame/common/core_msg_builder.h>
 
-#include "../dom.hpp"
+#include <ftxui/component/button.hpp>
+#include <ftxui/component/container.hpp>
+#include <ftxui/screen/string.hpp>
+
 #include "../component.h"
+#include "../dom.hpp"
 
 namespace SailGame { namespace Uno {
 
@@ -40,21 +41,18 @@ public:
     Element Render() {
         Update();
         auto handcards = GetState().mSelfState.mHandcards;
-        auto username = GetState().mPlayerStates[
-            GetState().mGameState.mSelfPlayerIndex].mUsername;
+        auto username =
+            GetState()
+                .mPlayerStates[GetState().mGameState.mSelfPlayerIndex]
+                .mUsername;
         auto cursor = GetState().mSelfState.mIndexOfNewlyDrawn;
         auto timeElapsed = GetState().mGameState.mTimeElapsed;
 
-        auto doc = vbox({
-            Dom::PlayerBox(to_wstring(username), 
-                Dom::ConvertHandcardsToVBox(handcards, cursor)),
-            Dom::TimeIndicator(timeElapsed),
-            text(mHintText),
-            hbox({
-                mYesButton.Render(),
-                mNoButton.Render()
-            }) | hcenter
-        });
+        auto doc = vbox(
+            {Dom::PlayerBox(to_wstring(username),
+                            Dom::ConvertHandcardsToVBox(handcards, cursor)),
+             Dom::TimeIndicator(timeElapsed), text(mHintText),
+             hbox({mYesButton.Render(), mNoButton.Render()}) | hcenter});
         return doc;
     }
 
@@ -63,25 +61,22 @@ public:
         mHasTimeout = false;
         Component::TakeFocus();
     }
-    
+
 private:
     void Play() {
         auto index = GetState().mSelfState.mIndexOfNewlyDrawn;
         auto handcards = GetState().mSelfState.mHandcards;
         auto isUno = (handcards.Number() == 1);
         auto cardToPlay = handcards.At(index);
-        if (cardToPlay.CanBePlayedAfter(
-            GetState().mGameState.mLastPlayedCard, isUno))
-        {
+        if (cardToPlay.CanBePlayedAfter(GetState().mGameState.mLastPlayedCard,
+                                        isUno)) {
             if (cardToPlay.mColor == CardColor::BLACK) {
                 OnPlayWildCard();
-            }
-            else {
+            } else {
                 mUIProxy->OperationInRoom(MsgBuilder::CreatePlay<UserOperation>(
                     cardToPlay, cardToPlay.mColor));
             }
-        } 
-        else {
+        } else {
             mHintText = L"You cannot play that card.";
         }
     }
@@ -90,7 +85,7 @@ private:
         mUIProxy->OperationInRoom(MsgBuilder::CreateSkip<UserOperation>());
     }
 
-    void Timeout() { 
+    void Timeout() {
         if (!mHasTimeout) {
             Skip();
             mHasTimeout = true;
@@ -106,4 +101,4 @@ public:
     Button mYesButton{L"Yes"};
     Button mNoButton{L"No"};
 };
-}}
+}}  // namespace SailGame::Uno

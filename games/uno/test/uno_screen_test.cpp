@@ -1,6 +1,6 @@
-#include <sailgame_pb/uno/uno.pb.h>
 #include <sailgame/common/core_msg_builder.h>
 #include <sailgame/uno/msg_builder.h>
+#include <sailgame_pb/uno/uno.pb.h>
 
 #include "../../../dock/tests/screen_fixture.h"
 #include "../core/state.h"
@@ -27,13 +27,13 @@ public:
         RoomDetails roomDetails = CoreMsgBuilder::CreateRoomDetails(
             "UNO", 102,
             {
-                CoreMsgBuilder::CreateRoomUser("A", RoomUser::READY),
-                CoreMsgBuilder::CreateRoomUser(mUsername, RoomUser::READY),
-                CoreMsgBuilder::CreateRoomUser("B", RoomUser::READY),
-                CoreMsgBuilder::CreateRoomUser("C", RoomUser::READY),
+                CoreMsgBuilder::CreateRoomUser("A", RoomUser::PLAYING),
+                CoreMsgBuilder::CreateRoomUser(mUsername, RoomUser::PLAYING),
+                CoreMsgBuilder::CreateRoomUser("B", RoomUser::PLAYING),
+                CoreMsgBuilder::CreateRoomUser("C", RoomUser::PLAYING),
             },
-            Uno::MsgBuilder::CreateStartGameSettings(
-                true, true, false, false, 15));
+            Uno::MsgBuilder::CreateStartGameSettings(true, true, false, false,
+                                                     15));
         GameStart(roomDetails);
     }
 
@@ -43,14 +43,12 @@ public:
         // this event will be immediately consumed in ftxui thread
         /// NOTE: this should be fixed now by sleep 0.5s both before and
         /// after posting Custom Event.
-        CoreMsg(CoreMsgBuilder::CreateBroadcastMsgByNotifyMsg(
-            0, 0, 1, gameStart));
+        CoreMsg(
+            CoreMsgBuilder::CreateBroadcastMsgByNotifyMsg(0, 0, 1, gameStart));
         UserEvent();
     }
 
-    WholeState GetState() {
-        return GetScreen()->GetState();
-    }
+    WholeState GetState() { return GetScreen()->GetState(); }
 
     std::shared_ptr<Uno::GameScreen> GetScreen() {
         return std::dynamic_pointer_cast<Uno::GameScreen>(
@@ -61,7 +59,7 @@ protected:
     std::string mUsername{"me"};
 };
 
-TEST_F(UnoScreenFixture, NotMyTurn) { 
+TEST_F(UnoScreenFixture, NotMyTurn) {
     InitHandcardsT initHandcards = {"R1", "Y+2", "GR", "BS", "W", "+4", "Y0"};
     GetGameStartMsg(MsgBuilder::CreateGameStart(initHandcards, "Y2", 0));
     EXPECT_EQ(GetState().mGameState.mSelfPlayerIndex, 1);
@@ -115,12 +113,12 @@ TEST_F(UnoScreenFixture, PlayCard) {
     EXPECT_EQ(GetScreen()->mChooseCardPanel.mCursor, 2);
 
     auto opRet = CoreMsgBuilder::CreateOperationInRoomRet(ErrorNumber::OK);
-    EXPECT_CALL(*mMockStub, OperationInRoom(
-        _, PlayMatcher("GR", CardColor::GREEN), _))
+    EXPECT_CALL(*mMockStub,
+                OperationInRoom(_, PlayMatcher("GR", CardColor::GREEN), _))
         .Times(1)
         .WillOnce(DoAll(SetArgPointee<2>(opRet), Return(Status::OK)));
     UserEvent(GetScreen()->mChooseCardPanel.mHandcardsSelector.OnPlay);
-    
+
     CoreMsg(CoreMsgBuilder::CreateBroadcastMsgByNotifyMsg(
         0, 0, 0, MsgBuilder::CreatePlay("GR", CardColor::GREEN)));
     EXPECT_EQ(GetState().mSelfState.mHandcards.Number(), 6);
@@ -147,7 +145,7 @@ TEST_F(UnoScreenFixture, Skip) {
         .Times(1)
         .WillOnce(DoAll(SetArgPointee<2>(opRet), Return(Status::OK)));
     UserEvent(GetScreen()->mPlayOrPassPanel.mPassButton.on_click);
-    
+
     CoreMsg(CoreMsgBuilder::CreateBroadcastMsgByNotifyMsg(
         0, 0, 0, MsgBuilder::CreateSkip()));
     EXPECT_EQ(GetState().mSelfState.mHandcards.Number(), 7);
@@ -185,12 +183,12 @@ TEST_F(UnoScreenFixture, DrawAndPlay) {
     EXPECT_TRUE(GetScreen()->mPlayImmediatelyPanel.Focused());
     UserEvent();
 
-    EXPECT_CALL(*mMockStub, OperationInRoom(
-        _, PlayMatcher("R5", CardColor::RED), _))
+    EXPECT_CALL(*mMockStub,
+                OperationInRoom(_, PlayMatcher("R5", CardColor::RED), _))
         .Times(1)
         .WillOnce(DoAll(SetArgPointee<2>(opRet), Return(Status::OK)));
     UserEvent(GetScreen()->mPlayImmediatelyPanel.mYesButton.on_click);
-    
+
     CoreMsg(CoreMsgBuilder::CreateBroadcastMsgByNotifyMsg(
         0, 0, 0, MsgBuilder::CreatePlay("R5", CardColor::RED)));
     EXPECT_EQ(GetState().mSelfState.mHandcards.Number(), 7);
@@ -198,7 +196,7 @@ TEST_F(UnoScreenFixture, DrawAndPlay) {
     EXPECT_EQ(GetState().mGameState.mLastPlayedCard, "R5");
     EXPECT_TRUE(GetState().mGameState.mIsInClockwise);
     EXPECT_EQ(GetState().mGameState.mCurrentPlayer, 2);
-    
+
     UserEvent();
     EXPECT_TRUE(GetScreen()->mNotMyTurnPanel.Focused());
 }
@@ -240,7 +238,7 @@ TEST_F(UnoScreenFixture, DrawAndNoPlay) {
     EXPECT_EQ(GetState().mGameState.mLastPlayedCard, "R4");
     EXPECT_TRUE(GetState().mGameState.mIsInClockwise);
     EXPECT_EQ(GetState().mGameState.mCurrentPlayer, 2);
-    
+
     UserEvent();
     EXPECT_TRUE(GetScreen()->mNotMyTurnPanel.Focused());
 }
@@ -266,7 +264,7 @@ TEST_F(UnoScreenFixture, SpecifyNextColorFromChooseCard) {
     EXPECT_EQ(GetScreen()->mSpecifyColorPanel.mCursor, 5);
     UserEvent();
 
-    // click cancel button will return to ChooseCardPanel 
+    // click cancel button will return to ChooseCardPanel
     UserEvent(GetScreen()->mSpecifyColorPanel.mCancelButton.on_click);
     EXPECT_TRUE(GetScreen()->mChooseCardPanel.Focused());
     UserEvent();
@@ -276,8 +274,8 @@ TEST_F(UnoScreenFixture, SpecifyNextColorFromChooseCard) {
     UserEvent();
 
     auto opRet = CoreMsgBuilder::CreateOperationInRoomRet(ErrorNumber::OK);
-    EXPECT_CALL(*mMockStub, OperationInRoom(
-        _, PlayMatcher("W", CardColor::YELLOW), _))
+    EXPECT_CALL(*mMockStub,
+                OperationInRoom(_, PlayMatcher("W", CardColor::YELLOW), _))
         .Times(1)
         .WillOnce(DoAll(SetArgPointee<2>(opRet), Return(Status::OK)));
     UserEvent(GetScreen()->mSpecifyColorPanel.mYellowButton.on_click);
@@ -291,7 +289,7 @@ TEST_F(UnoScreenFixture, SpecifyNextColorFromChooseCard) {
     EXPECT_EQ(GetState().mGameState.mLastPlayedCard, "Y4");
     EXPECT_TRUE(GetState().mGameState.mIsInClockwise);
     EXPECT_EQ(GetState().mGameState.mCurrentPlayer, 2);
-    
+
     UserEvent();
     EXPECT_TRUE(GetScreen()->mNotMyTurnPanel.Focused());
 }
@@ -326,7 +324,7 @@ TEST_F(UnoScreenFixture, SpecifyNextColorFromPlayImmediately) {
     EXPECT_EQ(GetScreen()->mSpecifyColorPanel.mCursor, 7);
     UserEvent();
 
-    // click cancel button will return to PlayImmediatelyPanel 
+    // click cancel button will return to PlayImmediatelyPanel
     UserEvent(GetScreen()->mSpecifyColorPanel.mCancelButton.on_click);
     EXPECT_TRUE(GetScreen()->mPlayImmediatelyPanel.Focused());
     UserEvent();
@@ -335,8 +333,8 @@ TEST_F(UnoScreenFixture, SpecifyNextColorFromPlayImmediately) {
     EXPECT_TRUE(GetScreen()->mSpecifyColorPanel.Focused());
     UserEvent();
 
-    EXPECT_CALL(*mMockStub, OperationInRoom(
-        _, PlayMatcher("+4", CardColor::BLUE), _))
+    EXPECT_CALL(*mMockStub,
+                OperationInRoom(_, PlayMatcher("+4", CardColor::BLUE), _))
         .Times(1)
         .WillOnce(DoAll(SetArgPointee<2>(opRet), Return(Status::OK)));
     UserEvent(GetScreen()->mSpecifyColorPanel.mBlueButton.on_click);
@@ -396,8 +394,8 @@ TEST_F(UnoScreenFixture, DrawPenalty) {
         0, 0, 0, MsgBuilder::CreateSkip()));
     EXPECT_EQ(GetState().mGameState.mCurrentPlayer, 2);
     EXPECT_FALSE(GetState().mPlayerStates[1].mDoPlayInLastRound);
-    
+
     UserEvent();
     EXPECT_TRUE(GetScreen()->mNotMyTurnPanel.Focused());
 }
-}}
+}}  // namespace SailGame::Test

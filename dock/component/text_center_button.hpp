@@ -19,4 +19,4 @@ public:
             return text(label) | hcenter | border;
     }
 };
-}}
+}}  // namespace SailGame::Dock

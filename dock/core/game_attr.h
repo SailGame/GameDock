@@ -1,12 +1,13 @@
 #pragma once
 
-#include <memory>
-#include <ftxui/dom/elements.hpp>
 #include <google/protobuf/any.pb.h>
 #include <sailgame/common/state_machine.h>
 
-#include "../screen/game_screen.hpp"
+#include <ftxui/dom/elements.hpp>
+#include <memory>
+
 #include "../component/game_settings_ctrl.hpp"
+#include "../screen/game_screen.hpp"
 
 namespace SailGame { namespace Dock {
 
@@ -21,8 +22,8 @@ public:
     virtual std::shared_ptr<GameScreen> GetGameScreen() = 0;
 
     virtual std::shared_ptr<GameSettingsController>
-        GetGameSettingsController() = 0;
+    GetGameSettingsController() = 0;
 
     virtual Element ShowGameSettings(const Any &any) = 0;
 };
-}}
+}}  // namespace SailGame::Dock

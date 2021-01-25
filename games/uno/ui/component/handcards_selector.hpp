@@ -1,8 +1,9 @@
 #pragma once
 
+#include <sailgame/uno/card.h>
+
 #include <ftxui/component/component.hpp>
 #include <ftxui/screen/string.hpp>
-#include <sailgame/uno/card.h>
 
 #include "../dom.hpp"
 
@@ -49,4 +50,4 @@ private:
     int mCardsPerRow{8};
 };
 
-}}
+}}  // namespace SailGame::Uno

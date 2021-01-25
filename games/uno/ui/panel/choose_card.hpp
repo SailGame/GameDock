@@ -1,21 +1,22 @@
 #pragma once
 
-#include <ftxui/component/container.hpp>
-#include <ftxui/component/button.hpp>
+#include <sailgame/common/core_msg_builder.h>
+#include <sailgame/common/util.h>
 #include <sailgame/uno/card.h>
 #include <sailgame/uno/msg_builder.h>
-#include <sailgame/common/util.h>
-#include <sailgame/common/core_msg_builder.h>
 
+#include <ftxui/component/button.hpp>
+#include <ftxui/component/container.hpp>
+
+#include "../component.h"
 #include "../component/handcards_selector.hpp"
 #include "../dom.hpp"
-#include "../component.h"
 
 namespace SailGame { namespace Uno {
 
 using namespace ftxui;
-using Common::Util;
 using Common::CoreMsgBuilder;
+using Common::Util;
 
 class ChooseCardPanel : public UnoComponent {
 public:
@@ -44,13 +45,13 @@ public:
             mHintText = L"";
             mCursor--;
         };
-        mHandcardsSelector.OnMoveRight = [this] { 
+        mHandcardsSelector.OnMoveRight = [this] {
             mHintText = L"";
-            mCursor++; 
+            mCursor++;
         };
-        mHandcardsSelector.OnPlay = [this] { 
+        mHandcardsSelector.OnPlay = [this] {
             mHintText = L"";
-            TryToPlay(); 
+            TryToPlay();
         };
         mCancelButton.on_click = [this] { OnCancel(); };
     }
@@ -73,19 +74,20 @@ public:
     Element Render() {
         Update();
         auto handcards = GetState().mSelfState.mHandcards;
-        auto username = GetState().mPlayerStates[
-            GetState().mGameState.mSelfPlayerIndex].mUsername;
+        auto username =
+            GetState()
+                .mPlayerStates[GetState().mGameState.mSelfPlayerIndex]
+                .mUsername;
         auto timeElapsed = GetState().mGameState.mTimeElapsed;
-        mCursor = (handcards.Number() == 0 ? -1
-            : Util::Wrap(mCursor, handcards.Number()));
+        mCursor =
+            (handcards.Number() == 0 ? -1
+                                     : Util::Wrap(mCursor, handcards.Number()));
 
-        auto doc = vbox({
-            Dom::PlayerBox(to_wstring(username), 
-                mHandcardsSelector.Render(handcards, mCursor)),
-            Dom::TimeIndicator(timeElapsed),
-            text(mHintText),
-            mCancelButton.Render() | hcenter
-        });
+        auto doc =
+            vbox({Dom::PlayerBox(to_wstring(username),
+                                 mHandcardsSelector.Render(handcards, mCursor)),
+                  Dom::TimeIndicator(timeElapsed), text(mHintText),
+                  mCancelButton.Render() | hcenter});
         return doc;
     }
 
@@ -101,23 +103,20 @@ private:
         auto handcards = GetState().mSelfState.mHandcards;
         auto isUno = (handcards.Number() == 1);
         auto cardToPlay = handcards.At(mCursor);
-        if (cardToPlay.CanBePlayedAfter(
-            GetState().mGameState.mLastPlayedCard, isUno))
-        {
+        if (cardToPlay.CanBePlayedAfter(GetState().mGameState.mLastPlayedCard,
+                                        isUno)) {
             if (cardToPlay.mColor == CardColor::BLACK) {
                 OnPlayWildCard();
-            }
-            else {
+            } else {
                 mUIProxy->OperationInRoom(MsgBuilder::CreatePlay<UserOperation>(
                     cardToPlay, cardToPlay.mColor));
             }
-        } 
-        else {
+        } else {
             mHintText = L"You cannot play that card.";
         }
     }
 
-    void Timeout() { 
+    void Timeout() {
         if (!mHasTimeout) {
             OnCancel();
             mHasTimeout = true;
@@ -134,9 +133,9 @@ public:
     bool mHasTimeout{false};
 
 public:
-// private:
+    // private:
     Container mContainer{Container::Vertical()};
     HandcardsSelector mHandcardsSelector;
     Button mCancelButton{L"Cancel"};
 };
-}}
+}}  // namespace SailGame::Uno

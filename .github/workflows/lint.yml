@@ -19,6 +19,9 @@ jobs:
 
     - name: Install clang-format
       run: sudo apt-get install -y clang-format
+    
+    - name: show clang-format version
+      run: clang-format --version
 
     - name: Dry run
       shell: bash

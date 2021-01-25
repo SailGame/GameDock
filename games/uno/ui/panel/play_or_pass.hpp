@@ -1,7 +1,7 @@
 #pragma once
 
-#include <ftxui/component/container.hpp>
 #include <ftxui/component/button.hpp>
+#include <ftxui/component/container.hpp>
 
 #include "../component.h"
 
@@ -28,18 +28,18 @@ public:
 
     void Update() {
         // cannot invoke OnNextTurn in Pass() method because
-        // when Pass() is invoked, client hasn't received the 
+        // when Pass() is invoked, client hasn't received the
         // broadcast msg that indicates self operation, which means
-        // mCurrentPlayer is still himself, if invoking OnNextTurn 
+        // mCurrentPlayer is still himself, if invoking OnNextTurn
         // under such condition, focus will turn to NotMyTurn and then
         // back to PlayOrPass immediately.
         // So invoke OnNextTurn in Render() method.
         if (!GetState().mGameState.IsMyTurn()) {
             OnNextTurn();
         }
-        if (mHandcardsNumInLastFrame != -1 && mHandcardsNumInLastFrame < 
-            GetState().mSelfState.mHandcards.Number()) 
-        {
+        if (mHandcardsNumInLastFrame != -1 &&
+            mHandcardsNumInLastFrame <
+                GetState().mSelfState.mHandcards.Number()) {
             HandleDrawRsp();
         }
         mHandcardsNumInLastFrame = GetState().mSelfState.mHandcards.Number();
@@ -52,20 +52,18 @@ public:
     Element Render() {
         Update();
         auto handcards = GetState().mSelfState.mHandcards;
-        auto username = GetState().mPlayerStates[
-            GetState().mGameState.mSelfPlayerIndex].mUsername;
+        auto username =
+            GetState()
+                .mPlayerStates[GetState().mGameState.mSelfPlayerIndex]
+                .mUsername;
         auto timeElapsed = GetState().mGameState.mTimeElapsed;
         spdlog::info("time elapsed: {}", timeElapsed);
 
-        auto doc = vbox({
-            Dom::PlayerBox(to_wstring(username), 
-                Dom::ConvertHandcardsToVBox(handcards)),
-            Dom::TimeIndicator(timeElapsed),
-            hbox({
-                mPlayButton.Render(),
-                mPassButton.Render()
-            }) | hcenter
-        });
+        auto doc = vbox(
+            {Dom::PlayerBox(to_wstring(username),
+                            Dom::ConvertHandcardsToVBox(handcards)),
+             Dom::TimeIndicator(timeElapsed),
+             hbox({mPlayButton.Render(), mPassButton.Render()}) | hcenter});
         return doc;
     }
 
@@ -78,8 +76,7 @@ private:
     void Pass() {
         if (GetState().mGameState.mLastPlayedCard.mText == CardText::SKIP) {
             mUIProxy->OperationInRoom(MsgBuilder::CreateSkip<UserOperation>());
-        }
-        else {
+        } else {
             auto number = GetState().mGameState.mCardsNumToDraw;
             mUIProxy->OperationInRoom(
                 MsgBuilder::CreateDraw<UserOperation>(number));
@@ -89,8 +86,7 @@ private:
     void HandleDrawRsp() {
         if (GetState().mSelfState.mHasChanceToPlayAfterDraw) {
             OnHasChanceToPlayAfterDraw();
-        }
-        else {
+        } else {
             mUIProxy->OperationInRoom(MsgBuilder::CreateSkip<UserOperation>());
         }
     }
@@ -98,15 +94,14 @@ private:
     void UpdatePassButtonLabel() {
         if (GetState().mGameState.mLastPlayedCard.mText == CardText::SKIP) {
             mPassButton.label = L"Skip this turn";
-        }
-        else {
+        } else {
             auto number = GetState().mGameState.mCardsNumToDraw;
-            mPassButton.label = L"Draw " + to_wstring(number)
-                + (number == 1 ? L" card" : L" cards");
+            mPassButton.label = L"Draw " + to_wstring(number) +
+                                (number == 1 ? L" card" : L" cards");
         }
     }
 
-    void Timeout() { 
+    void Timeout() {
         if (!mHasTimeout) {
             Pass();
             mHasTimeout = true;
@@ -118,10 +113,10 @@ private:
     int mHandcardsNumInLastFrame{-1};
     bool mHasTimeout{false};
 
-// private:
+    // private:
 public:
     Container mContainer{Container::Horizontal()};
     Button mPlayButton{L"Choose a card to play"};
     Button mPassButton;
 };
-}}
+}}  // namespace SailGame::Uno

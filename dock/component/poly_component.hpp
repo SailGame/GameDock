@@ -10,7 +10,7 @@ namespace SailGame { namespace Dock {
 using namespace ftxui;
 
 // T is Component and UIProxyClient
-template<typename T>
+template <typename T>
 class PolyComponent : public DockComponent {
 public:
     ~PolyComponent() override = default;
@@ -23,7 +23,7 @@ public:
         return mComponent ? mComponent->Render() : hbox();
     }
 
-    Component* ActiveChild() override {
+    Component *ActiveChild() override {
         // active child is the one that is currently held
         return mComponent.get();
     }
@@ -41,7 +41,7 @@ public:
 
     std::shared_ptr<T> GetComponent() const { return mComponent; }
 
-    template<typename Func, typename... Args>
+    template <typename Func, typename... Args>
     auto Invoke(const Func &func, Args &&... args) {
         return std::invoke(func, mComponent, std::forward<Args>(args)...);
     }
@@ -50,4 +50,4 @@ protected:
     std::shared_ptr<T> mComponent;
 };
 
-}}
+}}  // namespace SailGame::Dock

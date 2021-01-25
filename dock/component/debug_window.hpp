@@ -1,9 +1,9 @@
 #pragma once
 
 #include <algorithm>
-#include <string>
 #include <ftxui/component/component.hpp>
 #include <ftxui/screen/screen.hpp>
+#include <string>
 
 namespace SailGame { namespace Dock {
 
@@ -11,12 +11,12 @@ using namespace ftxui;
 
 class DebugWindow : public ftxui::Component {
 public:
-    explicit DebugWindow(unsigned int maxLines)
-        : mMaxLines(maxLines) {}
+    explicit DebugWindow(unsigned int maxLines) : mMaxLines(maxLines) {}
 
     ftxui::Element Render() override {
         Elements elements;
-        std::transform(mInfos.begin(), mInfos.end(),
+        std::transform(
+            mInfos.begin(), mInfos.end(),
             std::inserter(elements, elements.begin()),
             [](const std::wstring& debugStr) { return text(debugStr); });
         return vbox(elements);
@@ -37,4 +37,4 @@ private:
     const int mMaxLines;
 };
 
-}}
+}}  // namespace SailGame::Dock

@@ -1,6 +1,7 @@
-#include <sailgame_pb/core/types.pb.h>
-#include <ftxui/screen/string.hpp>
 #include <google/protobuf/util/message_differencer.h>
+#include <sailgame_pb/core/types.pb.h>
+
+#include <ftxui/screen/string.hpp>
 
 #include "../matcher.h"
 #include "../screen_fixture.h"
@@ -14,8 +15,8 @@ using Common::GameType;
 using ::Core::ErrorNumber;
 using ::Core::Ready;
 using ftxui::to_wstring;
-using grpc::Status;
 using google::protobuf::util::MessageDifferencer;
+using grpc::Status;
 
 class RoomScreenFixture : public ScreenFixture {
 public:
@@ -57,19 +58,22 @@ TEST_F(RoomScreenFixture, ExitRoom) {
 }
 
 TEST_F(RoomScreenFixture, NewPlayerJoins) {
-    RoomDetails roomDetails = CoreMsgBuilder::CreateRoomDetails("UNO", 101, {
-        CoreMsgBuilder::CreateRoomUser("a", RoomUser::READY),
-        CoreMsgBuilder::CreateRoomUser("b", RoomUser::PREPARING),
-    }, Uno::MsgBuilder::CreateStartGameSettings(true, true, false, false, 15));
+    RoomDetails roomDetails = CoreMsgBuilder::CreateRoomDetails(
+        "UNO", 101,
+        {
+            CoreMsgBuilder::CreateRoomUser("a", RoomUser::READY),
+            CoreMsgBuilder::CreateRoomUser("b", RoomUser::PREPARING),
+        },
+        Uno::MsgBuilder::CreateStartGameSettings(true, true, false, false, 15));
     CoreMsg(
         CoreMsgBuilder::CreateBroadcastMsgByRoomDetails(0, 0, 0, roomDetails));
     EXPECT_TRUE(MessageDifferencer::Equals(
         mDock.mRoomScreen.GetState().mRoomDetails, roomDetails));
     UserEvent();
-    
+
     // now comes a new player
-    roomDetails.add_user()->CopyFrom(CoreMsgBuilder::CreateRoomUser(
-        "new-joiner", RoomUser::PREPARING));
+    roomDetails.add_user()->CopyFrom(
+        CoreMsgBuilder::CreateRoomUser("new-joiner", RoomUser::PREPARING));
     CoreMsg(
         CoreMsgBuilder::CreateBroadcastMsgByRoomDetails(0, 0, 0, roomDetails));
     EXPECT_TRUE(MessageDifferencer::Equals(
@@ -78,19 +82,22 @@ TEST_F(RoomScreenFixture, NewPlayerJoins) {
 }
 
 TEST_F(RoomScreenFixture, GameStart) {
-    RoomDetails roomDetails = CoreMsgBuilder::CreateRoomDetails("UNO", 102, {
-        CoreMsgBuilder::CreateRoomUser("a", RoomUser::READY),
-        CoreMsgBuilder::CreateRoomUser("b", RoomUser::PREPARING),
-        CoreMsgBuilder::CreateRoomUser("c", RoomUser::READY),
-        // by default, `my` username is `test` 
-        CoreMsgBuilder::CreateRoomUser("test", RoomUser::READY),
-    }, Uno::MsgBuilder::CreateStartGameSettings(true, true, false, false, 15));
+    RoomDetails roomDetails = CoreMsgBuilder::CreateRoomDetails(
+        "UNO", 102,
+        {
+            CoreMsgBuilder::CreateRoomUser("a", RoomUser::READY),
+            CoreMsgBuilder::CreateRoomUser("b", RoomUser::PREPARING),
+            CoreMsgBuilder::CreateRoomUser("c", RoomUser::READY),
+            // by default, `my` username is `test`
+            CoreMsgBuilder::CreateRoomUser("test", RoomUser::READY),
+        },
+        Uno::MsgBuilder::CreateStartGameSettings(true, true, false, false, 15));
     CoreMsg(
         CoreMsgBuilder::CreateBroadcastMsgByRoomDetails(0, 0, 0, roomDetails));
     UserEvent();
 
     // b gets ready, game start now
-    // note that when all users are ready, Core will automatically 
+    // note that when all users are ready, Core will automatically
     // change user state to PLAYING
     for (auto i = 0; i < 4; i++) {
         roomDetails.mutable_user(i)->set_userstate(RoomUser::PLAYING);
@@ -98,4 +105,4 @@ TEST_F(RoomScreenFixture, GameStart) {
     GameStart(roomDetails);
 }
 
-}}
+}}  // namespace SailGame::Test

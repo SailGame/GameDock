@@ -3,8 +3,8 @@
 #include <ftxui/component/container.hpp>
 #include <ftxui/screen/string.hpp>
 
-#include "../dom.hpp"
 #include "../component.h"
+#include "../dom.hpp"
 
 namespace SailGame { namespace Uno {
 
@@ -30,13 +30,15 @@ public:
     Element Render() {
         Update();
         auto handcards = GetState().mSelfState.mHandcards;
-        auto username = GetState().mPlayerStates[
-            GetState().mGameState.mSelfPlayerIndex].mUsername;
+        auto username =
+            GetState()
+                .mPlayerStates[GetState().mGameState.mSelfPlayerIndex]
+                .mUsername;
 
-        auto doc = Dom::PlayerBox(to_wstring(username), 
-            Dom::ConvertHandcardsToVBox(handcards));
+        auto doc = Dom::PlayerBox(to_wstring(username),
+                                  Dom::ConvertHandcardsToVBox(handcards));
         return doc;
     }
 };
 
-}}
+}}  // namespace SailGame::Uno

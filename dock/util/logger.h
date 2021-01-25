@@ -1,7 +1,7 @@
 #pragma once
 
-#include <spdlog/spdlog.h>
 #include <sailgame_pb/core/types.pb.h>
+#include <spdlog/spdlog.h>
 
 namespace SailGame { namespace Dock {
 
@@ -11,19 +11,18 @@ class Logger {
 public:
     // Args
     static void Log(const LoginArgs &args) {
-        spdlog::info("[Login Args] username: {}, password: {}", 
-            args.username(), args.password());
+        spdlog::info("[Login Args] username: {}, password: {}", args.username(),
+                     args.password());
     }
 
     static void Log(const QueryAccountArgs &args) {
         switch (args.key_case()) {
             case QueryAccountArgs::kUserName:
-                spdlog::info("[QueryAccount Args] username: {}", 
-                    args.username());
+                spdlog::info("[QueryAccount Args] username: {}",
+                             args.username());
                 return;
             case QueryAccountArgs::kToken:
-                spdlog::info("[QueryAccount Args] token: {}", 
-                    args.token());
+                spdlog::info("[QueryAccount Args] token: {}", args.token());
                 return;
             default:
                 throw std::runtime_error("Unsupported key.");
@@ -36,8 +35,9 @@ public:
 
     /// TODO: deal with Any
     static void Log(const ControlRoomArgs &args) {
-        spdlog::info("[ControlRoom Args] token: {}, roomId: {}, gameName: {},"
-            "roomPassword: {} ", 
+        spdlog::info(
+            "[ControlRoom Args] token: {}, roomId: {}, gameName: {},"
+            "roomPassword: {} ",
             args.token(), args.roomid(), args.gamename(), args.roompassword());
     }
 
@@ -46,8 +46,8 @@ public:
     }
 
     static void Log(const JoinRoomArgs &args) {
-        spdlog::info("[JoinRoom Args] token: {}, roomId: {}", 
-            args.token(), args.roomid());
+        spdlog::info("[JoinRoom Args] token: {}, roomId: {}", args.token(),
+                     args.roomid());
     }
 
     static void Log(const ExitRoomArgs &args) {
@@ -55,8 +55,8 @@ public:
     }
 
     static void Log(const QueryRoomArgs &args) {
-        spdlog::info("[QueryRoom Args] token: {}, roomId: {}", 
-            args.token(), args.roomid());
+        spdlog::info("[QueryRoom Args] token: {}, roomId: {}", args.token(),
+                     args.roomid());
     }
 
     /// TODO: deal with Any
@@ -64,11 +64,11 @@ public:
         switch (args.RoomOperation_case()) {
             case OperationInRoomArgs::kReady:
                 spdlog::info("[OperationInRoom Args] token: {}, ready: {}",
-                    args.token(), args.ready());
+                             args.token(), args.ready());
                 break;
             case OperationInRoomArgs::kCustom:
                 spdlog::info("[OperationInRoom Args] token: {}, custom",
-                    args.token());
+                             args.token());
                 break;
             default:
                 throw std::runtime_error("Unsupported RoomOperation.");
@@ -76,7 +76,8 @@ public:
     }
 
     static void Log(const MessageArgs &args) {
-        spdlog::info("[Message Args] token: {}, message: {}, dstUser: {},"
+        spdlog::info(
+            "[Message Args] token: {}, message: {}, dstUser: {},"
             "dstRoom{} ",
             args.token(), args.message(), args.dstuser(), args.dstroom());
     }
@@ -84,18 +85,19 @@ public:
     // Ret
     static void Log(const LoginRet &ret) {
         spdlog::info("[Login Ret] err: {}, token: {}, username: {}, points: {}",
-            ret.err(), ret.token(), ret.account().username(),
-            ret.account().points());
+                     ret.err(), ret.token(), ret.account().username(),
+                     ret.account().points());
     }
 
     static void Log(const QueryAccountRet &ret) {
         spdlog::info("[QueryAccount Ret] err: {}, username: {}, points: {}",
-            ret.err(), ret.account().username(), ret.account().points());
+                     ret.err(), ret.account().username(),
+                     ret.account().points());
     }
 
     static void Log(const CreateRoomRet &ret) {
-        spdlog::info("[CreateRoom Ret] err: {}, roomId: {}",
-            ret.err(), ret.roomid());
+        spdlog::info("[CreateRoom Ret] err: {}, roomId: {}", ret.err(),
+                     ret.roomid());
     }
 
     /// TODO: deal with Any
@@ -105,8 +107,8 @@ public:
 
     /// TODO: deal with Repeated
     static void Log(const ListRoomRet &ret) {
-        spdlog::info("[ListRoom Ret] err: {}, room size: {}",
-            ret.err(), ret.room_size());
+        spdlog::info("[ListRoom Ret] err: {}, room size: {}", ret.err(),
+                     ret.room_size());
     }
 
     static void Log(const JoinRoomRet &ret) {
@@ -119,9 +121,10 @@ public:
 
     /// TODO: deal with Any
     static void Log(const QueryRoomRet &ret) {
-        spdlog::info("[QueryRoom Ret] err: {}, gameName: {}, roomId: {}, "
+        spdlog::info(
+            "[QueryRoom Ret] err: {}, gameName: {}, roomId: {}, "
             "user size: {}",
-            ret.err(), ret.room().gamename(), ret.room().roomid(), 
+            ret.err(), ret.room().gamename(), ret.room().roomid(),
             ret.room().user_size());
     }
 
@@ -132,6 +135,5 @@ public:
     static void Log(const MessageRet &ret) {
         spdlog::info("[Message Ret] err: {}", ret.err());
     }
-
 };
-}}
+}}  // namespace SailGame::Dock

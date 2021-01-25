@@ -1,10 +1,11 @@
 #pragma once
 
+#include <google/protobuf/any.pb.h>
+#include <sailgame/common/types.h>
+#include <sailgame/common/util.h>
+
 #include <ftxui/component/component.hpp>
 #include <ftxui/component/container.hpp>
-#include <google/protobuf/any.pb.h>
-#include <sailgame/common/util.h>
-#include <sailgame/common/types.h>
 
 #include "../core/component.h"
 #include "empty_component.hpp"
@@ -12,8 +13,8 @@
 namespace SailGame { namespace Dock {
 
 using namespace ftxui;
-using Common::Util;
 using Common::GameType;
+using Common::Util;
 using google::protobuf::Any;
 
 class GameSettingsController : public ComponentWithUIProxy {
@@ -48,10 +49,10 @@ protected:
 
     virtual Element RenderControlMode() = 0;
 
-    template<typename T>
+    template <typename T>
     T GetSettings() {
         auto settings = dynamic_cast<const Dock::State &>(mUIProxy->GetState())
-            .mRoomDetails.gamesetting();
+                            .mRoomDetails.gamesetting();
         return Util::UnpackGrpcAnyTo<T>(settings);
     }
 
@@ -67,4 +68,4 @@ protected:
     EmptyComponent mEmptyComponent;
     Component mController;
 };
-}}
+}}  // namespace SailGame::Dock

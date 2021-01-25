@@ -10,4 +10,4 @@ Decorator width(int value) { return size(WIDTH, EQUAL, value); }
 
 Decorator height(int value) { return size(HEIGHT, EQUAL, value); }
 
-}
+}  // namespace ftxui

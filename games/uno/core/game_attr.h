@@ -4,11 +4,11 @@
 #include <sailgame/common/util.h>
 #include <sailgame_pb/uno/uno.pb.h>
 
-#include "../../../dock/core/game_attr.h"
 #include "../../../dock/component/game_settings_ctrl.hpp"
-#include "../ui/game_screen.hpp"
-#include "../ui/dom.hpp"
+#include "../../../dock/core/game_attr.h"
 #include "../ui/component/game_settings_ctrl.hpp"
+#include "../ui/dom.hpp"
+#include "../ui/game_screen.hpp"
 #include "state_machine.h"
 
 namespace SailGame { namespace Uno {
@@ -30,9 +30,8 @@ public:
         return GameScreen::Create();
     }
 
-    virtual std::shared_ptr<Dock::GameSettingsController> 
-        GetGameSettingsController() override 
-    {
+    virtual std::shared_ptr<Dock::GameSettingsController>
+    GetGameSettingsController() override {
         return std::make_shared<GameSettingsController>();
     }
 
@@ -42,4 +41,4 @@ public:
     }
 };
 
-}}
+}}  // namespace SailGame::Uno

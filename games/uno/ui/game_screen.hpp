@@ -1,18 +1,19 @@
 #pragma once
 
-#include <ftxui/component/container.hpp>
 #include <sailgame/common/types.h>
+
+#include <ftxui/component/container.hpp>
 
 #include "../../../dock/screen/game_screen.hpp"
 #include "../core/state.h"
+#include "component.h"
+#include "dom.hpp"
 #include "panel/choose_card.hpp"
-#include "panel/play_or_pass.hpp"
+#include "panel/game_over.hpp"
 #include "panel/not_my_turn.hpp"
 #include "panel/play_immediately.hpp"
+#include "panel/play_or_pass.hpp"
 #include "panel/specify_color.hpp"
-#include "panel/game_over.hpp"
-#include "dom.hpp"
-#include "component.h"
 
 namespace SailGame { namespace Uno {
 
@@ -36,7 +37,7 @@ public:
         mNotMyTurnPanel.OnGameOver = [this] { mGameOverPanel.TakeFocus(); };
         mPlayOrPassPanel.OnPlay = [this] { mChooseCardPanel.TakeFocus(); };
         mPlayOrPassPanel.OnNextTurn = [this] { mNotMyTurnPanel.TakeFocus(); };
-        mPlayOrPassPanel.OnHasChanceToPlayAfterDraw = [this] { 
+        mPlayOrPassPanel.OnHasChanceToPlayAfterDraw = [this] {
             mPlayImmediatelyPanel.TakeFocus();
         };
         mChooseCardPanel.OnCancel = [this] { mPlayOrPassPanel.TakeFocus(); };
@@ -57,10 +58,9 @@ public:
             mSpecifyColorPanel.TakeFocus();
         };
         mSpecifyColorPanel.OnCancel = [this] {
-            if (mIsFromChooseCard) { 
-                mChooseCardPanel.TakeFocus(); 
-            }
-            else {
+            if (mIsFromChooseCard) {
+                mChooseCardPanel.TakeFocus();
+            } else {
                 mPlayImmediatelyPanel.TakeFocus();
             }
         };
@@ -90,12 +90,10 @@ public:
         auto lastPlayedCard = GetState().mGameState.mLastPlayedCard;
         auto curPlayer = GetState().mGameState.mCurrentPlayer;
         auto timeElapsed = GetState().mGameState.mTimeElapsed;
-        auto doc = vbox({
-            Dom::OtherPlayersDoc(
-                GetState().mPlayerStates, selfIndex, lastPlayedCard,
-                curPlayer, timeElapsed),
-            mPanelContainer.Render() | size(WIDTH, EQUAL, 60) | hcenter
-        });
+        auto doc =
+            vbox({Dom::OtherPlayersDoc(GetState().mPlayerStates, selfIndex,
+                                       lastPlayedCard, curPlayer, timeElapsed),
+                  mPanelContainer.Render() | size(WIDTH, EQUAL, 60) | hcenter});
         return doc | size(WIDTH, EQUAL, 80) | border | center;
     }
 
@@ -134,4 +132,4 @@ public:
     SpecifyColorPanel mSpecifyColorPanel;
     GameOverPanel mGameOverPanel;
 };
-}}
+}}  // namespace SailGame::Uno

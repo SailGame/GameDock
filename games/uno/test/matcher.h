@@ -1,10 +1,10 @@
 #pragma once
 
-#include <gtest/gtest.h>
 #include <gmock/gmock-matchers.h>
-#include <sailgame_pb/uno/uno.pb.h>
+#include <gtest/gtest.h>
 #include <sailgame/common/util.h>
 #include <sailgame/uno/card.h>
+#include <sailgame_pb/uno/uno.pb.h>
 
 namespace SailGame { namespace Test {
 
@@ -33,7 +33,7 @@ MATCHER_P2(PlayMatcher, card, color, "") {
         return false;
     }
     auto msg = Util::UnpackGrpcAnyTo<UserOperation>(arg.custom());
-    return msg.has_play() && 
-        Card{msg.play().card()} == card && msg.play().nextcolor() == color;
+    return msg.has_play() && Card{msg.play().card()} == card &&
+           msg.play().nextcolor() == color;
 }
-}}
+}}  // namespace SailGame::Test

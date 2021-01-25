@@ -2,8 +2,7 @@
 
 namespace SailGame { namespace Uno {
 
-void GameState::UpdateAfterDraw()
-{
+void GameState::UpdateAfterDraw() {
     if (CardSet::DrawTexts.count(mLastPlayedCard.mText)) {
         // last played card will become EMPTY after the draw penalty is consumed
         mLastPlayedCard.mText = CardText::EMPTY;
@@ -11,12 +10,11 @@ void GameState::UpdateAfterDraw()
     // the number of cards to draw falls back to 1
     mCardsNumToDraw = 1;
 
-    // no need to invoke NextPlayer() here 
+    // no need to invoke NextPlayer() here
     // because a draw action is always followed by a skip or play action
 }
 
-void GameState::UpdateAfterSkip()
-{
+void GameState::UpdateAfterSkip() {
     if (mLastPlayedCard.mText == CardText::SKIP) {
         // last played card will become EMPTY after the skip penalty is consumed
         mLastPlayedCard.mText = CardText::EMPTY;
@@ -24,16 +22,14 @@ void GameState::UpdateAfterSkip()
     NextPlayer();
 }
 
-void GameState::UpdateAfterPlay(Card card)
-{
+void GameState::UpdateAfterPlay(Card card) {
     if (card.mText == CardText::WILD) {
         // if just a common wild card (not +4), don't affect the number text
         mLastPlayedCard.mColor = card.mColor;
-    }
-    else {
+    } else {
         mLastPlayedCard = card;
     }
-    
+
     if (card.mText == CardText::REVERSE) {
         mIsInClockwise = !mIsInClockwise;
     }
@@ -51,16 +47,14 @@ void GameState::UpdateAfterPlay(Card card)
     }
 }
 
-void GameState::NextPlayer()
-{
+void GameState::NextPlayer() {
     mTimeElapsed = 0;
-    mCurrentPlayer = mIsInClockwise ? 
-        Util::Wrap(mCurrentPlayer + 1, mPlayerNum) :
-        Util::Wrap(mCurrentPlayer - 1, mPlayerNum);
+    mCurrentPlayer = mIsInClockwise
+                         ? Util::Wrap(mCurrentPlayer + 1, mPlayerNum)
+                         : Util::Wrap(mCurrentPlayer - 1, mPlayerNum);
 }
 
-void SelfState::UpdateAfterDrawRsp(const std::vector<Card> &cards)
-{
+void SelfState::UpdateAfterDrawRsp(const std::vector<Card> &cards) {
     Handcards originalHandCards = mHandcards;
     mHandcards.Draw(cards);
     if (cards.size() == 1) {
@@ -69,34 +63,24 @@ void SelfState::UpdateAfterDrawRsp(const std::vector<Card> &cards)
     }
 }
 
-void SelfState::UpdateAfterSkip()
-{
-    mHasChanceToPlayAfterDraw = false;
-}
+void SelfState::UpdateAfterSkip() { mHasChanceToPlayAfterDraw = false; }
 
-void SelfState::UpdateAfterPlay(Card card)
-{
+void SelfState::UpdateAfterPlay(Card card) {
     mHandcards.Erase(card);
     mHasChanceToPlayAfterDraw = false;
 }
 
-void PlayerState::UpdateAfterDraw(int number)
-{
+void PlayerState::UpdateAfterDraw(int number) {
     mRemainingHandCardsNum += number;
     mDoPlayInLastRound = false;
 }
 
-void PlayerState::UpdateAfterSkip()
-{
-    mDoPlayInLastRound = false;
-}
+void PlayerState::UpdateAfterSkip() { mDoPlayInLastRound = false; }
 
-void PlayerState::UpdateAfterPlay(Card card)
-{
+void PlayerState::UpdateAfterPlay(Card card) {
     mRemainingHandCardsNum--;
     mDoPlayInLastRound = true;
     mLastPlayedCard = card;
 }
 
-
-}}
+}}  // namespace SailGame::Uno

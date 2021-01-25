@@ -1,14 +1,15 @@
 #pragma once
 
-#include <sailgame_pb/core/types.pb.h>
 #include <sailgame/common/state_machine.h>
 #include <sailgame/common/types.h>
+#include <sailgame/common/util.h>
+#include <sailgame_pb/core/types.pb.h>
 
 namespace SailGame { namespace Dock {
 
+using Common::GameType;
 using Common::IState;
 using Common::Util;
-using Common::GameType;
 using ::Core::RoomDetails;
 using ::Core::RoomUser;
 
@@ -17,10 +18,11 @@ public:
     State() = default;
 
     bool IsOwner() const {
-        /// FIXME: shouldn't assume that owner's username appears as the first one
+        /// FIXME: shouldn't assume that owner's username appears as the first
+        /// one
         // return (mRoomDetails.user_size() > 0) &&
         //        (mRoomDetails.user(0).username() == mUsername);
-        
+
         /// XXX: currently there is no owner
         return false;
     }
@@ -48,4 +50,4 @@ public:
     std::string mUsername;
     RoomDetails mRoomDetails;
 };
-}}
+}}  // namespace SailGame::Dock

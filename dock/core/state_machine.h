@@ -1,24 +1,24 @@
 #pragma once
 
-#include <spdlog/spdlog.h>
 #include <sailgame/common/state_machine.h>
+#include <spdlog/spdlog.h>
 
-#include "state.h"
 #include "common.h"
+#include "state.h"
 
 namespace SailGame { namespace Dock {
 
+using Common::ClientStateMachine;
+using Common::GameType;
+using Common::IState;
+using Common::IStateMachine;
 using ::Core::BroadcastMsg;
 using ::Core::RoomDetails;
-using Common::IStateMachine;
-using Common::ClientStateMachine;
-using Common::IState;
-using Common::GameType;
 
 class StateMachine : public ClientStateMachine {
 public:
     // let StateMachine check whether game starts
-    // because in Dock level, we could only check that in Render, 
+    // because in Dock level, we could only check that in Render,
     // which is however asyncly invoked.
     std::function<void(GameType)> OnGameStart;
 
@@ -38,7 +38,7 @@ public:
 
     void SwitchFrom(const ClientStateMachine &stateMachine) override {
         mState = stateMachine.SwitchToRoom();
-        for (auto i = 0; i< mState.mRoomDetails.user_size(); i++) {
+        for (auto i = 0; i < mState.mRoomDetails.user_size(); i++) {
             mState.mRoomDetails.mutable_user(i)->set_userstate(
                 RoomUser::PREPARING);
         }
@@ -57,7 +57,7 @@ protected:
             case BroadcastMsg::MsgCase::kRoomDetails:
                 Transition(msg.roomdetails());
                 return;
-            /// TODO: handle other cases
+                /// TODO: handle other cases
         }
         throw std::runtime_error("Unsupported msg type");
     }
@@ -67,8 +67,8 @@ private:
         mState.mRoomDetails = details;
         /// XXX: for now, ret from Core doesn't include gameSetting
         mState.mRoomDetails.mutable_gamesetting()->PackFrom(
-            Uno::MsgBuilder::CreateStartGameSettings(
-                true, true, false, false, 15));
+            Uno::MsgBuilder::CreateStartGameSettings(true, true, false, false,
+                                                     15));
         if (mState.AreAllUsersReady()) {
             spdlog::info("[Dock StateMachine] All users are ready");
             OnGameStart(mState.GetGameType());
@@ -79,4 +79,4 @@ private:
     State mState;
 };
 
-}}
+}}  // namespace SailGame::Dock

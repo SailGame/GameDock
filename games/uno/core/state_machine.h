@@ -1,19 +1,19 @@
 #pragma once
 
-#include <sailgame/common/state_machine.h>
 #include <sailgame/common/event.h>
+#include <sailgame/common/state_machine.h>
 #include <sailgame/common/types.h>
 #include <sailgame_pb/core/types.pb.h>
 #include <sailgame_pb/uno/uno.pb.h>
 
-#include "state.h"
 #include "../../../dock/core/common.h"
+#include "state.h"
 
 namespace SailGame { namespace Uno {
 
+using Common::ClientStateMachine;
 using Common::GameType;
 using Common::IStateMachine;
-using Common::ClientStateMachine;
 using namespace ::Core;
 using namespace ::Uno;
 
@@ -27,7 +27,7 @@ public:
 
     const IState &GetState() const override { return mState; }
 
-    void SetState(const IState &state) override { 
+    void SetState(const IState &state) override {
         mState = dynamic_cast<const WholeState &>(state);
     }
 
@@ -56,4 +56,4 @@ private:
 private:
     WholeState mState;
 };
-}}
+}}  // namespace SailGame::Uno

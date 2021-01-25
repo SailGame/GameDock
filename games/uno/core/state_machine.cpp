@@ -1,15 +1,15 @@
-#include <sailgame_pb/core/provider.pb.h>
-#include <sailgame_pb/core/error.pb.h>
-#include <sailgame_pb/uno/uno.pb.h>
+#include "state_machine.h"
 
+#include <sailgame/common/core_msg_builder.h>
+#include <sailgame/common/event.h>
 #include <sailgame/common/state_machine.h>
 #include <sailgame/common/util.h>
-#include <sailgame/common/event.h>
-#include <sailgame/common/core_msg_builder.h>
 #include <sailgame/uno/msg_builder.h>
-
+#include <sailgame_pb/core/error.pb.h>
+#include <sailgame_pb/core/provider.pb.h>
+#include <sailgame_pb/uno/uno.pb.h>
 #include <spdlog/spdlog.h>
-#include "state_machine.h"
+
 #include "logger.h"
 
 namespace SailGame { namespace Uno {
@@ -18,8 +18,7 @@ using Common::CoreMsgBuilder;
 using Common::Util;
 using ::Uno::StartGameSettings;
 
-void StateMachine::SwitchFrom(const ClientStateMachine &stateMachine)
-{
+void StateMachine::SwitchFrom(const ClientStateMachine &stateMachine) {
     mState.mRoomState =
         dynamic_cast<const Dock::State &>(stateMachine.GetState());
     auto roomDetails = mState.mRoomState.mRoomDetails;
@@ -39,37 +38,39 @@ void StateMachine::SwitchFrom(const ClientStateMachine &stateMachine)
 
 Dock::State StateMachine::SwitchToRoom() const { return mState.mRoomState; }
 
-void StateMachine::Transition(const BroadcastMsg &msg)
-{
+void StateMachine::Transition(const BroadcastMsg &msg) {
     switch (msg.Msg_case()) {
         case BroadcastMsg::MsgCase::kCustom:
             Transition(Common::Util::UnpackGrpcAnyTo<NotifyMsg>(msg.custom()));
             return;
-        /// TODO: handle other cases
+            /// TODO: handle other cases
     }
     throw std::runtime_error("Unsupported msg type");
 }
 
-void StateMachine::Transition(const NotifyMsg &msg)
-{
+void StateMachine::Transition(const NotifyMsg &msg) {
     switch (msg.Msg_case()) {
         case NotifyMsg::MsgCase::kGameStart:
-            Transition(msg.gamestart()); return;
+            Transition(msg.gamestart());
+            return;
         case NotifyMsg::MsgCase::kDraw:
-            Transition(msg.draw()); return;
+            Transition(msg.draw());
+            return;
         case NotifyMsg::MsgCase::kDrawRsp:
-            Transition(msg.drawrsp()); return;
+            Transition(msg.drawrsp());
+            return;
         case NotifyMsg::MsgCase::kSkip:
-            Transition(msg.skip()); return;
+            Transition(msg.skip());
+            return;
         case NotifyMsg::MsgCase::kPlay:
-            Transition(msg.play()); return;
-        /// TODO: handle other cases
+            Transition(msg.play());
+            return;
+            /// TODO: handle other cases
     }
     throw std::runtime_error("Unsupported msg type");
 }
 
-void StateMachine::Transition(const GameStart &msg)
-{
+void StateMachine::Transition(const GameStart &msg) {
     Logger::Log(msg);
     Logger::LogState(mState);
     auto &gameState = mState.mGameState;
@@ -93,8 +94,7 @@ void StateMachine::Transition(const GameStart &msg)
     Logger::LogState(mState);
 }
 
-void StateMachine::Transition(const Draw &msg)
-{
+void StateMachine::Transition(const Draw &msg) {
     Logger::Log(msg);
     Logger::LogState(mState);
     assert(mState.mGameState.mCardsNumToDraw == msg.number());
@@ -106,12 +106,12 @@ void StateMachine::Transition(const Draw &msg)
     Logger::LogState(mState);
 }
 
-void StateMachine::Transition(const DrawRsp &msg)
-{
+void StateMachine::Transition(const DrawRsp &msg) {
     Logger::Log(msg);
     Logger::LogState(mState);
     assert(mState.mGameState.IsMyTurn());
-    auto grpcCards = Common::Util::ConvertGrpcRepeatedPtrFieldToVector(msg.cards());
+    auto grpcCards =
+        Common::Util::ConvertGrpcRepeatedPtrFieldToVector(msg.cards());
 
     std::vector<Card> cards;
     for (auto card : grpcCards) {
@@ -121,8 +121,7 @@ void StateMachine::Transition(const DrawRsp &msg)
     Logger::LogState(mState);
 }
 
-void StateMachine::Transition(const Skip &msg)
-{
+void StateMachine::Transition(const Skip &msg) {
     Logger::Log(msg);
     Logger::LogState(mState);
     if (mState.mGameState.IsMyTurn()) {
@@ -133,8 +132,7 @@ void StateMachine::Transition(const Skip &msg)
     Logger::LogState(mState);
 }
 
-void StateMachine::Transition(const Play &msg)
-{
+void StateMachine::Transition(const Play &msg) {
     Logger::Log(msg);
     Logger::LogState(mState);
     Card card = msg.card();
@@ -143,8 +141,9 @@ void StateMachine::Transition(const Play &msg)
     }
     // if card is not wild, nextColor is certainly the same with card's color
     // otherwise, nextColor indicates the next color.
-    // NOTE: color should be attached after updating SelfState because 
-    // we need to erase the card just played from handcards when updating SelfState
+    // NOTE: color should be attached after updating SelfState because
+    // we need to erase the card just played from handcards when updating
+    // SelfState
     card.mColor = msg.nextcolor();
     auto &curPlayer = mState.mPlayerStates[mState.mGameState.mCurrentPlayer];
     curPlayer.UpdateAfterPlay(card);
@@ -155,4 +154,4 @@ void StateMachine::Transition(const Play &msg)
     Logger::LogState(mState);
 }
 
-}}
+}}  // namespace SailGame::Uno

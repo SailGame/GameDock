@@ -1,7 +1,8 @@
 #pragma once
 
-#include <ftxui/component/component.hpp>
 #include <sailgame/common/types.h>
+
+#include <ftxui/component/component.hpp>
 
 #include "../core/component.h"
 
@@ -22,4 +23,4 @@ public:
 
     virtual GameType GetGameType() const = 0;
 };
-}}
+}}  // namespace SailGame::Dock

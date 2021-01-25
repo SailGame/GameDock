@@ -1,16 +1,17 @@
 #pragma once
 
-#include <ftxui/component/container.hpp>
-#include <ftxui/component/component.hpp>
-#include <ftxui/component/button.hpp>
-#include <sailgame_pb/core/types.pb.h>
 #include <sailgame/common/core_msg_builder.h>
+#include <sailgame_pb/core/types.pb.h>
 
-#include "../core/component.h"
-#include "../util/dom.hpp"
+#include <ftxui/component/button.hpp>
+#include <ftxui/component/component.hpp>
+#include <ftxui/component/container.hpp>
+
+#include "../component/empty_component.hpp"
 #include "../component/game_settings_ctrl.hpp"
 #include "../component/poly_component.hpp"
-#include "../component/empty_component.hpp"
+#include "../core/component.h"
+#include "../util/dom.hpp"
 
 namespace SailGame { namespace Dock {
 
@@ -63,18 +64,17 @@ public:
     void Update() {
         mReadyToggleButton.label = mIsReady ? L"Cancel" : L"Ready";
         if (GetState().IsOwner()) {
-        // if (true) {
+            // if (true) {
             if (mEmptyComponent.Active()) {
                 // cannot write like mSetButton.TakeFocus()
-                // because when the user is granted ownership, 
+                // because when the user is granted ownership,
                 // his focus could be elsewhere.
                 mSettingButtonsContainer.SetActiveChild(&mSetButton);
             }
         }
 
         if (!GetState().mRoomDetails.gamename().empty() &&
-            !mGameSettingsController.HasComponent()) 
-        {
+            !mGameSettingsController.HasComponent()) {
             /// TODO: switch GameSettingsController if change game
             mGameSettingsController.SetComponent(
                 GameAttrFactory::Create(GetState().mRoomDetails.gamename())
@@ -93,47 +93,25 @@ public:
             return hbox();
         }
 
-        auto topBar = hbox({
-            text(L"roomId: "),
-            text(to_wstring(details.roomid())),
-            filler(),
-            text(L"game: "),
-            text(to_wstring(details.gamename()))
-        });
+        auto topBar = hbox(
+            {text(L"roomId: "), text(to_wstring(details.roomid())), filler(),
+             text(L"game: "), text(to_wstring(details.gamename()))});
 
-        auto playerList = vbox({
-            text(L"Player List"),
-            separator(),
-            Dom::MapVectorToVBox(
-                details.user(),
-                &Dom::RoomUserToHBox
-            )
-        }) | flex | width(25);
+        auto playerList =
+            vbox({text(L"Player List"), separator(),
+                  Dom::MapVectorToVBox(details.user(), &Dom::RoomUserToHBox)}) |
+            flex | width(25);
 
-        auto roomDetail = vbox({
-            text(L"Room Detail"),
-            separator(),
-            text(L"Game settings") | bold,
-            mGameSettingsContainer.Render()
-        }) | xflex;
+        auto roomDetail = vbox({text(L"Room Detail"), separator(),
+                                text(L"Game settings") | bold,
+                                mGameSettingsContainer.Render()}) |
+                          xflex;
 
-        auto doc = vbox({
-            topBar,
-            separator(),
-            hbox({
-                filler(),
-                mReadyToggleButton.Render(),
-                filler(),
-                mExitRoomButton.Render(),
-                filler()
-            }),
-            separator(),
-            hbox({
-                playerList,
-                separator(),
-                roomDetail                    
-            }) | yflex
-        });
+        auto doc = vbox({topBar, separator(),
+                         hbox({filler(), mReadyToggleButton.Render(), filler(),
+                               mExitRoomButton.Render(), filler()}),
+                         separator(),
+                         hbox({playerList, separator(), roomDetail}) | yflex});
 
         return doc | range(80, 25) | border | center;
     }
@@ -147,8 +125,7 @@ private:
     void ToggleReady() {
         if (!mIsReady) {
             mUIProxy->OperationInRoom(Ready::READY);
-        }
-        else {
+        } else {
             mUIProxy->OperationInRoom(Ready::CANCEL);
         }
         mIsReady = !mIsReady;
@@ -173,8 +150,7 @@ private:
         auto roomPassword = "";
         mUIProxy->ControlRoom(roomId, gameName, roomPassword, results);
         mSetButton.TakeFocus();
-        mGameSettingsController.Invoke(
-            &GameSettingsController::ReadOnlyMode);
+        mGameSettingsController.Invoke(&GameSettingsController::ReadOnlyMode);
     }
 
     void QuitControlMode() {
@@ -199,4 +175,4 @@ public:
     Button mSaveChangeButton{L"Save"};
     Button mCancelChangeButton{L"Cancel"};
 };
-}}
+}}  // namespace SailGame::Dock

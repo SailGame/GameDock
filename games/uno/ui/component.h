@@ -2,8 +2,8 @@
 
 #include <ftxui/component/container.hpp>
 
-#include "../../../dock/core/ui_proxy.h"
 #include "../../../dock/core/component.h"
+#include "../../../dock/core/ui_proxy.h"
 #include "../core/state.h"
 
 namespace SailGame { namespace Uno {
@@ -19,4 +19,4 @@ public:
     }
 };
 
-}}
+}}  // namespace SailGame::Uno

@@ -1,9 +1,10 @@
 #pragma once
 
-#include <ftxui/component/container.hpp>
-#include <ftxui/component/button.hpp>
 #include <sailgame/common/core_msg_builder.h>
 #include <sailgame_pb/uno/uno.pb.h>
+
+#include <ftxui/component/button.hpp>
+#include <ftxui/component/container.hpp>
 
 #include "../component.h"
 #include "../dom.hpp"
@@ -55,23 +56,20 @@ public:
     Element Render() {
         Update();
         auto handcards = GetState().mSelfState.mHandcards;
-        auto username = GetState().mPlayerStates[
-            GetState().mGameState.mSelfPlayerIndex].mUsername;
+        auto username =
+            GetState()
+                .mPlayerStates[GetState().mGameState.mSelfPlayerIndex]
+                .mUsername;
         auto timeElapsed = GetState().mGameState.mTimeElapsed;
 
-        auto doc = vbox({
-            Dom::PlayerBox(to_wstring(username), 
-                Dom::ConvertHandcardsToVBox(handcards, mCursor)),
-            Dom::TimeIndicator(timeElapsed),
-            text(L"Specify the next color."),
-            hbox({
-                mRedButton.Render(),
-                mYellowButton.Render(),
-                mGreenButton.Render(),
-                mBlueButton.Render(),
-                mCancelButton.Render()
-            }) | hcenter
-        });
+        auto doc = vbox(
+            {Dom::PlayerBox(to_wstring(username),
+                            Dom::ConvertHandcardsToVBox(handcards, mCursor)),
+             Dom::TimeIndicator(timeElapsed), text(L"Specify the next color."),
+             hbox({mRedButton.Render(), mYellowButton.Render(),
+                   mGreenButton.Render(), mBlueButton.Render(),
+                   mCancelButton.Render()}) |
+                 hcenter});
         return doc;
     }
 
@@ -84,11 +82,11 @@ private:
     void Specify(CardColor nextColor) {
         // here the card can be played certainly
         auto cardToPlay = GetState().mSelfState.mHandcards.At(mCursor);
-        mUIProxy->OperationInRoom(MsgBuilder::CreatePlay<UserOperation>(
-            cardToPlay, nextColor));
+        mUIProxy->OperationInRoom(
+            MsgBuilder::CreatePlay<UserOperation>(cardToPlay, nextColor));
     }
 
-    void Timeout() { 
+    void Timeout() {
         if (!mHasTimeout) {
             // default to red
             Specify(CardColor::RED);
@@ -100,7 +98,7 @@ public:
     int mCursor{0};
     bool mHasTimeout{false};
 
-// private:
+    // private:
 public:
     Container mContainer{Container::Horizontal()};
     Button mRedButton{L"Red"};
@@ -109,4 +107,4 @@ public:
     Button mBlueButton{L"Blue"};
     Button mCancelButton{L"Cancel"};
 };
-}}
+}}  // namespace SailGame::Uno

@@ -1,10 +1,11 @@
 #pragma once
 
-#include <memory>
 #include <sailgame/common/types.h>
 
-#include "game_attr.h"
+#include <memory>
+
 #include "../../games/uno/core/game_attr.h"
+#include "game_attr.h"
 
 namespace SailGame { namespace Dock {
 
@@ -28,4 +29,4 @@ public:
     }
 };
 
-}}
+}}  // namespace SailGame::Dock

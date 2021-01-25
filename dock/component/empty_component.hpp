@@ -14,4 +14,4 @@ public:
 
     bool OnEvent(Event) override { return false; }
 };
-}}
+}}  // namespace SailGame::Dock

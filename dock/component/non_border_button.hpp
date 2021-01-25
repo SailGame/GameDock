@@ -17,4 +17,4 @@ public:
             return ftxui::text(label);
     }
 };
-}}
+}}  // namespace SailGame::Dock

@@ -1,7 +1,7 @@
 #pragma once
 
-#include <gtest/gtest.h>
 #include <gmock/gmock-matchers.h>
+#include <gtest/gtest.h>
 
 namespace SailGame { namespace Test {
 
@@ -25,4 +25,4 @@ MATCHER_P2(ReadyMatcher, token, ready, "") {
 
 MATCHER_P(ListenArgsMatcher, token, "") { return arg.token() == token; }
 
-}}
+}}  // namespace SailGame::Test

@@ -2,8 +2,8 @@
 
 #include <ftxui/component/component.hpp>
 
-#include "ui_proxy.h"
 #include "state.h"
+#include "ui_proxy.h"
 
 namespace SailGame { namespace Dock {
 
@@ -25,4 +25,4 @@ public:
     }
 };
 
-}}
+}}  // namespace SailGame::Dock

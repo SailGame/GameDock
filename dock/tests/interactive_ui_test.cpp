@@ -1,4 +1,5 @@
 #include <gtest/gtest.h>
+
 #include "screen_fixture.h"
 
 int main(int argc, char **argv) {
@@ -16,14 +17,12 @@ public:
         ScreenFixture::SetUp();
 
         // Login
-        auto loginRet = CoreMsgBuilder::CreateLoginRet(ErrorNumber::OK, "tkn", 
-            CoreMsgBuilder::CreateAccount("tbc", 147));
+        auto loginRet = CoreMsgBuilder::CreateLoginRet(
+            ErrorNumber::OK, "tkn", CoreMsgBuilder::CreateAccount("tbc", 147));
         EXPECT_CALL(*mMockStub, Login(_, _, _))
             .Times(AnyNumber())
-            .WillRepeatedly(DoAll(
-                SetArgPointee<2>(loginRet), 
-                Return(Status::OK)
-            ));
+            .WillRepeatedly(
+                DoAll(SetArgPointee<2>(loginRet), Return(Status::OK)));
 
         // Listen
         EXPECT_CALL(*mMockStub, ListenRaw(_, _))
@@ -41,11 +40,12 @@ public:
             CoreMsgBuilder::CreateRoom("UNO", 101, {"a", "b", "c"}),
             CoreMsgBuilder::CreateRoom("UNO", 102, {"at", "by", "co"}),
         };
-        auto listRoomRet = CoreMsgBuilder::CreateListRoomRet(
-            ErrorNumber::OK, roomList);
+        auto listRoomRet =
+            CoreMsgBuilder::CreateListRoomRet(ErrorNumber::OK, roomList);
         EXPECT_CALL(*mMockStub, ListRoom(_, _, _))
             .Times(AnyNumber())
-            .WillRepeatedly(DoAll(SetArgPointee<2>(listRoomRet), Return(Status::OK)));
+            .WillRepeatedly(
+                DoAll(SetArgPointee<2>(listRoomRet), Return(Status::OK)));
 
         // JoinRoom
 
@@ -53,28 +53,31 @@ public:
         auto exitRoomRet = CoreMsgBuilder::CreateExitRoomRet(ErrorNumber::OK);
         EXPECT_CALL(*mMockStub, ExitRoom(_, _, _))
             .Times(AnyNumber())
-            .WillRepeatedly(DoAll(SetArgPointee<2>(exitRoomRet), Return(Status::OK)));
+            .WillRepeatedly(
+                DoAll(SetArgPointee<2>(exitRoomRet), Return(Status::OK)));
 
         // QueryRoom
-        auto roomDetails = CoreMsgBuilder::CreateRoomDetails("UNO", 101, {
-            CoreMsgBuilder::CreateRoomUser("a", RoomUser::READY),
-            CoreMsgBuilder::CreateRoomUser("b", RoomUser::READY),
-            CoreMsgBuilder::CreateRoomUser("c", RoomUser::PREPARING),
-        }, Uno::MsgBuilder::CreateStartGameSettings(
-            true, true, false, false, 15));
-        auto queryRoomRet = CoreMsgBuilder::CreateQueryRoomRet(ErrorNumber::OK,
-            roomDetails);
+        auto roomDetails = CoreMsgBuilder::CreateRoomDetails(
+            "UNO", 101,
+            {
+                CoreMsgBuilder::CreateRoomUser("a", RoomUser::READY),
+                CoreMsgBuilder::CreateRoomUser("b", RoomUser::READY),
+                CoreMsgBuilder::CreateRoomUser("c", RoomUser::PREPARING),
+            },
+            Uno::MsgBuilder::CreateStartGameSettings(true, true, false, false,
+                                                     15));
+        auto queryRoomRet =
+            CoreMsgBuilder::CreateQueryRoomRet(ErrorNumber::OK, roomDetails);
         EXPECT_CALL(*mMockStub, QueryRoom(_, _, _))
             .Times(AnyNumber())
             .WillRepeatedly(DoAll(
                 // Return should be the last action of DoAll
-                SetArgPointee<2>(queryRoomRet), 
+                SetArgPointee<2>(queryRoomRet),
                 [this, roomDetails] {
-                    CoreMsg(
-                        CoreMsgBuilder::CreateBroadcastMsgByRoomDetails(
-                            0, 0, 0, roomDetails)); },
-                Return(Status::OK)
-            ));
+                    CoreMsg(CoreMsgBuilder::CreateBroadcastMsgByRoomDetails(
+                        0, 0, 0, roomDetails));
+                },
+                Return(Status::OK)));
 
         // OperationInRoom
         auto opRet = CoreMsgBuilder::CreateOperationInRoomRet(ErrorNumber::OK);
@@ -104,7 +107,8 @@ public:
 
 TEST_F(InteractiveUIFixture, Run) {
     /// TODO: add an Exit button
-    while (true) {}
+    while (true) {
+    }
 }
 
-}}
+}}  // namespace SailGame::Test

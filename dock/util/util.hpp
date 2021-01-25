@@ -9,8 +9,7 @@ using ::Core::RoomDetails;
 class DockUtil {
 public:
     static std::vector<std::string> GetUsernamesFromRoomDetails(
-        const RoomDetails &details)
-    {
+        const RoomDetails &details) {
         std::vector<std::string> usernames;
         for (const auto &roomUser : details.user()) {
             usernames.push_back(roomUser.username());
@@ -30,4 +29,4 @@ public:
     }
 };
 
-}}
+}}  // namespace SailGame::Dock

@@ -1,4 +1,5 @@
 #include <sailgame_pb/core/types.pb.h>
+
 #include <ftxui/screen/string.hpp>
 
 #include "../matcher.h"
@@ -28,7 +29,8 @@ TEST_F(LoginScreenFixture, LoginSuccess) {
     mDock.mLoginScreen.mPasswordInput.content = to_wstring(password);
     UserEvent();
 
-    auto loginRet = CoreMsgBuilder::CreateLoginRet(ErrorNumber::OK, token, 
+    auto loginRet = CoreMsgBuilder::CreateLoginRet(
+        ErrorNumber::OK, token,
         CoreMsgBuilder::CreateAccount(username, points));
     EXPECT_CALL(*mMockStub, Login(_, LoginArgsMatcher(username, password), _))
         .Times(1)
@@ -49,10 +51,10 @@ TEST_F(LoginScreenFixture, LoginFailure) {
     mDock.mLoginScreen.mUsernameInput.content = to_wstring(username);
     mDock.mLoginScreen.mPasswordInput.content = to_wstring(password);
     UserEvent();
-    
+
     // what token and account will return if error number is not ok?
-    auto loginRet = CoreMsgBuilder::CreateLoginRet(ErrorNumber::UnkownError, 
-        "", CoreMsgBuilder::CreateAccount("", 0));
+    auto loginRet = CoreMsgBuilder::CreateLoginRet(
+        ErrorNumber::UnkownError, "", CoreMsgBuilder::CreateAccount("", 0));
     EXPECT_CALL(*mMockStub, Login(_, LoginArgsMatcher(username, password), _))
         .Times(1)
         .WillOnce(DoAll(SetArgPointee<2>(loginRet), Return(Status::OK)));
@@ -62,4 +64,4 @@ TEST_F(LoginScreenFixture, LoginFailure) {
     EXPECT_TRUE(mDock.mLoginScreen.Active());
     EXPECT_FALSE(mDock.mLobbyScreen.Active());
 }
-}}
+}}  // namespace SailGame::Test

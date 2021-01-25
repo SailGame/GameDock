@@ -1,15 +1,15 @@
 #pragma once
 
-#include <sailgame/common/state_machine.h>
 #include <sailgame/common/game_manager.h>
+#include <sailgame/common/state_machine.h>
+
+#include "state.h"
 
 namespace SailGame { namespace Common {
 
 class ClientStateMachine : public IStateMachine {
 public:
-    void TransitionForBroadcastMsg(const BroadcastMsg &msg) {
-        Transition(msg);
-    }
+    void TransitionForBroadcastMsg(const BroadcastMsg &msg) { Transition(msg); }
 
     virtual void SetState(const IState &) = 0;
 
@@ -26,8 +26,7 @@ protected:
 class ClientNetworkInterface : public INetworkInterface {
 public:
     ClientNetworkInterface(const std::shared_ptr<GameCore::StubInterface> &stub)
-        : INetworkInterface(stub)
-    {
+        : INetworkInterface(stub) {
         mListenFunc = [this] {
             while (true) {
                 OnEventHappens(ReceiveMsg());
@@ -36,26 +35,22 @@ public:
     }
 
     static std::shared_ptr<ClientNetworkInterface> Create(
-        const std::shared_ptr<GameCore::StubInterface> &stub) 
-    {
+        const std::shared_ptr<GameCore::StubInterface> &stub) {
         return std::make_shared<ClientNetworkInterface>(stub);
     }
 
     virtual void Connect() override {
-        spdlog::info("[INetworkInterface] Connect invoked.");
+        // spdlog::info("[INetworkInterface] Connect invoked.");
         mStream = mStub->Listen(&mContext, CoreMsgBuilder::CreateListenArgs());
     }
 
-    virtual bool IsConnected() const override {
-        return mStream != nullptr;
-    }
+    virtual bool IsConnected() const override { return mStream != nullptr; }
 
     void OnEventHappens(const BroadcastMsg &msg) {
         mSubscriber->OnEventHappens(std::make_shared<BroadcastMsgEvent>(msg));
     }
 
-    BroadcastMsg ReceiveMsg()
-    {
+    BroadcastMsg ReceiveMsg() {
         BroadcastMsg msg;
         if (mStream->Read(&msg)) {
             return msg;
@@ -65,43 +60,39 @@ public:
             std::cout << "rpc failed." << std::endl;
             std::exit(-1);
         }
-        auto error_msg = "Stream ends normally, which indicates error in core side.";
+        auto error_msg =
+            "Stream ends normally, which indicates error in core side.";
         throw std::runtime_error(error_msg);
         return msg;
     }
 
-#define RpcMethod(RpcName) \
+#define RpcMethod(RpcName)                                        \
     Core::RpcName##Ret RpcName(const Core::RpcName##Args &args) { \
-        RpcName##Ret ret; \
-        ClientContext context; \
-        auto status = mStub->RpcName(&context, args, &ret); \
-        return ret; \
+        RpcName##Ret ret;                                         \
+        ClientContext context;                                    \
+        auto status = mStub->RpcName(&context, args, &ret);       \
+        return ret;                                               \
     }
 
-    RpcMethod(Login)
-    RpcMethod(QueryAccount)
-    RpcMethod(CreateRoom)
-    RpcMethod(ControlRoom)
-    RpcMethod(ListRoom)
-    RpcMethod(JoinRoom)
-    RpcMethod(ExitRoom)
-    RpcMethod(QueryRoom)
-    RpcMethod(OperationInRoom)
-    RpcMethod(Message)
+    RpcMethod(Login) RpcMethod(QueryAccount) RpcMethod(CreateRoom)
+        RpcMethod(ControlRoom) RpcMethod(ListRoom) RpcMethod(JoinRoom)
+            RpcMethod(ExitRoom) RpcMethod(QueryRoom) RpcMethod(OperationInRoom)
+                RpcMethod(Message)
 #undef RpcMethod
 
-private:
-    std::shared_ptr<ClientReaderInterface<BroadcastMsg>> mStream;
+                    private
+        : std::shared_ptr<ClientReaderInterface<BroadcastMsg>> mStream;
 };
 
 class ClientGameManager : public IGameManager {
 public:
-    ClientGameManager(const std::shared_ptr<EventLoop> &eventLoop, 
+    ClientGameManager(
+        const std::shared_ptr<EventLoop> &eventLoop,
         const std::shared_ptr<ClientStateMachine> &stateMachine,
         const std::shared_ptr<ClientNetworkInterface> &networkInterface)
-        : IGameManager(eventLoop), mStateMachine(stateMachine),
-        mNetworkInterface(networkInterface)
-    {
+        : IGameManager(eventLoop),
+          mStateMachine(stateMachine),
+          mNetworkInterface(networkInterface) {
         mNetworkInterface->SetSubscriber(this);
     }
 
@@ -110,7 +101,7 @@ public:
         IGameManager::Start();
     }
 
-    virtual void Stop() override { 
+    virtual void Stop() override {
         mNetworkInterface->Stop();
         IGameManager::Stop();
     }
@@ -126,10 +117,9 @@ public:
         mNetworkInterface->AsyncListen();
         IGameManager::Start();
     }
-    
+
     void SwitchStateMachine(
-        const std::shared_ptr<ClientStateMachine> &newStateMachine) 
-    {
+        const std::shared_ptr<ClientStateMachine> &newStateMachine) {
         auto oldStateMachine = mStateMachine;
         mStateMachine = newStateMachine;
         mStateMachine->SwitchFrom(*oldStateMachine);
@@ -150,4 +140,4 @@ private:
     std::shared_ptr<ClientNetworkInterface> mNetworkInterface;
 };
 
-}}
+}}  // namespace SailGame::Common
