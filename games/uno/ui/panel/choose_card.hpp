@@ -65,6 +65,9 @@ public:
         if (!GetState().mGameState.IsMyTurn()) {
             OnNextTurn();
         }
+        if (GetState().mGameState.mTimeElapsed >= 15) {
+            Timeout();
+        }
     }
 
     Element Render() {
@@ -72,12 +75,14 @@ public:
         auto handcards = GetState().mSelfState.mHandcards;
         auto username = GetState().mPlayerStates[
             GetState().mGameState.mSelfPlayerIndex].mUsername;
+        auto timeElapsed = GetState().mGameState.mTimeElapsed;
         mCursor = (handcards.Number() == 0 ? -1
             : Util::Wrap(mCursor, handcards.Number()));
 
         auto doc = vbox({
             Dom::PlayerBox(to_wstring(username), 
                 mHandcardsSelector.Render(handcards, mCursor)),
+            Dom::TimeIndicator(timeElapsed),
             text(mHintText),
             mCancelButton.Render() | hcenter
         });
@@ -87,6 +92,7 @@ public:
     void TakeFocus() override {
         mHintText = L"";
         mHandcardsSelector.TakeFocus();
+        mHasTimeout = false;
         // Component::TakeFocus();
     }
 
@@ -111,9 +117,21 @@ private:
         }
     }
 
+    void Timeout() { 
+        if (!mHasTimeout) {
+            OnCancel();
+            mHasTimeout = true;
+        }
+    }
+
 public:
     int mCursor{0};
     std::wstring mHintText;
+    // if don't use this flag, there may be a potential repetitive timeout:
+    // because we change focus after receiving msg from core,
+    // if before msg comes, refresher posts an event again
+    // Timeout method will be invoked twice.
+    bool mHasTimeout{false};
 
 public:
 // private:

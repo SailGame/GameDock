@@ -47,6 +47,9 @@ public:
         if (!GetState().mGameState.IsMyTurn()) {
             OnNextTurn();
         }
+        if (GetState().mGameState.mTimeElapsed >= 15) {
+            Timeout();
+        }
     }
 
     Element Render() {
@@ -54,10 +57,12 @@ public:
         auto handcards = GetState().mSelfState.mHandcards;
         auto username = GetState().mPlayerStates[
             GetState().mGameState.mSelfPlayerIndex].mUsername;
+        auto timeElapsed = GetState().mGameState.mTimeElapsed;
 
         auto doc = vbox({
             Dom::PlayerBox(to_wstring(username), 
                 Dom::ConvertHandcardsToVBox(handcards, mCursor)),
+            Dom::TimeIndicator(timeElapsed),
             text(L"Specify the next color."),
             hbox({
                 mRedButton.Render(),
@@ -70,6 +75,11 @@ public:
         return doc;
     }
 
+    void TakeFocus() override {
+        mHasTimeout = false;
+        UnoComponent::TakeFocus();
+    }
+
 private:
     void Specify(CardColor nextColor) {
         // here the card can be played certainly
@@ -78,8 +88,17 @@ private:
             cardToPlay, nextColor));
     }
 
+    void Timeout() { 
+        if (!mHasTimeout) {
+            // default to red
+            Specify(CardColor::RED);
+            mHasTimeout = true;
+        }
+    }
+
 public:
     int mCursor{0};
+    bool mHasTimeout{false};
 
 // private:
 public:

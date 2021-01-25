@@ -88,9 +88,12 @@ public:
     Element Render() override {
         auto selfIndex = GetState().mGameState.mSelfPlayerIndex;
         auto lastPlayedCard = GetState().mGameState.mLastPlayedCard;
+        auto curPlayer = GetState().mGameState.mCurrentPlayer;
+        auto timeElapsed = GetState().mGameState.mTimeElapsed;
         auto doc = vbox({
             Dom::OtherPlayersDoc(
-                GetState().mPlayerStates, selfIndex, lastPlayedCard),
+                GetState().mPlayerStates, selfIndex, lastPlayedCard,
+                curPlayer, timeElapsed),
             mPanelContainer.Render() | size(WIDTH, EQUAL, 60) | hcenter
         });
         return doc | size(WIDTH, EQUAL, 80) | border | center;
@@ -100,10 +103,27 @@ public:
         return dynamic_cast<const WholeState &>(mUIProxy->GetState());
     }
 
+    bool OnEvent(Event event) override {
+        if (event == Event::Custom) {
+            mTick++;
+            auto ticksPerSecond = static_cast<int>(1 / 0.05);
+            if (mTick == ticksPerSecond) {
+                mTick = 0;
+                auto state = GetState();
+                /// FIXME: concurrency issue
+                state.mGameState.mTimeElapsed++;
+                mUIProxy->SetState(state);
+            }
+            return true;
+        }
+        return Dock::GameScreen::OnEvent(event);
+    }
+
 private:
     // indicate whether SpecifyColorPanel is switched from ChooseCardPanel
     // or PlayImmediatelyPanel, to return correctly after cancel.
     bool mIsFromChooseCard;
+    int mTick{0};
 
 public:
     Container mPanelContainer{Container::Tab(nullptr)};

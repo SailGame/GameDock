@@ -44,6 +44,9 @@ public:
         }
         mHandcardsNumInLastFrame = GetState().mSelfState.mHandcards.Number();
         UpdatePassButtonLabel();
+        if (GetState().mGameState.mTimeElapsed >= 15) {
+            Timeout();
+        }
     }
 
     Element Render() {
@@ -51,16 +54,24 @@ public:
         auto handcards = GetState().mSelfState.mHandcards;
         auto username = GetState().mPlayerStates[
             GetState().mGameState.mSelfPlayerIndex].mUsername;
+        auto timeElapsed = GetState().mGameState.mTimeElapsed;
+        spdlog::info("time elapsed: {}", timeElapsed);
 
         auto doc = vbox({
             Dom::PlayerBox(to_wstring(username), 
                 Dom::ConvertHandcardsToVBox(handcards)),
+            Dom::TimeIndicator(timeElapsed),
             hbox({
                 mPlayButton.Render(),
                 mPassButton.Render()
             }) | hcenter
         });
         return doc;
+    }
+
+    void TakeFocus() override {
+        mHasTimeout = false;
+        UnoComponent::TakeFocus();
     }
 
 private:
@@ -95,9 +106,17 @@ private:
         }
     }
 
+    void Timeout() { 
+        if (!mHasTimeout) {
+            Pass();
+            mHasTimeout = true;
+        }
+    }
+
 private:
     // used to detect DrawRsp msg
     int mHandcardsNumInLastFrame{-1};
+    bool mHasTimeout{false};
 
 // private:
 public:

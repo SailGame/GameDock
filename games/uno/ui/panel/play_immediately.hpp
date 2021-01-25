@@ -32,6 +32,9 @@ public:
         if (!GetState().mGameState.IsMyTurn()) {
             OnNextTurn();
         }
+        if (GetState().mGameState.mTimeElapsed >= 15) {
+            Timeout();
+        }
     }
 
     Element Render() {
@@ -40,10 +43,12 @@ public:
         auto username = GetState().mPlayerStates[
             GetState().mGameState.mSelfPlayerIndex].mUsername;
         auto cursor = GetState().mSelfState.mIndexOfNewlyDrawn;
+        auto timeElapsed = GetState().mGameState.mTimeElapsed;
 
         auto doc = vbox({
             Dom::PlayerBox(to_wstring(username), 
                 Dom::ConvertHandcardsToVBox(handcards, cursor)),
+            Dom::TimeIndicator(timeElapsed),
             text(mHintText),
             hbox({
                 mYesButton.Render(),
@@ -55,6 +60,7 @@ public:
 
     void TakeFocus() override {
         mHintText = L"Whether to play the card just drawn?";
+        mHasTimeout = false;
         Component::TakeFocus();
     }
     
@@ -84,8 +90,16 @@ private:
         mUIProxy->OperationInRoom(MsgBuilder::CreateSkip<UserOperation>());
     }
 
+    void Timeout() { 
+        if (!mHasTimeout) {
+            Skip();
+            mHasTimeout = true;
+        }
+    }
+
 public:
     std::wstring mHintText;
+    bool mHasTimeout{false};
 
 public:
     Container mContainer{Container::Horizontal()};

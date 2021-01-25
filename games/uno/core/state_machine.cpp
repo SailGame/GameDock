@@ -80,13 +80,13 @@ void StateMachine::Transition(const GameStart &msg)
 
     auto &selfState = mState.mSelfState;
     /// XXX: for test
-    selfState.mHandcards.Draw(msg.inithandcards(0));
-    // for (auto card : msg.inithandcards()) {
-    //     selfState.mHandcards.Draw(Card{card});
-    // }
+    // selfState.mHandcards.Draw(msg.inithandcards(0));
+    for (auto card : msg.inithandcards()) {
+        selfState.mHandcards.Draw(Card{card});
+    }
 
-    auto initHandcardsNum = 1;
-    // auto initHandcardsNum = 7;
+    // auto initHandcardsNum = 1;
+    auto initHandcardsNum = 7;
     for (auto &playerState : mState.mPlayerStates) {
         playerState.mRemainingHandCardsNum = initHandcardsNum;
     }

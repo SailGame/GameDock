@@ -53,10 +53,10 @@ void GameState::UpdateAfterPlay(Card card)
 
 void GameState::NextPlayer()
 {
+    mTimeElapsed = 0;
     mCurrentPlayer = mIsInClockwise ? 
         Util::Wrap(mCurrentPlayer + 1, mPlayerNum) :
         Util::Wrap(mCurrentPlayer - 1, mPlayerNum);
-    // mTimeElapsed = 0;
 }
 
 void SelfState::UpdateAfterDrawRsp(const std::vector<Card> &cards)

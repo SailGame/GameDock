@@ -16,18 +16,42 @@ using Common::Util;
 
 class Dom {
 public:
+    static Element TimeIndicator(int current = -1, int total = 15) {
+        if (current < 0) {
+            return hbox();
+        }
+        std::wstring indicator = L"[";
+        for (auto i = 0; i < total; i++) {
+            if (i < current) {
+                indicator += L"=";
+            }
+            else if (i == current) {
+                indicator += L">";
+            }
+            else {
+                indicator += L" ";
+            }
+        }
+        indicator += L"]";
+        return text(indicator) | hcenter;
+    }
+
     static Element PlayerBox(const std::wstring &username, 
-        const Element &doc) 
+        const Element &doc, int timeElapsed = -1) 
     {
         return vbox({
-            text(username) | hcenter,
-            separator(),
-            doc
-        }) | border | hcenter;
+            vbox({
+                text(username) | hcenter,
+                separator(),
+                doc
+            }) | border,
+            TimeIndicator(timeElapsed)
+        }) | hcenter;
     }
 
     static Element OtherPlayerBox(const std::wstring &username, 
-        int cardsRemained, bool doPlayInLastRound, Card lastPlayed) 
+        int cardsRemained, bool doPlayInLastRound, Card lastPlayed, 
+        int timeElapsed = -1) 
     {
         auto lastPlayedText =
             !doPlayInLastRound ? L"" : to_wstring(lastPlayed.ToString());
@@ -36,21 +60,27 @@ public:
             vbox({
                 text(L" cards remained: " + to_wstring(cardsRemained) + L" "),
                 text(L" last played: " + lastPlayedText + L" "),
-            }));
+            }), timeElapsed);
     }
 
-    static Element OtherPlayerBox(const PlayerState &state) {
+    static Element OtherPlayerBox(const PlayerState &state, int timeElapsed = -1) {
         return OtherPlayerBox(to_wstring(state.mUsername), 
             state.mRemainingHandCardsNum, state.mDoPlayInLastRound,
-            state.mLastPlayedCard);
+            state.mLastPlayedCard, timeElapsed);
     }
 
     static Element OtherPlayersDoc(const std::vector<PlayerState> &states, 
-        int selfIndex, Card lastPlayedCard) 
+        int selfIndex, Card lastPlayedCard, int curPlayer, int timeElapsed) 
     {
         // assume there are only 2 players
+        if (curPlayer == selfIndex) {
+            return vbox({
+                OtherPlayerBox(states[Util::Wrap(selfIndex - 1, 2)]),
+                ConvertCardToFtxText(lastPlayedCard) | hcenter
+            });
+        }
         return vbox({
-            OtherPlayerBox(states[Util::Wrap(selfIndex - 1, 2)]),
+            OtherPlayerBox(states[Util::Wrap(selfIndex - 1, 2)], timeElapsed),
             ConvertCardToFtxText(lastPlayedCard) | hcenter
         });
 
