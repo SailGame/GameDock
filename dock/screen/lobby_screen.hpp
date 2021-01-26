@@ -167,10 +167,6 @@ private:
         auto ret = mUIProxy->QueryRoom(roomId);
         assert(ret.err() == ErrorNumber::OK);
         mDetails = ret.room();
-        /// XXX: Core bug
-        mDetails.mutable_gamesetting()->PackFrom(
-            Uno::MsgBuilder::CreateStartGameSettings(true, true, false, false,
-                                                     15));
     }
 
     void QueryRoomByIndex(int roomIndex) {

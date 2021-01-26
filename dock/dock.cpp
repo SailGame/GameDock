@@ -35,11 +35,7 @@ Dock::Dock(const std::shared_ptr<UIProxy> &uiProxy) : mUIProxy(uiProxy) {
         auto ret = mUIProxy->QueryRoom(roomId);
         assert(ret.err() == ErrorNumber::OK);
         auto state = dynamic_cast<const State &>(mUIProxy->GetState());
-        /// XXX: for now, ret from Core doesn't include gameSetting
         state.mRoomDetails = ret.room();
-        state.mRoomDetails.mutable_gamesetting()->PackFrom(
-            Uno::MsgBuilder::CreateStartGameSettings(true, true, false, false,
-                                                     15));
         mUIProxy->SetState(state);
         mRoomScreen.TakeFocus();
     };

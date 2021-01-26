@@ -65,10 +65,6 @@ protected:
 private:
     void Transition(const RoomDetails &details) {
         mState.mRoomDetails = details;
-        /// XXX: for now, ret from Core doesn't include gameSetting
-        mState.mRoomDetails.mutable_gamesetting()->PackFrom(
-            Uno::MsgBuilder::CreateStartGameSettings(true, true, false, false,
-                                                     15));
         if (mState.AreAllUsersReady()) {
             spdlog::info("[Dock StateMachine] All users are ready");
             OnGameStart(mState.GetGameType());
