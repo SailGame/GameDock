@@ -51,7 +51,9 @@ jobs:
     - name: Cache externals
       uses: actions/cache@v2
       with:
-        path: ${{runner.workspace}}/build/externals
+        path: |
+          ${{runner.workspace}}/build/externals
+          $MY_INSTALL_DIR
         key: ${{ runner.os }}-build-${{ matrix.build_type }}-${{ hashFiles('externals/**/CMakeLists.txt') }}
 
     - name: Build
@@ -104,7 +106,9 @@ jobs:
     - name: Cache externals
       uses: actions/cache@v2
       with:
-        path: ${{runner.workspace}}/build/externals
+        path: |
+          ${{runner.workspace}}/build/externals
+          $MY_INSTALL_DIR
         key: ${{ runner.os }}-build-${{ matrix.build_type }}-${{ hashFiles('externals/**/CMakeLists.txt') }}
 
     - name: Build
@@ -118,41 +122,41 @@ jobs:
       shell: bash
       run: ctest -L GameDock
 
-  build-win:
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        os: [windows-latest]
-        build_type: [debug, release]
+  # build-win:
+  #   runs-on: ${{ matrix.os }}
+  #   strategy:
+  #     matrix:
+  #       os: [windows-latest]
+  #       build_type: [debug, release]
 
-    steps:
-    - uses: actions/checkout@v1
-      with:
-        submodules: 'recursive'
+  #   steps:
+  #   - uses: actions/checkout@v1
+  #     with:
+  #       submodules: 'recursive'
 
-    - name: Create Build Environment
-      working-directory: ${{runner.workspace}}
-      run: |
-        cmake -E make_directory build
+  #   - name: Create Build Environment
+  #     working-directory: ${{runner.workspace}}
+  #     run: |
+  #       cmake -E make_directory build
 
-    - name: Configure CMake
-      shell: bash
-      working-directory: ${{runner.workspace}}/build/
-      run: cmake $GITHUB_WORKSPACE -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
+  #   - name: Configure CMake
+  #     shell: bash
+  #     working-directory: ${{runner.workspace}}/build/
+  #     run: cmake $GITHUB_WORKSPACE -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
 
-    - name: Cache externals
-      uses: actions/cache@v2
-      with:
-        path: ${{runner.workspace}}/build/externals
-        key: ${{ runner.os }}-build-${{ matrix.build_type }}-${{ hashFiles('externals/**/CMakeLists.txt') }}
+  #   - name: Cache externals
+  #     uses: actions/cache@v2
+  #     with:
+  #       path: ${{runner.workspace}}/build/externals
+  #       key: ${{ runner.os }}-build-${{ matrix.build_type }}-${{ hashFiles('externals/**/CMakeLists.txt') }}
 
-    - name: Build
-      working-directory: ${{runner.workspace}}/build/
-      shell: bash
-      run: 
-        cmake --build . --config ${{ matrix.build_type }} -j 4
+  #   - name: Build
+  #     working-directory: ${{runner.workspace}}/build/
+  #     shell: bash
+  #     run: 
+  #       cmake --build . --config ${{ matrix.build_type }} -j 4
 
-    - name: Test
-      working-directory: ${{runner.workspace}}/build/
-      shell: bash
-      run: ctest -L GameDock
+  #   - name: Test
+  #     working-directory: ${{runner.workspace}}/build/
+  #     shell: bash
+  #     run: ctest -L GameDock
