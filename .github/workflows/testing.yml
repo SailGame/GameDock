@@ -53,7 +53,7 @@ jobs:
       with:
         path: |
           ${{runner.workspace}}/build/externals
-          $MY_INSTALL_DIR
+          ${MY_INSTALL_DIR}
         key: ${{ runner.os }}-build-${{ matrix.build_type }}-${{ hashFiles('externals/**/CMakeLists.txt') }}
 
     - name: Build
@@ -108,7 +108,7 @@ jobs:
       with:
         path: |
           ${{runner.workspace}}/build/externals
-          $MY_INSTALL_DIR
+          ${MY_INSTALL_DIR}
         key: ${{ runner.os }}-build-${{ matrix.build_type }}-${{ hashFiles('externals/**/CMakeLists.txt') }}
 
     - name: Build

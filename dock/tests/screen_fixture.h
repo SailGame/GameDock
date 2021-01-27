@@ -125,7 +125,7 @@ protected:
     MockClientReader<BroadcastMsg> *mMockStream;
     std::shared_ptr<MockGameCoreStub> mMockStub;
 
-    Dock::Dock mDock;
+    SailGame::Dock::Dock mDock;
     std::unique_ptr<std::thread> mDockThread;
 };
 
