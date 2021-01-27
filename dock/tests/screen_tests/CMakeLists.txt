@@ -14,8 +14,8 @@ add_executable(dock_screen_test ${DOCK_SCREEN_TEST_SRCS})
 target_link_libraries(dock_screen_test dock gtest gmock)
 
 # ctest cannot pass these ui tests, don't know why
-# include(GoogleTest)
-# gtest_discover_tests(dock_screen_test PROPERTIES LABELS GameDock)
+include(GoogleTest)
+gtest_discover_tests(dock_screen_test PROPERTIES LABELS UiTest)
 
 set_target_properties(dock_screen_test 
     PROPERTIES 

@@ -13,8 +13,8 @@ aux_source_directory(. UNO_TEST_SRCS)
 add_executable(uno_test ${UNO_TEST_SRCS})
 target_link_libraries(uno_test dock uno_core gtest gmock)
 
-# include(GoogleTest)
-# gtest_discover_tests(uno_test PROPERTIES LABELS GameDock)
+include(GoogleTest)
+gtest_discover_tests(uno_test PROPERTIES LABELS UiTest)
 
 set_target_properties(uno_test 
     PROPERTIES 
