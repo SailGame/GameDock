@@ -7,8 +7,8 @@
 #include <ftxui/component/container.hpp>
 
 #include "../component.h"
-#include "../dom.hpp"
 #include "../component/colorful_button.hpp"
+#include "../dom.hpp"
 
 namespace SailGame { namespace Uno {
 

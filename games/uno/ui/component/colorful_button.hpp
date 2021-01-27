@@ -11,8 +11,8 @@ class ColorfulButton : public ftxui::Button {
 public:
     ColorfulButton() = default;
 
-    ColorfulButton(const std::wstring &label, ftxui::Color color) 
-        : ftxui::Button(label) , mColor(color) {}
+    ColorfulButton(const std::wstring &label, ftxui::Color color)
+        : ftxui::Button(label), mColor(color) {}
 
     ftxui::Element Render() override {
         if (Focused())
@@ -24,4 +24,4 @@ public:
 private:
     ftxui::Color mColor;
 };
-}}  // namespace SailGame::Dock
+}}  // namespace SailGame::Uno
