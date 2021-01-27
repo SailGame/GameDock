@@ -10,11 +10,7 @@ add_subdirectory(util)
 add_library(${PROJECT_NAME} ${DOCK_SRCS})
 
 target_link_libraries(${PROJECT_NAME} PUBLIC
-  ftxui::screen
-  ftxui::dom
-  ftxui::component
   spdlog::spdlog
-  common_lib
   game_core
 )
 
