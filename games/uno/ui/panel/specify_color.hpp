@@ -8,6 +8,7 @@
 
 #include "../component.h"
 #include "../dom.hpp"
+#include "../component/colorful_button.hpp"
 
 namespace SailGame { namespace Uno {
 
@@ -101,10 +102,10 @@ public:
     // private:
 public:
     Container mContainer{Container::Horizontal()};
-    Button mRedButton{L"Red"};
-    Button mYellowButton{L"Yellow"};
-    Button mGreenButton{L"Green"};
-    Button mBlueButton{L"Blue"};
+    ColorfulButton mRedButton{L"Red", ftxui::Color::Red};
+    ColorfulButton mYellowButton{L"Yellow", ftxui::Color::Yellow};
+    ColorfulButton mGreenButton{L"Green", ftxui::Color::Green};
+    ColorfulButton mBlueButton{L"Blue", ftxui::Color::Blue};
     Button mCancelButton{L"Cancel"};
 };
 }}  // namespace SailGame::Uno

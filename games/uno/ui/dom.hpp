@@ -115,24 +115,23 @@ public:
         return vBox | size(WIDTH, EQUAL, selfBoxWidth) | hcenter;
     }
 
-    static Element ConvertCardToFtxText(Card card) {
-        auto color = Color::Red;
-        switch (card.mColor) {
-            case CardColor::RED:
-                color = Color::Red;
-                break;
-            case CardColor::YELLOW:
-                color = Color::Yellow;
-                break;
-            case CardColor::GREEN:
-                color = Color::Green;
-                break;
-            case CardColor::BLUE:
-                color = Color::Blue;
-                break;
-            default:
-                return text(to_wstring(card.ToString()));
+    static ftxui::Color ConvertCardColorToFtxColor(CardColor color) {
+        switch (color) {
+            case CardColor::RED: return ftxui::Color::Red;
+            case CardColor::YELLOW: return ftxui::Color::Yellow;
+            case CardColor::GREEN: return ftxui::Color::Green;
+            case CardColor::BLUE: return ftxui::Color::Blue;
+            default: return ftxui::Color::Black;
         }
+    }
+
+    static Element ConvertCardToFtxText(Card card) {
+        if (card.mColor == CardColor::BLACK) {
+            // if wild card, show as black in light terminal 
+            // and show as white in dark terminal 
+            return text(to_wstring(card.ToString()));
+        }
+        auto color = ConvertCardColorToFtxColor(card.mColor);
         return text(to_wstring(card.ToString())) | ftxui::color(color);
     }
 
