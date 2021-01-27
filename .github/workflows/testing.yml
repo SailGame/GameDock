@@ -19,17 +19,26 @@ jobs:
         build_type: [debug, release]
     env:
       MY_INSTALL_DIR: ~/.local
+      GRPC_VERSION: 1.32.0
 
     steps:
     - uses: actions/checkout@v1
       with:
         submodules: 'recursive'
 
+    - name: Cache grpc
+      uses: actions/cache@v2
+      id: grpc-cache
+      with:
+        path: ${{env.MY_INSTALL_DIR}}
+        key: ${{ runner.os }}-grpc-${{ env.GRPC_VERSION }}
+
     - name: Set up dependencies
+      if: steps.grpc-cache.outputs.cache-hit != 'true'
       run: |
         sudo apt install -y protobuf-compiler libprotobuf-dev
         mkdir -p $MY_INSTALL_DIR
-        git clone --recurse-submodules -b v1.34.1 https://github.com/grpc/grpc
+        git clone --recurse-submodules -b v${{ env.GRPC_VERSION }} https://github.com/grpc/grpc
         cd grpc
         mkdir -p cmake/build
         pushd cmake/build
@@ -51,9 +60,7 @@ jobs:
     - name: Cache externals
       uses: actions/cache@v2
       with:
-        path: |
-          ${{runner.workspace}}/build/externals
-          ${{env.MY_INSTALL_DIR}}
+        path: ${{ runner.workspace }}/build/externals
         key: ${{ runner.os }}-build-${{ matrix.build_type }}-${{ hashFiles('externals/**/CMakeLists.txt') }}
 
     - name: Build
@@ -75,17 +82,26 @@ jobs:
         build_type: [debug, release]
     env:
       MY_INSTALL_DIR: ~/.local
+      GRPC_VERSION: 1.32.0
 
     steps:
     - uses: actions/checkout@v1
       with:
         submodules: 'recursive'
+      
+    - name: Cache grpc
+      uses: actions/cache@v2
+      id: grpc-cache
+      with:
+        path: ${{env.MY_INSTALL_DIR}}
+        key: ${{ runner.os }}-grpc-${{ env.GRPC_VERSION }}
 
     - name: Set up dependencies
+      if: steps.grpc-cache.outputs.cache-hit != 'true'
       run: |
         brew install protobuf
         mkdir -p $MY_INSTALL_DIR
-        git clone --recurse-submodules -b v1.34.1 https://github.com/grpc/grpc
+        git clone --recurse-submodules -b v${{ env.GRPC_VERSION }} https://github.com/grpc/grpc
         cd grpc
         mkdir -p cmake/build
         pushd cmake/build
@@ -106,9 +122,7 @@ jobs:
     - name: Cache externals
       uses: actions/cache@v2
       with:
-        path: |
-          ${{runner.workspace}}/build/externals
-          ${{env.MY_INSTALL_DIR}}
+        path: ${{ runner.workspace }}/build/externals
         key: ${{ runner.os }}-build-${{ matrix.build_type }}-${{ hashFiles('externals/**/CMakeLists.txt') }}
 
     - name: Build
