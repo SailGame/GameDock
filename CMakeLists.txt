@@ -1,4 +1,12 @@
+# enable x.y version format
+cmake_policy(SET CMP0048 NEW)
+project(GameDock VERSION 0.9.0)
+
 cmake_minimum_required (VERSION 3.11)
+
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_BUILD_TYPE Debug)
 
 enable_testing()
 
@@ -21,14 +29,10 @@ if(NOT ftxui_POPULATED)
 endif()
 
 add_subdirectory(externals)
-add_subdirectory(common)
+add_subdirectory(dock)
 add_subdirectory(games)
 
-project (GameDock)
+add_executable(sailgame main.cpp)
+target_link_libraries(sailgame dock cxxopts)
 
-add_executable(main main.cpp)
-target_link_libraries(main
-  PRIVATE common
-)
-
-set_target_properties(main PROPERTIES CXX_STANDARD 17)
+set_target_properties(sailgame PROPERTIES CXX_STANDARD 17)
