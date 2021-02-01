@@ -64,7 +64,6 @@ public:
     void Update() {
         mReadyToggleButton.label = mIsReady ? L"Cancel" : L"Ready";
         if (GetState().IsOwner()) {
-            // if (true) {
             if (mEmptyComponent.Active()) {
                 // cannot write like mSetButton.TakeFocus()
                 // because when the user is granted ownership,
@@ -79,6 +78,10 @@ public:
             mGameSettingsController.SetComponent(
                 GameAttrFactory::Create(GetState().mRoomDetails.gamename())
                     ->GetGameSettingsController());
+        }
+
+        if (GetState().IsOwner() && mGameSettingsContainer.Focused()) {
+            mContainer.SetActiveChild(&mButtonsContainer);
         }
     }
 

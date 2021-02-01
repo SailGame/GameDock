@@ -64,6 +64,14 @@ public:
 
     void Update() {
         Dom::MapVectorToMenuEntries(mRoomList, mRooms, &Dom::RoomToString);
+        if (mRooms.empty() && mRoomList.Focused()) {
+            if (mDetails.gamename().empty()) {
+                mContainer.SetActiveChild(&mOpBar);
+            }
+            else {
+                mRoomDisplayArea.SetActiveChild(&mRoomDetail);
+            }
+        }
     }
 
     Element Render() final {
