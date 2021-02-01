@@ -67,23 +67,55 @@ public:
     static Element OtherPlayersDoc(const std::vector<PlayerState> &states,
                                    int selfIndex, Card lastPlayedCard,
                                    int curPlayer, int timeElapsed) {
-        // assume there are only 2 players
         if (curPlayer == selfIndex) {
-            return vbox({OtherPlayerBox(states[Util::Wrap(selfIndex - 1, 2)]),
-                         ConvertCardToFtxText(lastPlayedCard) | hcenter});
+            timeElapsed = -1;
         }
+        if (states.size() == 2) {
+            return OtherPlayersDoc_2(states, selfIndex, lastPlayedCard,
+                                     curPlayer, timeElapsed);
+        }
+        if (states.size() == 3) {
+            return OtherPlayersDoc_3(states, selfIndex, lastPlayedCard,
+                                     curPlayer, timeElapsed);
+        } 
+        if (states.size() == 4) {
+            return OtherPlayersDoc_4(states, selfIndex, lastPlayedCard,
+                                     curPlayer, timeElapsed);
+        }
+        throw std::runtime_error("Unsupported player num");
+    }
+
+    static Element OtherPlayersDoc_2(const std::vector<PlayerState> &states,
+                                   int selfIndex, Card lastPlayedCard,
+                                   int curPlayer, int timeElapsed) {
         return vbox(
             {OtherPlayerBox(states[Util::Wrap(selfIndex - 1, 2)], timeElapsed),
              ConvertCardToFtxText(lastPlayedCard) | hcenter});
+    }
 
-        /// TODO: support multi-player
-        // return vbox({
-        //     OtherPlayerBox(states[Util::Wrap(selfIndex + 2, 4)]),
-        //     hbox({
-        //         OtherPlayerBox(states[Util::Wrap(selfIndex + 1, 4)]),
-        //         OtherPlayerBox(states[Util::Wrap(selfIndex - 1, 4)]),
-        //     })
-        // });
+    static Element OtherPlayersDoc_3(const std::vector<PlayerState> &states,
+                                   int selfIndex, Card lastPlayedCard,
+                                   int curPlayer, int timeElapsed) {
+        return vbox({hbox({OtherPlayerBox(states[Util::Wrap(selfIndex + 1, 3)],
+                                          timeElapsed),
+                           OtherPlayerBox(states[Util::Wrap(selfIndex - 1, 3)],
+                                          timeElapsed)}),
+                     ConvertCardToFtxText(lastPlayedCard) | hcenter});
+    }
+
+    static Element OtherPlayersDoc_4(const std::vector<PlayerState> &states,
+                                   int selfIndex, Card lastPlayedCard,
+                                   int curPlayer, int timeElapsed) {
+        return vbox({OtherPlayerBox(states[Util::Wrap(selfIndex + 2, 4)]),
+                     text(L""),
+                     hbox({
+                         OtherPlayerBox(states[Util::Wrap(selfIndex + 1, 4)]),
+                         vbox({
+                             ConvertCardToFtxText(lastPlayedCard) | center ,
+                         }) | yflex,
+                         OtherPlayerBox(states[Util::Wrap(selfIndex - 1, 4)]),
+                     }),
+                     text(L"")});
     }
 
     static Element ConvertCardRowToHBox(const Handcards &handcards, int rowNum,

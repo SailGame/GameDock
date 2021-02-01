@@ -5,6 +5,7 @@
 #include <ftxui/component/container.hpp>
 
 #include "../../../dock/screen/game_screen.hpp"
+#include "../../../dock/util/dom.hpp"
 #include "../core/state.h"
 #include "component.h"
 #include "dom.hpp"
@@ -93,8 +94,8 @@ public:
         auto doc =
             vbox({Dom::OtherPlayersDoc(GetState().mPlayerStates, selfIndex,
                                        lastPlayedCard, curPlayer, timeElapsed),
-                  mPanelContainer.Render() | size(WIDTH, EQUAL, 60) | hcenter});
-        return doc | size(WIDTH, EQUAL, 80) | border | center;
+                  mPanelContainer.Render() | width(60) | hcenter});
+        return doc | center | range(80, 25) | border;
     }
 
     WholeState GetState() const {

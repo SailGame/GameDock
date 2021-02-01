@@ -4,8 +4,7 @@
 
 #include <ftxui/component/menu.hpp>
 #include <ftxui/dom/elements.hpp>
-
-#include "../core/game_attr_fac.h"
+#include <ftxui/screen/string.hpp>
 
 namespace ftxui {
 Decorator range(int width, int height);
@@ -22,13 +21,7 @@ using ::Core::RoomUser;
 
 class Dom {
 public:
-    static Element ShowGameSettings(const RoomDetails &details) {
-        if (details.gamename().empty()) {
-            return text(L"empty");
-        }
-        return GameAttrFactory::Create(details.gamename())
-            ->ShowGameSettings(details.gamesetting());
-    }
+    static Element ShowGameSettings(const RoomDetails &details);
 
     template <typename ElemT, typename FuncT>
     static void MapVectorToMenuEntries(ftxui::Menu &menu,

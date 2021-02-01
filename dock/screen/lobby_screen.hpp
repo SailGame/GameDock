@@ -35,7 +35,8 @@ public:
     std::function<void(int)> OnJoinRoom;
 
     LobbyScreen() {
-        Add(&mContainer);
+        mOuterContainer.Add(&mContainer);
+        mOuterContainer.SetActiveChild(&mContainer);
         mContainer.Add(&mOpBar);
         mContainer.Add(&mRoomDisplayArea);
 
@@ -61,6 +62,10 @@ public:
         mRoomList.on_change = [this] { QueryRoomByIndex(mRoomList.selected); };
 
         mJoinRoomButton.on_click = [this] { JoinRoom(); };
+
+        mDialogOkButton.on_click = [this] {
+            mOuterContainer.SetActiveChild(&mContainer);
+        };
     }
 
     void Update() {
@@ -102,9 +107,10 @@ public:
                            yflex;
 
         auto accountElement =
-            vbox({text(L"username  : " + to_wstring(mAccount.username())),
-                  text(L"points    : " + to_wstring(mAccount.points()))}) |
-            xflex;
+            // vbox({text(L"username  : " + to_wstring(mAccount.username())),
+            //       text(L"points    : " + to_wstring(mAccount.points()))}) |
+            // xflex;
+            text(L"QueryAccount not supported yet");
 
         auto doc = vbox(
             {topBar, separator(),
@@ -116,18 +122,24 @@ public:
                    mQueryAccountButton.Render()}),
              separator(), mShowRoomList ? roomElement : accountElement});
 
-        return doc | range(80, 25) | border | center;
+        return TryRenderDialog(doc) | range(80, 25) | border | center;
     }
 
 private:
     void SearchRoom() {
+        if (mSearchInput.content.empty()) {
+            return;
+        }
         mShowRoomList = true;
         auto content = to_string(mSearchInput.content);
         if (auto roomId = DockUtil::TryToGetRoomId(content); roomId != -1) {
             QueryRoomByRoomId(roomId);
         } else {
             auto ret = mUIProxy->ListRoom(content);
-            assert(ret.err() == ErrorNumber::OK);
+            if (ret.err() != ErrorNumber::OK) {
+                ShowDialogWithText();
+                return;
+            }
             mRooms = Util::ConvertGrpcRepeatedPtrFieldToVector(ret.room());
             if (!mRooms.empty()) {
                 mRoomList.selected = 0;
@@ -138,7 +150,10 @@ private:
 
     void CreateRoom() {
         auto ret = mUIProxy->CreateRoom();
-        assert(ret.err() == ErrorNumber::OK);
+        if (ret.err() != ErrorNumber::OK) {
+            ShowDialogWithText();
+            return;
+        }
         auto roomId = ret.roomid();
 
         /// TODO: for now set game to UNO, in the future make it configurable
@@ -146,26 +161,41 @@ private:
             mUIProxy->ControlRoom(roomId, "UNO", "",
                                   Uno::MsgBuilder::CreateStartGameSettings(
                                       true, true, false, false, 15));
-        assert(ctrlRet.err() == ErrorNumber::OK);
+        if (ctrlRet.err() != ErrorNumber::OK) {
+            ShowDialogWithText();
+            return;
+        }
 
         auto joinRet = mUIProxy->JoinRoom(roomId);
-        assert(joinRet.err() == ErrorNumber::OK);
+        if (joinRet.err() != ErrorNumber::OK) {
+            ShowDialogWithText();
+            return;
+        }
 
         OnJoinRoom(roomId);
     }
 
     void QueryAccount() {
         mShowRoomList = false;
-        /// XXX: QueryAccount hasn't been supported by Core
-        auto ret =
-            mUIProxy->QueryAccount(to_string(mQueryAccountInput.content));
-        assert(ret.err() == ErrorNumber::OK);
-        mAccount = ret.account();
+        /// XXX: QueryAccount hasn't been supported completely by Core
+        // auto ret =
+        //     mUIProxy->QueryAccount(to_string(mQueryAccountInput.content));
+        // assert(ret.err() == ErrorNumber::OK);
+        // mAccount = ret.account();
     }
 
     void QueryRoomByRoomId(int roomId) {
         auto ret = mUIProxy->QueryRoom(roomId);
-        assert(ret.err() == ErrorNumber::OK);
+        if (ret.err() != ErrorNumber::OK) {
+            switch (ret.err()) {
+                case ErrorNumber::QryRoom_InvalidRoomID:
+                    ShowDialogWithText("Room doesn't exist.");
+                    return;
+                default:
+                    ShowDialogWithText();
+                    return;
+            }
+        }
         mDetails = ret.room();
     }
 
@@ -177,7 +207,16 @@ private:
         // auto roomId = mRooms[mRoomList.selected].roomid();
         auto roomId = mDetails.roomid();
         auto ret = mUIProxy->JoinRoom(roomId);
-        assert(ret.err() == ErrorNumber::OK);
+        if (ret.err() != ErrorNumber::OK) {
+            switch (ret.err()) {
+                case ErrorNumber::JoinRoom_FullRoom:
+                    ShowDialogWithText("Room is full.");
+                    return;
+                default:
+                    ShowDialogWithText();
+                    return;
+            }
+        }
         OnJoinRoom(roomId);
     }
 

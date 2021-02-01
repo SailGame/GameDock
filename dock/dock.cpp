@@ -32,12 +32,7 @@ Dock::Dock(const std::shared_ptr<UIProxy> &uiProxy) : mUIProxy(uiProxy) {
     };
 
     mLobbyScreen.OnJoinRoom = [this](int roomId) {
-        auto ret = mUIProxy->QueryRoom(roomId);
-        assert(ret.err() == ErrorNumber::OK);
-        auto state = dynamic_cast<const State &>(mUIProxy->GetState());
-        state.mRoomDetails = ret.room();
-        mUIProxy->SetState(state);
-        mRoomScreen.TakeFocus();
+        QueryRoomAndSetStateMachine(roomId);
     };
 
     mRoomScreen.OnExitRoom = [this] { mLobbyScreen.TakeFocus(); };
@@ -52,10 +47,23 @@ Dock::Dock(const std::shared_ptr<UIProxy> &uiProxy) : mUIProxy(uiProxy) {
         mPolyGameScreen.Invoke(&GameScreen::RegisterGameOverCallback, [this] {
             spdlog::info("Game Over callback invoked");
             mUIProxy->SwitchToNewStateMachine(StateMachine::Create());
+            mUIProxy->SetGameStartCallback();
             mPolyGameScreen.ResetComponent();
-            mRoomScreen.TakeFocus();
+            auto roomId = dynamic_cast<const State &>(mUIProxy->GetState())
+                .mRoomDetails.roomid();
+            QueryRoomAndSetStateMachine(roomId);
         });
     };
+}
+
+void Dock::QueryRoomAndSetStateMachine(int roomId)
+{
+    auto ret = mUIProxy->QueryRoom(roomId);
+    assert(ret.err() == ErrorNumber::OK);
+    auto state = dynamic_cast<const State &>(mUIProxy->GetState());
+    state.mRoomDetails = ret.room();
+    mUIProxy->SetState(state);
+    mRoomScreen.TakeFocus();
 }
 
 Dock::~Dock() {}

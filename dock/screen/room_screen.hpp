@@ -11,6 +11,7 @@
 #include "../component/game_settings_ctrl.hpp"
 #include "../component/poly_component.hpp"
 #include "../core/component.h"
+#include "../core/game_attr_fac.h"
 #include "../util/dom.hpp"
 
 namespace SailGame { namespace Dock {
@@ -28,7 +29,8 @@ public:
     std::function<void()> OnExitRoom;
 
     RoomScreen() {
-        Add(&mContainer);
+        mOuterContainer.Add(&mContainer);
+        mOuterContainer.SetActiveChild(&mContainer);
         mContainer.Add(&mButtonsContainer);
         mContainer.Add(&mGameSettingsContainer);
 
@@ -54,6 +56,10 @@ public:
         mSaveChangeButton.on_click = [this] { ControlRoom(); };
 
         mCancelChangeButton.on_click = [this] { QuitControlMode(); };
+
+        mDialogOkButton.on_click = [this] {
+            mOuterContainer.SetActiveChild(&mContainer);
+        };
     }
 
     virtual void SetUIProxy(UIProxy *uiProxy) override {
@@ -113,7 +119,7 @@ public:
                          separator(),
                          hbox({playerList, separator(), roomDetail}) | yflex});
 
-        return doc | range(80, 25) | border | center;
+        return TryRenderDialog(doc) | range(80, 25) | border | center;
     }
 
     virtual void TakeFocus() override {
@@ -123,17 +129,25 @@ public:
 
 private:
     void ToggleReady() {
+        OperationInRoomRet ret;
         if (!mIsReady) {
-            mUIProxy->OperationInRoom(Ready::READY);
+            ret = mUIProxy->OperationInRoom(Ready::READY);
         } else {
-            mUIProxy->OperationInRoom(Ready::CANCEL);
+            ret = mUIProxy->OperationInRoom(Ready::CANCEL);
+        }
+        if (ret.err() != ErrorNumber::OK) {
+            ShowDialogWithText();
+            return;
         }
         mIsReady = !mIsReady;
     }
 
     void ExitRoom() {
         auto ret = mUIProxy->ExitRoom();
-        assert(ret.err() == ErrorNumber::OK);
+        if (ret.err() != ErrorNumber::OK) {
+            ShowDialogWithText();
+            return;
+        }
         OnExitRoom();
     }
 
@@ -148,7 +162,11 @@ private:
         auto roomId = GetState().mRoomDetails.roomid();
         auto gameName = GetState().mRoomDetails.gamename();
         auto roomPassword = "";
-        mUIProxy->ControlRoom(roomId, gameName, roomPassword, results);
+        auto ret = mUIProxy->ControlRoom(roomId, gameName, roomPassword, results);
+        if (ret.err() != ErrorNumber::OK) {
+            ShowDialogWithText();
+            return;
+        }
         mSetButton.TakeFocus();
         mGameSettingsController.Invoke(&GameSettingsController::ReadOnlyMode);
     }

@@ -47,6 +47,12 @@ public:
         mGameManager->SwitchStateMachine(stateMachine);
     }
 
+    void SetGameStartCallback() {
+        assert(OnGameStart);
+        std::dynamic_pointer_cast<StateMachine>(mGameManager->GetStateMachine())
+            ->OnGameStart = [this](GameType game) { OnGameStart(game); };
+    }
+
     void OnLoginSuccess(const std::string &token,
                         const std::string &username = "test") {
         assert(!mGameManager);
@@ -58,8 +64,7 @@ public:
         state.mUsername = username;
         mGameManager->SetState(state);
 
-        std::dynamic_pointer_cast<StateMachine>(mGameManager->GetStateMachine())
-            ->OnGameStart = [this](GameType game) { OnGameStart(game); };
+        SetGameStartCallback();
 
         // token cannot be captured by reference here
         // because the thread may start running after token gets destructed

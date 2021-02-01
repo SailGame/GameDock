@@ -43,6 +43,10 @@ void StateMachine::Transition(const BroadcastMsg &msg) {
         case BroadcastMsg::MsgCase::kCustom:
             Transition(Common::Util::UnpackGrpcAnyTo<NotifyMsg>(msg.custom()));
             return;
+        case BroadcastMsg::MsgCase::kRoomDetails:
+            // this branch can be reached: you're staying in the GameOverPanel
+            // when someone has returned to RoomScreen and got ready.
+            return;
             /// TODO: handle other cases
     }
     throw std::runtime_error("Unsupported msg type");

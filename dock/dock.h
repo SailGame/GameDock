@@ -26,7 +26,9 @@ public:
 
     void Loop(bool useRefersher = true);
 
-    // private:
+private:
+    void QueryRoomAndSetStateMachine(int roomId);
+
 public:
     ftxui::ScreenInteractive mScreen{ScreenInteractive::Fullscreen()};
 

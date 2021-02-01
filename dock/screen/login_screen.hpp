@@ -20,7 +20,8 @@ public:
     std::function<void(const LoginRet &)> OnLogin;
 
     LoginScreen() {
-        Add(&mContainer);
+        mOuterContainer.Add(&mContainer);
+        mOuterContainer.SetActiveChild(&mContainer);
         mContainer.Add(&mUsernameInput);
         mContainer.Add(&mPasswordInput);
         mContainer.Add(&mLoginButton);
@@ -30,9 +31,14 @@ public:
         mLoginButton.on_click = [this] {
             auto ret = mUIProxy->Login(to_string(mUsernameInput.content),
                                        to_string(mPasswordInput.content));
-            if (ret.err() == ErrorNumber::OK) {
-                OnLogin(ret);
+            if (ret.err() != ErrorNumber::OK) {
+                ShowDialogWithText();
+                return;
             }
+            OnLogin(ret);
+        };
+        mDialogOkButton.on_click = [this] {
+            mOuterContainer.SetActiveChild(&mContainer);
         };
     }
 
@@ -46,7 +52,7 @@ public:
                    }) |
                    range(40, 10) | center;
 
-        return doc | range(80, 25) | border | center;
+        return TryRenderDialog(doc) | range(80, 25) | border | center;
     }
 
 public:
