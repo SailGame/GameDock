@@ -1,5 +1,6 @@
 #pragma once
 
+#include <iostream>
 #include <ftxui/component/component.hpp>
 #include <ftxui/component/container.hpp>
 #include <ftxui/component/button.hpp>
@@ -26,7 +27,22 @@ class DockComponent : public ComponentWithUIProxy {
 public:
     DockComponent() {
         Add(&mOuterContainer);
+        mOuterContainer.Add(&mContainer);
         mOuterContainer.Add(&mDialogOkButton);
+        mOuterContainer.Add(&mExitContainer);
+
+        mExitContainer.Add(&mExitYesButton);
+        mExitContainer.Add(&mExitNoButton);
+
+        mDialogOkButton.on_click = [this] {
+            mOuterContainer.SetActiveChild(&mContainer);
+        };
+
+        mExitYesButton.on_click = [this] { mUIProxy->ExitApp(); };
+
+        mExitNoButton.on_click = [this] {
+            mOuterContainer.SetActiveChild(&mContainer);
+        };
     }
 
     State GetState() const {
@@ -38,17 +54,37 @@ public:
         mOuterContainer.SetActiveChild(&mDialogOkButton);
     }
 
+    virtual bool OnEvent(Event event) override {
+        if (event == Event::Escape) {
+            mOuterContainer.SetActiveChild(&mExitContainer);
+            return true;
+        }
+        return ComponentWithUIProxy::OnEvent(event);
+    }
+
     Element TryRenderDialog(const Element &doc) {
         if (mDialogOkButton.Active()) {
-            return dbox({
-                doc,
-                vbox({
-                    text(L"Error") | center,
-                    separator(), text(L""), text(L""),
-                    text(to_wstring(mDialogText)) | center, text(L""), text(L""),
-                    mDialogOkButton.Render() | center
-                }) | range(40, 10) | border | clear_under | center 
-            });            
+            return dbox(
+                {doc, vbox({text(L"Error") | center, separator(), text(L""),
+                            text(L""), text(to_wstring(mDialogText)) | center,
+                            text(L""), text(L""),
+                            mDialogOkButton.Render() | center}) |
+                          range(40, 10) | border | clear_under | center});
+        }
+        if (mExitContainer.Active()) {
+            return dbox(
+                {doc, vbox({
+                          text(L"Exit") | center,
+                          separator(),
+                          text(L""),
+                          text(L""),
+                          text(L"Exit SailGame?") | center,
+                          text(L""),
+                          text(L""),
+                          hbox({filler(), mExitYesButton.Render(), filler(),
+                                mExitNoButton.Render(), filler()}),
+                      }) | range(40, 10) |
+                          border | clear_under | center});
         }
         return doc;
     }
@@ -58,7 +94,11 @@ protected:
 
 protected:
     Container mOuterContainer{Container::Tab(nullptr)};
+    Container mContainer{Container::Vertical()};
     Button mDialogOkButton{L"   Ok   "};
+    Container mExitContainer{Container::Horizontal()};
+    Button mExitYesButton{L"  Yes  "};
+    Button mExitNoButton{L"  No  "};
 };
 
 }}  // namespace SailGame::Dock

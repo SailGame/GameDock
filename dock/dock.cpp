@@ -18,8 +18,6 @@ Dock::Dock(const std::shared_ptr<UIProxy> &uiProxy) : mUIProxy(uiProxy) {
     mRoomScreen.SetUIProxy(mUIProxy.get());
     mPolyGameScreen.SetUIProxy(mUIProxy.get());
 
-    // mPolyGameScreen.SetComponent(std::make_shared<GameScreen>());
-
     // navigation between screens
     mLoginScreen.OnLogin = [this](const auto &ret) {
         assert(ret.err() == ErrorNumber::OK);
@@ -54,6 +52,10 @@ Dock::Dock(const std::shared_ptr<UIProxy> &uiProxy) : mUIProxy(uiProxy) {
             QueryRoomAndSetStateMachine(roomId);
         });
     };
+
+    mUIProxy->OnExitApp = [this] {
+        mScreen.ExitLoopClosure()();
+    };
 }
 
 void Dock::QueryRoomAndSetStateMachine(int roomId)
@@ -68,12 +70,12 @@ void Dock::QueryRoomAndSetStateMachine(int roomId)
 
 Dock::~Dock() {}
 
-void Dock::Loop(bool useRefersher) {
-    /// XXX: where to join
-    std::unique_ptr<std::thread> refersher;
-    if (useRefersher) {
-        refersher = std::make_unique<std::thread>([&] {
-            while (true) {
+void Dock::Loop(bool useRefresher) {
+    std::unique_ptr<std::thread> refresher;
+    bool shouldStop = false;
+    if (useRefresher) {
+        refresher = std::make_unique<std::thread>([&] {
+            while (!shouldStop) {
                 using namespace std::chrono_literals;
                 std::this_thread::sleep_for(0.05s);
                 mScreen.PostEvent(Event::Custom);
@@ -81,6 +83,11 @@ void Dock::Loop(bool useRefersher) {
         });
     }
     mScreen.Loop(&mScreenContainer);
+    shouldStop = true;
+    if (refresher) {
+        refresher->join();
+    }
+    std::cout << "Goodbye, Sailor." << std::endl;
 }
 
 }}  // namespace SailGame::Dock

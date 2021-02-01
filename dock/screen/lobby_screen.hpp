@@ -35,8 +35,6 @@ public:
     std::function<void(int)> OnJoinRoom;
 
     LobbyScreen() {
-        mOuterContainer.Add(&mContainer);
-        mOuterContainer.SetActiveChild(&mContainer);
         mContainer.Add(&mOpBar);
         mContainer.Add(&mRoomDisplayArea);
 
@@ -62,10 +60,6 @@ public:
         mRoomList.on_change = [this] { QueryRoomByIndex(mRoomList.selected); };
 
         mJoinRoomButton.on_click = [this] { JoinRoom(); };
-
-        mDialogOkButton.on_click = [this] {
-            mOuterContainer.SetActiveChild(&mContainer);
-        };
     }
 
     void Update() {
@@ -231,7 +225,6 @@ public:
     Account mAccount;
 
 public:
-    Container mContainer{Container::Vertical()};
     Container mOpBar{Container::Horizontal()};
     Input mSearchInput;
     NonBorderButton mSearchButton{L"Search Room"};

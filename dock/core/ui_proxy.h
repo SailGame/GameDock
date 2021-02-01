@@ -31,6 +31,8 @@ public:
 
     std::function<void()> OnGameOver;
 
+    std::function<void()> OnExitApp;
+
     UIProxy(const std::shared_ptr<ClientNetworkInterface> &networkInterface,
             bool isTest = false)
         : mNetworkInterface(networkInterface), mIsTest(isTest) {}
@@ -88,6 +90,8 @@ public:
             mGameManagerThread->join();
         }
     }
+
+    void ExitApp() { OnExitApp(); }
 
     const IState &GetState() const { return mGameManager->GetState(); };
 

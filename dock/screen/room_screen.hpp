@@ -29,8 +29,6 @@ public:
     std::function<void()> OnExitRoom;
 
     RoomScreen() {
-        mOuterContainer.Add(&mContainer);
-        mOuterContainer.SetActiveChild(&mContainer);
         mContainer.Add(&mButtonsContainer);
         mContainer.Add(&mGameSettingsContainer);
 
@@ -56,10 +54,6 @@ public:
         mSaveChangeButton.on_click = [this] { ControlRoom(); };
 
         mCancelChangeButton.on_click = [this] { QuitControlMode(); };
-
-        mDialogOkButton.on_click = [this] {
-            mOuterContainer.SetActiveChild(&mContainer);
-        };
     }
 
     virtual void SetUIProxy(UIProxy *uiProxy) override {
@@ -180,7 +174,6 @@ public:
     bool mIsReady{false};
 
 public:
-    Container mContainer{Container::Vertical()};
     Container mButtonsContainer{Container::Horizontal()};
     Button mReadyToggleButton{L"Ready"};
     Button mExitRoomButton{L"Exit Room"};

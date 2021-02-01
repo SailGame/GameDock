@@ -20,8 +20,6 @@ public:
     std::function<void(const LoginRet &)> OnLogin;
 
     LoginScreen() {
-        mOuterContainer.Add(&mContainer);
-        mOuterContainer.SetActiveChild(&mContainer);
         mContainer.Add(&mUsernameInput);
         mContainer.Add(&mPasswordInput);
         mContainer.Add(&mLoginButton);
@@ -36,9 +34,6 @@ public:
                 return;
             }
             OnLogin(ret);
-        };
-        mDialogOkButton.on_click = [this] {
-            mOuterContainer.SetActiveChild(&mContainer);
         };
     }
 
@@ -56,7 +51,6 @@ public:
     }
 
 public:
-    Container mContainer{Container::Vertical()};
     Input mUsernameInput;
     Input mPasswordInput;
     TextCenterButton mLoginButton{L"Login"};
