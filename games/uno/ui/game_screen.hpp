@@ -95,7 +95,7 @@ public:
             vbox({Dom::OtherPlayersDoc(GetState().mPlayerStates, selfIndex,
                                        lastPlayedCard, curPlayer, timeElapsed),
                   mPanelContainer.Render() | width(60) | hcenter});
-        return doc | center | range(80, 25) | border;
+        return doc | center | range(80, 25) | border | center;
     }
 
     WholeState GetState() const {

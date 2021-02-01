@@ -1,14 +1,14 @@
 #pragma once
 
-#include <iostream>
+#include <ftxui/component/button.hpp>
 #include <ftxui/component/component.hpp>
 #include <ftxui/component/container.hpp>
-#include <ftxui/component/button.hpp>
 #include <ftxui/screen/string.hpp>
+#include <iostream>
 
+#include "../util/dom.hpp"
 #include "state.h"
 #include "ui_proxy.h"
-#include "../util/dom.hpp"
 
 namespace SailGame { namespace Dock {
 

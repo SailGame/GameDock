@@ -77,7 +77,7 @@ public:
         if (states.size() == 3) {
             return OtherPlayersDoc_3(states, selfIndex, lastPlayedCard,
                                      curPlayer, timeElapsed);
-        } 
+        }
         if (states.size() == 4) {
             return OtherPlayersDoc_4(states, selfIndex, lastPlayedCard,
                                      curPlayer, timeElapsed);
@@ -86,16 +86,16 @@ public:
     }
 
     static Element OtherPlayersDoc_2(const std::vector<PlayerState> &states,
-                                   int selfIndex, Card lastPlayedCard,
-                                   int curPlayer, int timeElapsed) {
+                                     int selfIndex, Card lastPlayedCard,
+                                     int curPlayer, int timeElapsed) {
         return vbox(
             {OtherPlayerBox(states[Util::Wrap(selfIndex - 1, 2)], timeElapsed),
              ConvertCardToFtxText(lastPlayedCard) | hcenter});
     }
 
     static Element OtherPlayersDoc_3(const std::vector<PlayerState> &states,
-                                   int selfIndex, Card lastPlayedCard,
-                                   int curPlayer, int timeElapsed) {
+                                     int selfIndex, Card lastPlayedCard,
+                                     int curPlayer, int timeElapsed) {
         return vbox({hbox({OtherPlayerBox(states[Util::Wrap(selfIndex + 1, 3)],
                                           timeElapsed),
                            OtherPlayerBox(states[Util::Wrap(selfIndex - 1, 3)],
@@ -104,14 +104,14 @@ public:
     }
 
     static Element OtherPlayersDoc_4(const std::vector<PlayerState> &states,
-                                   int selfIndex, Card lastPlayedCard,
-                                   int curPlayer, int timeElapsed) {
+                                     int selfIndex, Card lastPlayedCard,
+                                     int curPlayer, int timeElapsed) {
         return vbox({OtherPlayerBox(states[Util::Wrap(selfIndex + 2, 4)]),
                      text(L""),
                      hbox({
                          OtherPlayerBox(states[Util::Wrap(selfIndex + 1, 4)]),
                          vbox({
-                             ConvertCardToFtxText(lastPlayedCard) | center ,
+                             ConvertCardToFtxText(lastPlayedCard) | center,
                          }) | yflex,
                          OtherPlayerBox(states[Util::Wrap(selfIndex - 1, 4)]),
                      }),

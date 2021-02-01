@@ -67,8 +67,7 @@ public:
         if (mRooms.empty() && mRoomList.Focused()) {
             if (mDetails.gamename().empty()) {
                 mContainer.SetActiveChild(&mOpBar);
-            }
-            else {
+            } else {
                 mRoomDisplayArea.SetActiveChild(&mRoomDetail);
             }
         }

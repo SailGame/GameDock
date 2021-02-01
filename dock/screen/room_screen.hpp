@@ -159,7 +159,8 @@ private:
         auto roomId = GetState().mRoomDetails.roomid();
         auto gameName = GetState().mRoomDetails.gamename();
         auto roomPassword = "";
-        auto ret = mUIProxy->ControlRoom(roomId, gameName, roomPassword, results);
+        auto ret =
+            mUIProxy->ControlRoom(roomId, gameName, roomPassword, results);
         if (ret.err() != ErrorNumber::OK) {
             ShowDialogWithText();
             return;

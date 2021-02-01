@@ -1,4 +1,5 @@
 #include "dom.hpp"
+
 #include "../core/game_attr_fac.h"
 
 namespace ftxui {
@@ -23,4 +24,4 @@ Element Dom::ShowGameSettings(const RoomDetails &details) {
         ->ShowGameSettings(details.gamesetting());
 }
 
-}}
+}}  // namespace SailGame::Dock

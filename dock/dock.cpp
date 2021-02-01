@@ -48,18 +48,19 @@ Dock::Dock(const std::shared_ptr<UIProxy> &uiProxy) : mUIProxy(uiProxy) {
             mUIProxy->SetGameStartCallback();
             mPolyGameScreen.ResetComponent();
             auto roomId = dynamic_cast<const State &>(mUIProxy->GetState())
-                .mRoomDetails.roomid();
+                              .mRoomDetails.roomid();
             QueryRoomAndSetStateMachine(roomId);
         });
     };
 
     mUIProxy->OnExitApp = [this] {
+        /// TODO: inform Core to logout
         mScreen.ExitLoopClosure()();
+        mUIProxy->Stop();
     };
 }
 
-void Dock::QueryRoomAndSetStateMachine(int roomId)
-{
+void Dock::QueryRoomAndSetStateMachine(int roomId) {
     auto ret = mUIProxy->QueryRoom(roomId);
     assert(ret.err() == ErrorNumber::OK);
     auto state = dynamic_cast<const State &>(mUIProxy->GetState());

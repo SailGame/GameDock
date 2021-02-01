@@ -28,7 +28,7 @@ public:
     ClientNetworkInterface(const std::shared_ptr<GameCore::StubInterface> &stub)
         : INetworkInterface(stub) {
         mListenFunc = [this] {
-            while (true) {
+            while (!mShouldStop) {
                 OnEventHappens(ReceiveMsg());
             }
         };
@@ -52,6 +52,9 @@ public:
 
     BroadcastMsg ReceiveMsg() {
         BroadcastMsg msg;
+        /// XXX: exit app without informing Core,
+        /// NetworkInterface will block here,
+        /// for now directly detach the thread as workaround
         if (mStream->Read(&msg)) {
             return msg;
         }
