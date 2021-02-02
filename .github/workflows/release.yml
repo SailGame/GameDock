@@ -9,7 +9,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [macos-latest, ubuntu-20.04, ubuntu-18.04]
+        os: [macos-latest, ubuntu-20.04, ubuntu-18.04, ubuntu-16.04]
     
     env:
       MY_INSTALL_DIR: ~/.local
@@ -74,8 +74,8 @@ jobs:
       run: |
         mkdir release
         cp build/sailgame release/
-        cp SailGame/README.md release/
-        cp SailGame/LICENSE release/
+        cp GameDock/README.md release/
+        cp GameDock/LICENSE release/
         PACKAGE_NAME=sailgame.gamedock.${GITHUB_REF#refs/tags/}.${{ matrix.os }}.tar.gz
         tar -czvf $PACKAGE_NAME -C release .
         echo ::set-output name=name::${PACKAGE_NAME}
