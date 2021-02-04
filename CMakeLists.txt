@@ -1,6 +1,6 @@
 # enable x.y version format
 cmake_policy(SET CMP0048 NEW)
-project(GameDock VERSION 0.9.2)
+project(GameDock VERSION 0.9.3)
 
 cmake_minimum_required (VERSION 3.11)
 
