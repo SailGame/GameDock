@@ -97,8 +97,8 @@ public:
 
     void SetState(const IState &state) { mGameManager->SetState(state); }
 
-#define RpcMethod(RpcName, para...)                          \
-    auto args = CoreMsgBuilder::Create##RpcName##Args(para); \
+#define RpcMethod(RpcName, ...)                          \
+    auto args = CoreMsgBuilder::Create##RpcName##Args(__VA_ARGS__); \
     Logger::Log(args);                                       \
     auto ret = mNetworkInterface->RpcName(args);             \
     Logger::Log(ret);                                        \
