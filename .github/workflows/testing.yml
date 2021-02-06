@@ -26,12 +26,26 @@ jobs:
       with:
         submodules: 'recursive'
 
-    - uses: arduino/setup-protoc@v1
-      with:
-        version: '3.x'
+    # - uses: arduino/setup-protoc@v1
+    #   with:
+    #     version: '3.x'
+    - name:  Install Protobuf
+      shell: bash
+      run:   |
+            if [ "$RUNNER_OS" == "Linux" ]; then
+                  sudo apt install -y protobuf-compiler libprotobuf-dev
+            elif [ "$RUNNER_OS" == "Windows" ]; then
+                  choco install protoc
+            elif [ "$RUNNER_OS" == "macOS" ]; then
+                  brew install protobuf
+            else
+                  echo "$RUNNER_OS not supported"
+                  exit 1
+            fi
 
     - name: Get CMake Version
       id: cmake-version
+      shell: bash
       run: |
         CMAKE_VERSION=$(cmake --version | grep -o "[0-9]*\.[0-9]*\.[0-9]*")
         echo ::set-output name=CMAKE_VERSION::${CMAKE_VERSION}
@@ -47,10 +61,10 @@ jobs:
       if: steps.grpc-cache.outputs.cache-hit != 'true'
       run: |
         cmake -E make_directory ${{ env.GRPC_INSTALL_DIR }}
-        git clone --recurse-submodules -b v${{ env.GRPC_VERSION }} https://github.com/grpc/grpc
+        git clone --depth 1 --recurse-submodules --shallow-submodules -b v${{ env.GRPC_VERSION }} https://github.com/grpc/grpc
         cmake -E make_directory grpc/cmake/build
         cd grpc/cmake/build
-        cmake -DgRPC_INSTALL=ON -DgRPC_BUILD_TESTS=ON -DCMAKE_INSTALL_PREFIX=${{ env.GRPC_INSTALL_DIR }} -DBENCHMARK_ENABLE_TESTING=OFF ../..
+        cmake -DgRPC_INSTALL=ON -DgRPC_BUILD_TESTS=OFF -DCMAKE_INSTALL_PREFIX=${{ env.GRPC_INSTALL_DIR }} -DBENCHMARK_ENABLE_TESTING=OFF ../..
         cmake --build . -j 8
         cmake --build . --target install
   
@@ -62,7 +76,7 @@ jobs:
     - name: Configure CMake
       shell: bash
       working-directory: ${{runner.workspace}}/build/
-      run: cmake $GITHUB_WORKSPACE -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
+      run: cmake $GITHUB_WORKSPACE -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} -DCMAKE_PREFIX_PATH=${{ env.GRPC_INSTALL_DIR }}
 
     - name: Build
       working-directory: ${{runner.workspace}}/build/
