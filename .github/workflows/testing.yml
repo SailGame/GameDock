@@ -18,30 +18,34 @@ jobs:
         os: [ubuntu-20.04, macos-latest, windows-latest]
         build_type: [debug, release]
     env:
-      GRPC_INSTALL_DIR: ~/.local
+      GRPC_INSTALL_DIR: .grpc
       GRPC_VERSION: 1.32.0
+      PROTOBUF_VERSION: 3.14.0
 
     steps:
     - uses: actions/checkout@v1
       with:
         submodules: 'recursive'
 
-    # - uses: arduino/setup-protoc@v1
-    #   with:
-    #     version: '3.x'
     - name:  Install Protobuf
       shell: bash
       run:   |
-            if [ "$RUNNER_OS" == "Linux" ]; then
-                  sudo apt install -y protobuf-compiler libprotobuf-dev
-            elif [ "$RUNNER_OS" == "Windows" ]; then
-                  choco install protoc
-            elif [ "$RUNNER_OS" == "macOS" ]; then
-                  brew install protobuf
-            else
-                  echo "$RUNNER_OS not supported"
-                  exit 1
-            fi
+        if [ "$RUNNER_OS" == "Linux" ]; then
+              sudo apt install -y protobuf-compiler libprotobuf-dev
+        elif [ "$RUNNER_OS" == "Windows" ]; then
+              choco install protoc
+              git clone --depth 1 --recurse-submodules --shallow-submodules -b v${{ env.PROTOBUF_VERSION }} https://github.com/protocolbuffers/protobuf.git
+              cmake -E make_directory protobuf/cmake/build
+              cd protobuf/cmake/build
+              cmake ..
+              cmake --build . -j 8
+              cmake --build . --target install
+        elif [ "$RUNNER_OS" == "macOS" ]; then
+              brew install protobuf
+        else
+              echo "$RUNNER_OS not supported"
+              exit 1
+        fi
 
     - name: Get CMake Version
       id: cmake-version
@@ -54,17 +58,17 @@ jobs:
       uses: actions/cache@v2
       id: grpc-cache
       with:
-        path: ${{ env.GRPC_INSTALL_DIR }}
-        key: ${{ runner.os }}-grpc-${{ env.GRPC_VERSION }}-${{ steps.cmake-version.outputs.CMAKE_VERSION }}
+        path: ${{ runner.workspace }}/${{ env.GRPC_INSTALL_DIR }}
+        key: ${{ runner.os }}-${{ matrix.build_type }}-grpc-${{ env.GRPC_VERSION }}-${{ steps.cmake-version.outputs.CMAKE_VERSION }}
 
     - name: Set up grpc
       if: steps.grpc-cache.outputs.cache-hit != 'true'
       run: |
-        cmake -E make_directory ${{ env.GRPC_INSTALL_DIR }}
+        cmake -E make_directory ${{ runner.workspace }}/${{ env.GRPC_INSTALL_DIR }}
         git clone --depth 1 --recurse-submodules --shallow-submodules -b v${{ env.GRPC_VERSION }} https://github.com/grpc/grpc
         cmake -E make_directory grpc/cmake/build
         cd grpc/cmake/build
-        cmake -DgRPC_INSTALL=ON -DgRPC_BUILD_TESTS=OFF -DCMAKE_INSTALL_PREFIX=${{ env.GRPC_INSTALL_DIR }} -DBENCHMARK_ENABLE_TESTING=OFF ../..
+        cmake -DgRPC_INSTALL=ON -DgRPC_BUILD_TESTS=ON -DCMAKE_INSTALL_PREFIX=${{ runner.workspace }}/${{ env.GRPC_INSTALL_DIR }} -DBENCHMARK_ENABLE_TESTING=OFF ../..
         cmake --build . -j 8
         cmake --build . --target install
   
@@ -76,7 +80,7 @@ jobs:
     - name: Configure CMake
       shell: bash
       working-directory: ${{runner.workspace}}/build/
-      run: cmake $GITHUB_WORKSPACE -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} -DCMAKE_PREFIX_PATH=${{ env.GRPC_INSTALL_DIR }}
+      run: cmake $GITHUB_WORKSPACE -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} -DCMAKE_PREFIX_PATH=${{ runner.workspace }}/${{ env.GRPC_INSTALL_DIR }}
 
     - name: Build
       working-directory: ${{runner.workspace}}/build/

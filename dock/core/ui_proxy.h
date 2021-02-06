@@ -97,11 +97,11 @@ public:
 
     void SetState(const IState &state) { mGameManager->SetState(state); }
 
-#define RpcMethod(RpcName, ...)                          \
+#define RpcMethod(RpcName, ...)                                     \
     auto args = CoreMsgBuilder::Create##RpcName##Args(__VA_ARGS__); \
-    Logger::Log(args);                                       \
-    auto ret = mNetworkInterface->RpcName(args);             \
-    Logger::Log(ret);                                        \
+    Logger::Log(args);                                              \
+    auto ret = mNetworkInterface->RpcName(args);                    \
+    Logger::Log(ret);                                               \
     return ret;
 
     LoginRet Login(const std::string &username, const std::string &password) {
