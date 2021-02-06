@@ -27,26 +27,6 @@ jobs:
       with:
         submodules: 'recursive'
 
-    - name:  Install Protobuf
-      shell: bash
-      run:   |
-        if [ "$RUNNER_OS" == "Linux" ]; then
-              sudo apt install -y protobuf-compiler libprotobuf-dev
-        elif [ "$RUNNER_OS" == "Windows" ]; then
-              choco install protoc
-              git clone --depth 1 --recurse-submodules --shallow-submodules -b v${{ env.PROTOBUF_VERSION }} https://github.com/protocolbuffers/protobuf.git
-              cmake -E make_directory protobuf/cmake/build
-              cd protobuf/cmake/build
-              cmake ..
-              cmake --build . -j 8
-              cmake --build . --target install
-        elif [ "$RUNNER_OS" == "macOS" ]; then
-              brew install protobuf
-        else
-              echo "$RUNNER_OS not supported"
-              exit 1
-        fi
-
     - name: Get CMake Version
       id: cmake-version
       shell: bash
@@ -63,6 +43,7 @@ jobs:
 
     - name: Set up grpc
       if: steps.grpc-cache.outputs.cache-hit != 'true'
+      shell: bash
       run: |
         cmake -E make_directory ${{ runner.workspace }}/${{ env.GRPC_INSTALL_DIR }}
         git clone --depth 1 --recurse-submodules --shallow-submodules -b v${{ env.GRPC_VERSION }} https://github.com/grpc/grpc
@@ -73,19 +54,20 @@ jobs:
         cmake --build . --target install
   
     - name: Create Build Environment
-      working-directory: ${{runner.workspace}}
+      shell: bash
       run: |
         cmake -E make_directory build
 
     - name: Configure CMake
       shell: bash
       working-directory: ${{runner.workspace}}/build/
-      run: cmake $GITHUB_WORKSPACE -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} -DCMAKE_PREFIX_PATH=${{ runner.workspace }}/${{ env.GRPC_INSTALL_DIR }}
+      run: |
+        cmake $GITHUB_WORKSPACE -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} -DCMAKE_PREFIX_PATH=${{ runner.workspace }}/${{ env.GRPC_INSTALL_DIR }}
 
     - name: Build
-      working-directory: ${{runner.workspace}}/build/
       shell: bash
-      run: 
+      working-directory: ${{runner.workspace}}/build/
+      run: |
         cmake --build . --config ${{ matrix.build_type }} -j 4 --target sailgame
 
     # - name: Test
