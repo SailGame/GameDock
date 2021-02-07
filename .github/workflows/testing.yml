@@ -15,12 +15,11 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-20.04, macos-latest, windows-latest]
+        os: [ubuntu-20.04, macos-latest]
         build_type: [debug, release]
     env:
-      GRPC_INSTALL_DIR: .grpc
+      GRPC_INSTALL_DIR: ~/.grpc
       GRPC_VERSION: 1.32.0
-      PROTOBUF_VERSION: 3.14.0
 
     steps:
     - uses: actions/checkout@v1
@@ -38,31 +37,29 @@ jobs:
       uses: actions/cache@v2
       id: grpc-cache
       with:
-        path: ${{ runner.workspace }}/${{ env.GRPC_INSTALL_DIR }}
+        path: ${{ env.GRPC_INSTALL_DIR }}
         key: ${{ runner.os }}-${{ matrix.build_type }}-grpc-${{ env.GRPC_VERSION }}-${{ steps.cmake-version.outputs.CMAKE_VERSION }}
 
     - name: Set up grpc
       if: steps.grpc-cache.outputs.cache-hit != 'true'
       shell: bash
+      working-directory: ${{runner.workspace}}/
       run: |
-        cmake -E make_directory ${{ runner.workspace }}/${{ env.GRPC_INSTALL_DIR }}
+        cmake -E make_directory ${{ env.GRPC_INSTALL_DIR }}
         git clone --depth 1 --recurse-submodules --shallow-submodules -b v${{ env.GRPC_VERSION }} https://github.com/grpc/grpc
         cmake -E make_directory grpc/cmake/build
         cd grpc/cmake/build
-        cmake -DgRPC_INSTALL=ON -DgRPC_BUILD_TESTS=OFF -DCMAKE_INSTALL_PREFIX=${{ runner.workspace }}/${{ env.GRPC_INSTALL_DIR }} -DBENCHMARK_ENABLE_TESTING=OFF ../..
+        cmake -DgRPC_INSTALL=ON -DgRPC_BUILD_TESTS=OFF -DCMAKE_INSTALL_PREFIX=${{ env.GRPC_INSTALL_DIR }} -DBENCHMARK_ENABLE_TESTING=OFF ../..
         cmake --build . -j 8
         cmake --build . --target install
   
-    - name: Create Build Environment
-      shell: bash
-      run: |
-        cmake -E make_directory build
-
     - name: Configure CMake
       shell: bash
-      working-directory: ${{runner.workspace}}/build/
+      working-directory: ${{runner.workspace}}/
       run: |
-        cmake $GITHUB_WORKSPACE -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} -DCMAKE_PREFIX_PATH=${{ runner.workspace }}/${{ env.GRPC_INSTALL_DIR }}
+        cmake -E make_directory build
+        cd build
+        cmake $GITHUB_WORKSPACE -DCMAKE_BUILD_TYPE=release -DCMAKE_PREFIX_PATH=${{ env.GRPC_INSTALL_DIR }}
 
     - name: Build
       shell: bash
@@ -70,7 +67,7 @@ jobs:
       run: |
         cmake --build . --config ${{ matrix.build_type }} -j 4 --target sailgame
 
-    # - name: Test
-    #   working-directory: ${{runner.workspace}}/build/
-    #   shell: bash
-    #   run: ctest -L GameDock
+    - name: Test
+      working-directory: ${{runner.workspace}}/build/
+      shell: bash
+      run: ctest -L GameDock

@@ -12,7 +12,7 @@ jobs:
         os: [macos-latest, ubuntu-20.04, ubuntu-18.04]
     
     env:
-      GRPC_INSTALL_DIR: .grpc
+      GRPC_INSTALL_DIR: ~/.grpc
       GRPC_VERSION: 1.32.0
 
     steps:
@@ -45,38 +45,38 @@ jobs:
       uses: actions/cache@v2
       id: grpc-cache
       with:
-        path: ${{ runner.workspace }}/${{ env.GRPC_INSTALL_DIR }}
+        path: ${{ env.GRPC_INSTALL_DIR }}
         key: ${{ runner.os }}-${{ matrix.build_type }}-grpc-${{ env.GRPC_VERSION }}-${{ steps.cmake-version.outputs.CMAKE_VERSION }}
 
     - name: Set up grpc
       if: steps.grpc-cache.outputs.cache-hit != 'true'
       run: |
-        cmake -E make_directory ${{ runner.workspace }}/${{ env.GRPC_INSTALL_DIR }}
+        cmake -E make_directory ${{ env.GRPC_INSTALL_DIR }}
         git clone --depth 1 --recurse-submodules ---shallow-submodules -b v${{ env.GRPC_VERSION }} https://github.com/grpc/grpc
         cmake -E make_directory grpc/cmake/build
         cd grpc/cmake/build
-        cmake -DgRPC_INSTALL=ON -DgRPC_BUILD_TESTS=OFF -DCMAKE_INSTALL_PREFIX=${{ runner.workspace }}/${{ env.GRPC_INSTALL_DIR }} -DBENCHMARK_ENABLE_TESTING=OFF ../..
+        cmake -DgRPC_INSTALL=ON -DgRPC_BUILD_TESTS=OFF -DCMAKE_INSTALL_PREFIX=${{ env.GRPC_INSTALL_DIR }} -DBENCHMARK_ENABLE_TESTING=OFF ../..
         cmake --build . -j 8
         cmake --build . --target install
 
-    - name: Create Build Environment
-      run: |
-        cmake -E make_directory build
-
     - name: Configure CMake
       shell: bash
-      working-directory: ${{runner.workspace}}/build/
-      run: cmake $GITHUB_WORKSPACE -DCMAKE_BUILD_TYPE=release -DCMAKE_PREFIX_PATH=${{ runner.workspace }}/${{ env.GRPC_INSTALL_DIR }}
+      working-directory: ${{runner.workspace}}/
+      run: |
+        cmake -E make_directory build
+        cd build
+        cmake $GITHUB_WORKSPACE -DCMAKE_BUILD_TYPE=release -DCMAKE_PREFIX_PATH=${{ env.GRPC_INSTALL_DIR }}
 
     - name: Build Release
       working-directory: ${{runner.workspace}}/build/
       shell: bash
-      run: cmake --build . --config release -j 4 --target sailgame
+      run: |
+        cmake --build . --config release -j 4 --target sailgame
 
-    # - name: Test Release
-    #   working-directory: ${{runner.workspace}}/build/
-    #   shell: bash
-    #   run: ctest -L GameDock
+    - name: Test Release
+      working-directory: ${{runner.workspace}}/build/
+      shell: bash
+      run: ctest -L GameDock
 
     - name: Create package
       id: package
