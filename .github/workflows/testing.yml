@@ -11,83 +11,14 @@ on:
     - cron: 0 0 * * * # daily at 00:00
 
 jobs:
-  build-linux:
+  build:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-20.04]
+        os: [ubuntu-20.04, macos-latest]
         build_type: [debug, release]
     env:
-      MY_INSTALL_DIR: ~/.local
-      GRPC_VERSION: 1.32.0
-
-    steps:
-    - uses: actions/checkout@v1
-      with:
-        submodules: 'recursive'
-    
-    - name: Get CMake Version
-      id: cmake-version
-      run: |
-        CMAKE_VERSION=$(cmake --version | grep -o "[0-9]*\.[0-9]*\.[0-9]*")
-        echo ::set-output name=CMAKE_VERSION::${CMAKE_VERSION}
-
-    - name: Cache grpc
-      uses: actions/cache@v2
-      id: grpc-cache
-      with:
-        path: ${{env.MY_INSTALL_DIR}}
-        key: ${{ runner.os }}-grpc-${{ env.GRPC_VERSION }}-${{ steps.cmake-version.outputs.CMAKE_VERSION }}
-
-    - name: Set up dependencies
-      if: steps.grpc-cache.outputs.cache-hit != 'true'
-      run: |
-        sudo apt install -y protobuf-compiler libprotobuf-dev
-        mkdir -p $MY_INSTALL_DIR
-        git clone --recurse-submodules -b v${{ env.GRPC_VERSION }} https://github.com/grpc/grpc
-        cd grpc
-        mkdir -p cmake/build
-        pushd cmake/build
-        cmake -DgRPC_INSTALL=ON -DgRPC_BUILD_TESTS=ON -DCMAKE_INSTALL_PREFIX=$MY_INSTALL_DIR -DBENCHMARK_ENABLE_TESTING=OFF ../..
-        make -j 8
-        make install
-
-    - name: Create Build Environment
-      working-directory: ${{runner.workspace}}
-      run: |
-        cmake -E make_directory build
-
-    - name: Configure CMake
-      shell: bash
-      working-directory: ${{runner.workspace}}/build/
-      run: |
-        cmake $GITHUB_WORKSPACE -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} -DCMAKE_PREFIX_PATH=$MY_INSTALL_DIR
-
-    - name: Cache externals
-      uses: actions/cache@v2
-      with:
-        path: ${{ runner.workspace }}/build/externals
-        key: ${{ runner.os }}-build-${{ matrix.build_type }}-${{ hashFiles('externals/**/CMakeLists.txt') }}-${{ steps.cmake-version.outputs.CMAKE_VERSION }}
-
-    - name: Build
-      working-directory: ${{runner.workspace}}/build/
-      shell: bash
-      run: 
-        cmake --build . --config ${{ matrix.build_type }} -j 4
-
-    - name: Test
-      working-directory: ${{runner.workspace}}/build/
-      shell: bash
-      run: ctest -L GameDock
-
-  build-macos:
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        os: [macos-latest]
-        build_type: [debug, release]
-    env:
-      MY_INSTALL_DIR: ~/.local
+      GRPC_INSTALL_DIR: ~/.grpc
       GRPC_VERSION: 1.32.0
 
     steps:
@@ -97,92 +28,46 @@ jobs:
 
     - name: Get CMake Version
       id: cmake-version
+      shell: bash
       run: |
         CMAKE_VERSION=$(cmake --version | grep -o "[0-9]*\.[0-9]*\.[0-9]*")
         echo ::set-output name=CMAKE_VERSION::${CMAKE_VERSION}
-      
+
     - name: Cache grpc
       uses: actions/cache@v2
       id: grpc-cache
       with:
-        path: ${{env.MY_INSTALL_DIR}}
-        key: ${{ runner.os }}-grpc-${{ env.GRPC_VERSION }}-${{ steps.cmake-version.outputs.CMAKE_VERSION }}
+        path: ${{ env.GRPC_INSTALL_DIR }}
+        key: ${{ runner.os }}-${{ matrix.build_type }}-grpc-${{ env.GRPC_VERSION }}-${{ steps.cmake-version.outputs.CMAKE_VERSION }}
 
-    - name: Set up dependencies
+    - name: Set up grpc
       if: steps.grpc-cache.outputs.cache-hit != 'true'
+      shell: bash
+      working-directory: ${{runner.workspace}}/
       run: |
-        brew install protobuf
-        mkdir -p $MY_INSTALL_DIR
-        git clone --recurse-submodules -b v${{ env.GRPC_VERSION }} https://github.com/grpc/grpc
-        cd grpc
-        mkdir -p cmake/build
-        pushd cmake/build
-        cmake -DgRPC_INSTALL=ON -DgRPC_BUILD_TESTS=ON -DCMAKE_INSTALL_PREFIX=$MY_INSTALL_DIR -DBENCHMARK_ENABLE_TESTING=OFF ../..
-        make -j 8
-        make install
-
-    - name: Create Build Environment
-      working-directory: ${{runner.workspace}}
-      run: |
-        cmake -E make_directory build
-
+        cmake -E make_directory ${{ env.GRPC_INSTALL_DIR }}
+        git clone --depth 1 --recurse-submodules --shallow-submodules -b v${{ env.GRPC_VERSION }} https://github.com/grpc/grpc
+        cmake -E make_directory grpc/cmake/build
+        cd grpc/cmake/build
+        cmake -DgRPC_INSTALL=ON -DgRPC_BUILD_TESTS=OFF -DCMAKE_INSTALL_PREFIX=${{ env.GRPC_INSTALL_DIR }} -DBENCHMARK_ENABLE_TESTING=OFF ../..
+        cmake --build . -j 8
+        cmake --build . --target install
+  
     - name: Configure CMake
       shell: bash
-      working-directory: ${{runner.workspace}}/build/
-      run: cmake $GITHUB_WORKSPACE -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} -DCMAKE_PREFIX_PATH=$MY_INSTALL_DIR
-
-    - name: Cache externals
-      uses: actions/cache@v2
-      with:
-        path: ${{ runner.workspace }}/build/externals
-        key: ${{ runner.os }}-build-${{ matrix.build_type }}-${{ hashFiles('externals/**/CMakeLists.txt') }}-${{ steps.cmake-version.outputs.CMAKE_VERSION }}
+      working-directory: ${{runner.workspace}}/
+      run: |
+        cmake -E make_directory build
+        cd build
+        cmake $GITHUB_WORKSPACE -DCMAKE_BUILD_TYPE=release -DCMAKE_PREFIX_PATH=${{ env.GRPC_INSTALL_DIR }}
 
     - name: Build
-      working-directory: ${{runner.workspace}}/build/
       shell: bash
-      run: 
-        cmake --build . --config ${{ matrix.build_type }} -j 4
+      working-directory: ${{runner.workspace}}/build/
+      run: |
+        cmake --build . --config ${{ matrix.build_type }} -j 4 --target sailgame
 
     - name: Test
       working-directory: ${{runner.workspace}}/build/
       shell: bash
       run: ctest -L GameDock
-
-  # build-win:
-  #   runs-on: ${{ matrix.os }}
-  #   strategy:
-  #     matrix:
-  #       os: [windows-latest]
-  #       build_type: [debug, release]
-
-  #   steps:
-  #   - uses: actions/checkout@v1
-  #     with:
-  #       submodules: 'recursive'
-
-  #   - name: Create Build Environment
-  #     working-directory: ${{runner.workspace}}
-  #     run: |
-  #       cmake -E make_directory build
-
-  #   - name: Configure CMake
-  #     shell: bash
-  #     working-directory: ${{runner.workspace}}/build/
-  #     run: cmake $GITHUB_WORKSPACE -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
-
-  #   - name: Cache externals
-  #     uses: actions/cache@v2
-  #     with:
-  #       path: ${{runner.workspace}}/build/externals
-  #       key: ${{ runner.os }}-build-${{ matrix.build_type }}-${{ hashFiles('externals/**/CMakeLists.txt') }}
-
-  #   - name: Build
-  #     working-directory: ${{runner.workspace}}/build/
-  #     shell: bash
-  #     run: 
-  #       cmake --build . --config ${{ matrix.build_type }} -j 4
-
-  #   - name: Test
-  #     working-directory: ${{runner.workspace}}/build/
-  #     shell: bash
-  #     run: ctest -L GameDock

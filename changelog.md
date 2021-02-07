@@ -1,3 +1,8 @@
+## Unreleased
+- remove grpc submodule
+- simplify git action
+- give up windows support
+
 ## 0.9.3
 - fix a cmake-version-related action problem
 ## 0.9.2
