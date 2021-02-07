@@ -20,20 +20,6 @@ jobs:
       with:
         submodules: 'recursive'
 
-    - name:  Install Protobuf
-      shell: bash
-      run:   |
-            if [ "$RUNNER_OS" == "Linux" ]; then
-                  sudo apt install -y protobuf-compiler libprotobuf-dev
-            elif [ "$RUNNER_OS" == "Windows" ]; then
-                  choco install protoc
-            elif [ "$RUNNER_OS" == "macOS" ]; then
-                  brew install protobuf
-            else
-                  echo "$RUNNER_OS not supported"
-                  exit 1
-            fi
-
     - name: Get CMake Version
       id: cmake-version
       shell: bash
