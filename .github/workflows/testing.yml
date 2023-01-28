@@ -26,7 +26,7 @@ jobs:
       shell: bash
       run: |
         CMAKE_VERSION=$(cmake --version | grep -o "[0-9]*\.[0-9]*\.[0-9]*")
-        echo ::set-output name=CMAKE_VERSION::${CMAKE_VERSION}
+        echo "CMAKE_VERSION=${CMAKE_VERSION}" >> $GITHUB_OUTPUT
 
     - name: Cache deps
       uses: actions/cache@v2

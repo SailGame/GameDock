@@ -30,9 +30,8 @@ public:
 
     LobbyScreen() {
         auto roomListOption = MenuOption::Vertical();
-        roomListOption.on_change = [this] { 
-            if (mRoomSelected < mRooms.size())
-                QueryRoomByIndex(mRoomSelected);
+        roomListOption.on_change = [this] {
+            if (mRoomSelected < mRooms.size()) QueryRoomByIndex(mRoomSelected);
         };
         mRoomList = Menu(&mRoomNames, &mRoomSelected, roomListOption);
 

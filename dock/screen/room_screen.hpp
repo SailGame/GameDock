@@ -30,12 +30,9 @@ public:
 
     RoomScreen() {
         for (const auto& gameName : SupportedGames) {
-            try
-            {
+            try {
                 mGameAttrs.emplace(gameName, GameAttrFactory::Create(gameName));
-            }
-            catch(const std::exception& e)
-            {
+            } catch (const std::exception& e) {
             }
         }
 
@@ -46,15 +43,15 @@ public:
         auto gameListOption = RadioboxOption::Simple();
         gameListOption.on_change = [this] {
             if (mGameSelected != 0) {
-                mGameSettingsController->SetComponent(mGameAttrs.at(GetGameName())->GetGameSettingsController());
+                mGameSettingsController->SetComponent(
+                    mGameAttrs.at(GetGameName())->GetGameSettingsController());
                 ControlRoom();
-            }
-            else
-            {
+            } else {
                 mGameSettingsController->ResetComponent();
             }
         };
-        mGameList = Radiobox(&SupportedGames, &mGameSelected, std::move(gameListOption));
+        mGameList = Radiobox(&SupportedGames, &mGameSelected,
+                             std::move(gameListOption));
 
         mReadyToggleButtonLabel = L"Ready";
         mReadyToggleButton =
@@ -64,8 +61,8 @@ public:
         mSaveChangeButton = Button(L"Save", [this] { ControlRoom(); });
         mCancelChangeButton = Button(L"Cancel", [this] { QuitControlMode(); });
 
-        mButtonsContainer =
-            Container::Horizontal({mGameList, mReadyToggleButton, mExitRoomButton});
+        mButtonsContainer = Container::Horizontal(
+            {mGameList, mReadyToggleButton, mExitRoomButton});
 
         mSaveOrCancelButtonsContainer =
             Container::Horizontal({mSaveChangeButton, mCancelChangeButton});
@@ -81,7 +78,7 @@ public:
         mContainer->Add(mGameSettingsContainer);
     }
 
-    virtual void SetUIProxy(UIProxy *uiProxy) override {
+    virtual void SetUIProxy(UIProxy* uiProxy) override {
         UIProxyClient::SetUIProxy(uiProxy);
         mGameSettingsController->SetUIProxy(uiProxy);
     }
@@ -127,8 +124,8 @@ public:
 
         auto doc = vbox({topBar, separator(),
                          hbox({filler(), mGameList->Render(), filler(),
-                                mReadyToggleButton->Render(), filler(),
-                                mExitRoomButton->Render(), filler()}),
+                               mReadyToggleButton->Render(), filler(),
+                               mExitRoomButton->Render(), filler()}),
                          separator(),
                          hbox({playerList, separator(), roomDetail}) | yflex});
 
