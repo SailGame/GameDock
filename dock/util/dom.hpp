@@ -2,7 +2,7 @@
 
 #include <sailgame_pb/core/types.pb.h>
 
-#include <ftxui/component/menu.hpp>
+#include <ftxui/component/component.hpp>
 #include <ftxui/dom/elements.hpp>
 #include <ftxui/screen/string.hpp>
 
@@ -23,24 +23,13 @@ class Dom {
 public:
     static Element ShowGameSettings(const RoomDetails &details);
 
-    template <typename ElemT, typename FuncT>
-    static void MapVectorToMenuEntries(ftxui::Menu &menu,
-                                       const std::vector<ElemT> &vec,
-                                       const FuncT &func) {
-        menu.entries.clear();
-        for (const auto &element : vec) {
-            menu.entries.push_back(func(element));
-        }
-    }
-
     template <typename VecT, typename FuncT>
     // VecT could be std::vector or grpc RepeatedField
     static Element MapVectorToVBox(const VecT &vec, const FuncT &func) {
-        auto vBox = vbox({});
-        for (const auto &element : vec) {
-            vBox->children.push_back(func(element));
-        }
-        return vBox;
+        ftxui::Elements elements;
+        std::transform(vec.begin(), vec.end(),
+                       std::back_insert_iterator(elements), func);
+        return vbox(std::move(elements));
     }
 
     static std::wstring RoomToString(const Room &room) {

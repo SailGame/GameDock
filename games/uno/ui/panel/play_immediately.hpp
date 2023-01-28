@@ -2,8 +2,6 @@
 
 #include <sailgame/common/core_msg_builder.h>
 
-#include <ftxui/component/button.hpp>
-#include <ftxui/component/container.hpp>
 #include <ftxui/screen/string.hpp>
 
 #include "../component.h"
@@ -21,12 +19,12 @@ public:
     std::function<void()> OnPlayWildCard;
 
     PlayImmediatelyPanel() {
-        Add(&mContainer);
-        mContainer.Add(&mYesButton);
-        mContainer.Add(&mNoButton);
+        mYesButton = Button(L"Yes", [this] { Play(); });
+        mNoButton = Button(L"No", [this] { Skip(); });
 
-        mYesButton.on_click = [this] { Play(); };
-        mNoButton.on_click = [this] { Skip(); };
+        mContainer = Container::Horizontal({mYesButton, mNoButton});
+
+        Add(mContainer);
     }
 
     void Update() {
@@ -52,14 +50,14 @@ public:
             {Dom::PlayerBox(to_wstring(username),
                             Dom::ConvertHandcardsToVBox(handcards, cursor)),
              Dom::TimeIndicator(timeElapsed), text(mHintText),
-             hbox({mYesButton.Render(), mNoButton.Render()}) | hcenter});
+             hbox({mYesButton->Render(), mNoButton->Render()}) | hcenter});
         return doc;
     }
 
     void TakeFocus() override {
         mHintText = L"Whether to play the card just drawn?";
         mHasTimeout = false;
-        Component::TakeFocus();
+        ComponentBase::TakeFocus();
     }
 
 private:
@@ -97,8 +95,8 @@ public:
     bool mHasTimeout{false};
 
 public:
-    Container mContainer{Container::Horizontal()};
-    Button mYesButton{L"Yes"};
-    Button mNoButton{L"No"};
+    Component mContainer;
+    Component mYesButton;
+    Component mNoButton;
 };
 }}  // namespace SailGame::Uno

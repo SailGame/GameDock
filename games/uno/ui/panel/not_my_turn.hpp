@@ -1,6 +1,6 @@
 #pragma once
 
-#include <ftxui/component/container.hpp>
+#include <ftxui/component/component.hpp>
 #include <ftxui/screen/string.hpp>
 
 #include "../component.h"

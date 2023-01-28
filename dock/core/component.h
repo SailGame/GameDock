@@ -1,8 +1,6 @@
 #pragma once
 
-#include <ftxui/component/button.hpp>
 #include <ftxui/component/component.hpp>
-#include <ftxui/component/container.hpp>
 #include <ftxui/screen/string.hpp>
 #include <iostream>
 
@@ -14,11 +12,11 @@ namespace SailGame { namespace Dock {
 
 using namespace ftxui;
 
-class SailGameComponent : public ftxui::Component {
+class SailGameComponent : public ftxui::ComponentBase {
 public:
     SailGameComponent() = default;
 
-    virtual void TakeFocus() { Component::TakeFocus(); }
+    virtual void TakeFocus() { ComponentBase::TakeFocus(); }
 };
 
 class ComponentWithUIProxy : public SailGameComponent, public UIProxyClient {};
@@ -26,23 +24,27 @@ class ComponentWithUIProxy : public SailGameComponent, public UIProxyClient {};
 class DockComponent : public ComponentWithUIProxy {
 public:
     DockComponent() {
-        Add(&mOuterContainer);
-        mOuterContainer.Add(&mContainer);
-        mOuterContainer.Add(&mDialogOkButton);
-        mOuterContainer.Add(&mExitContainer);
+        mContainer = Container::Vertical({});
+        mExitYesButton = Button(L"  Yes  ", [this] { mUIProxy->ExitApp(); });
+        mExitNoButton = Button(L"  No  ", [this] {
+            mOuterContainer->SetActiveChild(mContainer.get());
+        });
 
-        mExitContainer.Add(&mExitYesButton);
-        mExitContainer.Add(&mExitNoButton);
+        mExitContainer = Container::Horizontal({
+            mExitYesButton,
+            mExitNoButton,
+        });
 
-        mDialogOkButton.on_click = [this] {
-            mOuterContainer.SetActiveChild(&mContainer);
-        };
+        mDialogOkButton = Button(L"  Ok  ", [this] {
+            mOuterContainer->SetActiveChild(mContainer.get());
+        });
 
-        mExitYesButton.on_click = [this] { mUIProxy->ExitApp(); };
+        mOuterContainerSelected = 0;
+        mOuterContainer =
+            Container::Tab({mContainer, mDialogOkButton, mExitContainer},
+                           &mOuterContainerSelected);
 
-        mExitNoButton.on_click = [this] {
-            mOuterContainer.SetActiveChild(&mContainer);
-        };
+        Add(mOuterContainer);
     }
 
     State GetState() const {
@@ -51,27 +53,27 @@ public:
 
     void ShowDialogWithText(const std::string &text = "Unknown Error.") {
         mDialogText = text;
-        mOuterContainer.SetActiveChild(&mDialogOkButton);
+        mOuterContainer->SetActiveChild(mDialogOkButton.get());
     }
 
     virtual bool OnEvent(Event event) override {
         if (event == Event::Escape) {
-            mOuterContainer.SetActiveChild(&mExitContainer);
+            mOuterContainer->SetActiveChild(mExitContainer.get());
             return true;
         }
         return ComponentWithUIProxy::OnEvent(event);
     }
 
     Element TryRenderDialog(const Element &doc) {
-        if (mDialogOkButton.Active()) {
+        if (mDialogOkButton->Active()) {
             return dbox(
                 {doc, vbox({text(L"Error") | center, separator(), text(L""),
                             text(L""), text(to_wstring(mDialogText)) | center,
                             text(L""), text(L""),
-                            mDialogOkButton.Render() | center}) |
+                            mDialogOkButton->Render() | center}) |
                           range(40, 10) | border | clear_under | center});
         }
-        if (mExitContainer.Active()) {
+        if (mExitContainer->Active()) {
             return dbox(
                 {doc, vbox({
                           text(L"Exit") | center,
@@ -81,8 +83,8 @@ public:
                           text(L"Exit SailGame?") | center,
                           text(L""),
                           text(L""),
-                          hbox({filler(), mExitYesButton.Render(), filler(),
-                                mExitNoButton.Render(), filler()}),
+                          hbox({filler(), mExitYesButton->Render(), filler(),
+                                mExitNoButton->Render(), filler()}),
                       }) | range(40, 10) |
                           border | clear_under | center});
         }
@@ -93,12 +95,13 @@ protected:
     std::string mDialogText;
 
 protected:
-    Container mOuterContainer{Container::Tab(nullptr)};
-    Container mContainer{Container::Vertical()};
-    Button mDialogOkButton{L"   Ok   "};
-    Container mExitContainer{Container::Horizontal()};
-    Button mExitYesButton{L"  Yes  "};
-    Button mExitNoButton{L"  No  "};
+    int mOuterContainerSelected;
+    Component mOuterContainer;
+    Component mContainer;
+    Component mDialogOkButton;
+    Component mExitContainer;
+    Component mExitYesButton;
+    Component mExitNoButton;
 };
 
 }}  // namespace SailGame::Dock

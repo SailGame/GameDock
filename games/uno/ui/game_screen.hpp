@@ -2,7 +2,7 @@
 
 #include <sailgame/common/types.h>
 
-#include <ftxui/component/container.hpp>
+#include <ftxui/component/component.hpp>
 
 #include "../../../dock/screen/game_screen.hpp"
 #include "../../../dock/util/dom.hpp"
@@ -26,58 +26,67 @@ using Dock::UIProxyClient;
 class GameScreen : public Dock::GameScreen {
 public:
     GameScreen() {
-        Add(&mPanelContainer);
-        mPanelContainer.Add(&mNotMyTurnPanel);
-        mPanelContainer.Add(&mPlayOrPassPanel);
-        mPanelContainer.Add(&mChooseCardPanel);
-        mPanelContainer.Add(&mPlayImmediatelyPanel);
-        mPanelContainer.Add(&mSpecifyColorPanel);
-        mPanelContainer.Add(&mGameOverPanel);
-
-        mNotMyTurnPanel.OnMyTurn = [this] { mPlayOrPassPanel.TakeFocus(); };
-        mNotMyTurnPanel.OnGameOver = [this] { mGameOverPanel.TakeFocus(); };
-        mPlayOrPassPanel.OnPlay = [this] { mChooseCardPanel.TakeFocus(); };
-        mPlayOrPassPanel.OnNextTurn = [this] { mNotMyTurnPanel.TakeFocus(); };
-        mPlayOrPassPanel.OnHasChanceToPlayAfterDraw = [this] {
-            mPlayImmediatelyPanel.TakeFocus();
+        mNotMyTurnPanel->OnMyTurn = [this] { mPlayOrPassPanel->TakeFocus(); };
+        mNotMyTurnPanel->OnGameOver = [this] { mGameOverPanel->TakeFocus(); };
+        mPlayOrPassPanel->OnPlay = [this] { mChooseCardPanel->TakeFocus(); };
+        mPlayOrPassPanel->OnNextTurn = [this] { mNotMyTurnPanel->TakeFocus(); };
+        mPlayOrPassPanel->OnHasChanceToPlayAfterDraw = [this] {
+            mPlayImmediatelyPanel->TakeFocus();
         };
-        mChooseCardPanel.OnCancel = [this] { mPlayOrPassPanel.TakeFocus(); };
-        mChooseCardPanel.OnPlayWildCard = [this] {
-            mSpecifyColorPanel.mCursor = mChooseCardPanel.mCursor;
+        mChooseCardPanel->OnCancel = [this] { mPlayOrPassPanel->TakeFocus(); };
+        mChooseCardPanel->OnPlayWildCard = [this] {
+            mSpecifyColorPanel->mCursor = mChooseCardPanel->mCursor;
             mIsFromChooseCard = true;
-            mSpecifyColorPanel.TakeFocus();
+            mSpecifyColorPanel->TakeFocus();
         };
-        mChooseCardPanel.OnGameOver = [this] { mGameOverPanel.TakeFocus(); };
-        mChooseCardPanel.OnNextTurn = [this] { mNotMyTurnPanel.TakeFocus(); };
-        mPlayImmediatelyPanel.OnNextTurn = [this] {
-            mNotMyTurnPanel.TakeFocus();
+        mChooseCardPanel->OnGameOver = [this] { mGameOverPanel->TakeFocus(); };
+        mChooseCardPanel->OnNextTurn = [this] { mNotMyTurnPanel->TakeFocus(); };
+        mPlayImmediatelyPanel->OnNextTurn = [this] {
+            mNotMyTurnPanel->TakeFocus();
         };
-        mPlayImmediatelyPanel.OnPlayWildCard = [this] {
-            mSpecifyColorPanel.mCursor =
+        mPlayImmediatelyPanel->OnPlayWildCard = [this] {
+            mSpecifyColorPanel->mCursor =
                 GetState().mSelfState.mIndexOfNewlyDrawn;
             mIsFromChooseCard = false;
-            mSpecifyColorPanel.TakeFocus();
+            mSpecifyColorPanel->TakeFocus();
         };
-        mSpecifyColorPanel.OnCancel = [this] {
+        mSpecifyColorPanel->OnCancel = [this] {
             if (mIsFromChooseCard) {
-                mChooseCardPanel.TakeFocus();
+                mChooseCardPanel->TakeFocus();
             } else {
-                mPlayImmediatelyPanel.TakeFocus();
+                mPlayImmediatelyPanel->TakeFocus();
             }
         };
-        mSpecifyColorPanel.OnNextTurn = [this] { mNotMyTurnPanel.TakeFocus(); };
-        mSpecifyColorPanel.OnGameOver = [this] { mGameOverPanel.TakeFocus(); };
-        mGameOverPanel.OnReturn = [this] { OnGameOver(); };
+        mSpecifyColorPanel->OnNextTurn = [this] {
+            mNotMyTurnPanel->TakeFocus();
+        };
+        mSpecifyColorPanel->OnGameOver = [this] {
+            mGameOverPanel->TakeFocus();
+        };
+        mGameOverPanel->OnReturn = [this] { OnGameOver(); };
+
+        mPanelContainer = Container::Tab(
+            {
+                mNotMyTurnPanel,
+                mPlayOrPassPanel,
+                mChooseCardPanel,
+                mPlayImmediatelyPanel,
+                mSpecifyColorPanel,
+                mGameOverPanel,
+            },
+            &mPanelSelected);
+
+        Add(mPanelContainer);
     }
 
     virtual void SetUIProxy(UIProxy *uiProxy) override {
         UIProxyClient::SetUIProxy(uiProxy);
-        mNotMyTurnPanel.SetUIProxy(mUIProxy);
-        mPlayOrPassPanel.SetUIProxy(mUIProxy);
-        mChooseCardPanel.SetUIProxy(mUIProxy);
-        mPlayImmediatelyPanel.SetUIProxy(mUIProxy);
-        mSpecifyColorPanel.SetUIProxy(mUIProxy);
-        mGameOverPanel.SetUIProxy(mUIProxy);
+        mNotMyTurnPanel->SetUIProxy(mUIProxy);
+        mPlayOrPassPanel->SetUIProxy(mUIProxy);
+        mChooseCardPanel->SetUIProxy(mUIProxy);
+        mPlayImmediatelyPanel->SetUIProxy(mUIProxy);
+        mSpecifyColorPanel->SetUIProxy(mUIProxy);
+        mGameOverPanel->SetUIProxy(mUIProxy);
     }
 
     static std::shared_ptr<Dock::GameScreen> Create() {
@@ -94,7 +103,7 @@ public:
         auto doc =
             vbox({Dom::OtherPlayersDoc(GetState().mPlayerStates, selfIndex,
                                        lastPlayedCard, curPlayer, timeElapsed),
-                  mPanelContainer.Render() | width(60) | hcenter});
+                  mPanelContainer->Render() | width(60) | hcenter});
         return doc | center | range(80, 25) | border | center;
     }
 
@@ -125,12 +134,14 @@ private:
     int mTick{0};
 
 public:
-    Container mPanelContainer{Container::Tab(nullptr)};
-    NotMyTurnPanel mNotMyTurnPanel;
-    PlayOrPassPanel mPlayOrPassPanel;
-    ChooseCardPanel mChooseCardPanel;
-    PlayImmediatelyPanel mPlayImmediatelyPanel;
-    SpecifyColorPanel mSpecifyColorPanel;
-    GameOverPanel mGameOverPanel;
+    int mPanelSelected{0};
+    Component mPanelContainer;
+    std::shared_ptr<NotMyTurnPanel> mNotMyTurnPanel =
+        std::make_shared<NotMyTurnPanel>();
+    std::shared_ptr<PlayOrPassPanel> mPlayOrPassPanel;
+    std::shared_ptr<ChooseCardPanel> mChooseCardPanel;
+    std::shared_ptr<PlayImmediatelyPanel> mPlayImmediatelyPanel;
+    std::shared_ptr<SpecifyColorPanel> mSpecifyColorPanel;
+    std::shared_ptr<GameOverPanel> mGameOverPanel;
 };
 }}  // namespace SailGame::Uno

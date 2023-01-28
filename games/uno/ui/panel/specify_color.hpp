@@ -3,11 +3,9 @@
 #include <sailgame/common/core_msg_builder.h>
 #include <sailgame_pb/uno/uno.pb.h>
 
-#include <ftxui/component/button.hpp>
-#include <ftxui/component/container.hpp>
+#include <ftxui/component/component.hpp>
 
 #include "../component.h"
-#include "../component/colorful_button.hpp"
 #include "../dom.hpp"
 
 namespace SailGame { namespace Uno {
@@ -25,18 +23,24 @@ public:
     std::function<void()> OnGameOver;
 
     SpecifyColorPanel() {
-        Add(&mContainer);
-        mContainer.Add(&mRedButton);
-        mContainer.Add(&mYellowButton);
-        mContainer.Add(&mGreenButton);
-        mContainer.Add(&mBlueButton);
-        mContainer.Add(&mCancelButton);
+        mRedButton = Button(
+            L"Red", [this] { Specify(CardColor::RED); },
+            ButtonOption::Animated(ftxui::Color::Red));
+        mYellowButton = Button(
+            L"Yellow", [this] { Specify(CardColor::YELLOW); },
+            ButtonOption::Animated(ftxui::Color::Yellow));
+        mBlueButton = Button(
+            L"Green", [this] { Specify(CardColor::GREEN); },
+            ButtonOption::Animated(ftxui::Color::Green));
+        mRedButton = Button(
+            L"Blue", [this] { Specify(CardColor::BLUE); },
+            ButtonOption::Animated(ftxui::Color::Blue));
+        mCancelButton = Button(L"Cancel", [this] { OnCancel(); });
 
-        mRedButton.on_click = [this] { Specify(CardColor::RED); };
-        mYellowButton.on_click = [this] { Specify(CardColor::YELLOW); };
-        mGreenButton.on_click = [this] { Specify(CardColor::GREEN); };
-        mBlueButton.on_click = [this] { Specify(CardColor::BLUE); };
-        mCancelButton.on_click = [this] { OnCancel(); };
+        mContainer =
+            Container::Horizontal({mRedButton, mYellowButton, mGreenButton,
+                                   mBlueButton, mCancelButton});
+        Add(mContainer);
     }
 
     void Update() {
@@ -67,9 +71,9 @@ public:
             {Dom::PlayerBox(to_wstring(username),
                             Dom::ConvertHandcardsToVBox(handcards, mCursor)),
              Dom::TimeIndicator(timeElapsed), text(L"Specify the next color."),
-             hbox({mRedButton.Render(), mYellowButton.Render(),
-                   mGreenButton.Render(), mBlueButton.Render(),
-                   mCancelButton.Render()}) |
+             hbox({mRedButton->Render(), mYellowButton->Render(),
+                   mGreenButton->Render(), mBlueButton->Render(),
+                   mCancelButton->Render()}) |
                  hcenter});
         return doc;
     }
@@ -101,11 +105,11 @@ public:
 
     // private:
 public:
-    Container mContainer{Container::Horizontal()};
-    ColorfulButton mRedButton{L"Red", ftxui::Color::Red};
-    ColorfulButton mYellowButton{L"Yellow", ftxui::Color::Yellow};
-    ColorfulButton mGreenButton{L"Green", ftxui::Color::Green};
-    ColorfulButton mBlueButton{L"Blue", ftxui::Color::Blue};
-    Button mCancelButton{L"Cancel"};
+    Component mContainer;
+    Component mRedButton;
+    Component mYellowButton;
+    Component mGreenButton;
+    Component mBlueButton;
+    Component mCancelButton;
 };
 }}  // namespace SailGame::Uno

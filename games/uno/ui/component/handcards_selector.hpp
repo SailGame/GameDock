@@ -2,7 +2,7 @@
 
 #include <sailgame/uno/card.h>
 
-#include <ftxui/component/component.hpp>
+#include <ftxui/component/component_base.hpp>
 #include <ftxui/screen/string.hpp>
 
 #include "../dom.hpp"
@@ -11,7 +11,7 @@ namespace SailGame { namespace Uno {
 
 using namespace ftxui;
 
-class HandcardsSelector : public Component {
+class HandcardsSelector : public ComponentBase {
 public:
     std::function<void()> OnMoveLeft;
 
@@ -22,7 +22,7 @@ public:
     HandcardsSelector() = default;
 
     Element Render(const Handcards &handcards, int cursor) {
-        if (!Focused()) {
+        if (!ComponentBase::Focused()) {
             // hide cursor if not focused
             cursor = -1;
         }
