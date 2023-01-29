@@ -36,26 +36,9 @@ public:
           mDock(UIProxy::Create(ClientNetworkInterface::Create(mMockStub),
                                 true)) {}
 
-    void SetUp() {
-        // spdlog::set_level(spdlog::level::err);
-        // mTimerThread = std::make_unique<std::thread>([this] {
-        //     for (;;) {
-        //         using namespace std::chrono_literals;
-        //         std::this_thread::sleep_for(0.05s);
-        //         mDock.mScreen.PostEvent(ftxui::Event::Custom);
-        //     }
-        // });
-        mDockThread =
-            std::make_unique<std::thread>([this] { mDock.Loop(false); });
-    }
+    void SetUp() {}
 
-    void TearDown() {
-        using namespace std::chrono_literals;
-        std::this_thread::sleep_for(1s);
-        mDock.mScreen.ExitLoopClosure()();
-        mDock.mUIProxy->Stop();
-        mDockThread->join();
-    }
+    void TearDown() { mDock.mUIProxy->Stop(); }
 
     void LoginSuccess(const std::string &token,
                       const std::string &username = "test") {
@@ -69,35 +52,19 @@ public:
     }
 
     void GameStart(const RoomDetails &roomDetails) {
-        mDock.mRoomScreen.TakeFocus();
+        mDock.mRoomScreen->TakeFocus();
+        ASSERT_EQ(mDock.mUIProxy->mGameManager->GetGameType(),
+                  GameType::NoGame);
+
         CoreMsg(CoreMsgBuilder::CreateBroadcastMsgByRoomDetails(0, 0, 0,
                                                                 roomDetails));
-        // EXPECT_TRUE(mDock.mRoomScreen.AreAllUsersReady());
-        // EXPECT_EQ(mDock.mUIProxy->mGameManager->GetGameType(),
-        // GameType::NoGame);
-        // EXPECT_FALSE(mDock.mPolyGameScreen.HasComponent());
-
         // next frame: all players are ready in room screen
-        // UserEvent();
-        EXPECT_TRUE(mDock.mPolyGameScreen.HasComponent());
-        EXPECT_TRUE(mDock.mPolyGameScreen.GetComponent()->Focused());
+        ASSERT_TRUE(mDock.mPolyGameScreen->HasComponent());
+        EXPECT_TRUE(mDock.mPolyGameScreen->Active());
         auto gameType = Util::GetGameTypeByGameName(roomDetails.gamename());
         EXPECT_EQ(mDock.mUIProxy->mGameManager->GetGameType(), gameType);
-        EXPECT_EQ(mDock.mPolyGameScreen.GetComponent()->GetGameType(),
+        EXPECT_EQ(mDock.mPolyGameScreen->GetComponent()->GetGameType(),
                   gameType);
-
-        // next frame: game screen
-        UserEvent();
-    }
-
-    void UserEvent(const std::function<void()> &callback = [] {}) {
-        // wait for 1 seconds to display ui
-        using namespace std::chrono_literals;
-        std::this_thread::sleep_for(0.5s);
-        callback();
-        // post an event to refresh ui
-        mDock.mScreen.PostEvent(ftxui::Event::Custom);
-        std::this_thread::sleep_for(0.5s);
     }
 
     void CoreMsg(const BroadcastMsg &msg) {
@@ -111,22 +78,11 @@ public:
         }
     }
 
-    void Refresh() {
-        using namespace std::chrono_literals;
-        // update focus in Render()
-        mDock.mScreen.PostEvent(ftxui::Event::Custom);
-        std::this_thread::sleep_for(0.5s);
-        // re-Render to show the update
-        mDock.mScreen.PostEvent(ftxui::Event::Custom);
-        std::this_thread::sleep_for(0.5s);
-    }
-
 protected:
     MockClientReader<BroadcastMsg> *mMockStream;
     std::shared_ptr<MockGameCoreStub> mMockStub;
 
     SailGame::Dock::Dock mDock;
-    std::unique_ptr<std::thread> mDockThread;
 };
 
 }}  // namespace SailGame::Test

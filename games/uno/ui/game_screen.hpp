@@ -138,10 +138,15 @@ public:
     Component mPanelContainer;
     std::shared_ptr<NotMyTurnPanel> mNotMyTurnPanel =
         std::make_shared<NotMyTurnPanel>();
-    std::shared_ptr<PlayOrPassPanel> mPlayOrPassPanel;
-    std::shared_ptr<ChooseCardPanel> mChooseCardPanel;
-    std::shared_ptr<PlayImmediatelyPanel> mPlayImmediatelyPanel;
-    std::shared_ptr<SpecifyColorPanel> mSpecifyColorPanel;
-    std::shared_ptr<GameOverPanel> mGameOverPanel;
+    std::shared_ptr<PlayOrPassPanel> mPlayOrPassPanel =
+        std::make_shared<PlayOrPassPanel>();
+    std::shared_ptr<ChooseCardPanel> mChooseCardPanel =
+        std::make_shared<ChooseCardPanel>();
+    std::shared_ptr<PlayImmediatelyPanel> mPlayImmediatelyPanel =
+        std::make_shared<PlayImmediatelyPanel>();
+    std::shared_ptr<SpecifyColorPanel> mSpecifyColorPanel =
+        std::make_shared<SpecifyColorPanel>();
+    std::shared_ptr<GameOverPanel> mGameOverPanel =
+        std::make_shared<GameOverPanel>();
 };
 }}  // namespace SailGame::Uno

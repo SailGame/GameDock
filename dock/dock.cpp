@@ -36,10 +36,11 @@ Dock::Dock(const std::shared_ptr<UIProxy> &uiProxy) : mUIProxy(uiProxy) {
     mRoomScreen->OnExitRoom = [this] { mLobbyScreen->TakeFocus(); };
 
     mUIProxy->OnGameStart = [this](GameType game) {
+        spdlog::info("Game Start");
         mUIProxy->SwitchToNewStateMachine(
-            GameAttrFactory::Create(game)->GetStateMachine());
+            GameAttrFactory::Get(game)->GetStateMachine());
         mPolyGameScreen->SetComponent(
-            GameAttrFactory::Create(game)->GetGameScreen());
+            GameAttrFactory::Get(game)->GetGameScreen());
         mPolyGameScreen->TakeFocus();
 
         mPolyGameScreen->Invoke(&GameScreen::RegisterGameOverCallback, [this] {

@@ -25,9 +25,8 @@ TEST_F(LoginScreenFixture, LoginSuccess) {
     std::string password = "123456";
     std::string token = "tttoken";
     auto points = 21;
-    mDock.mLoginScreen.mUsernameInput.content = to_wstring(username);
-    mDock.mLoginScreen.mPasswordInput.content = to_wstring(password);
-    UserEvent();
+    mDock.mLoginScreen->mUsernameInputContent = username;
+    mDock.mLoginScreen->mPasswordInputContent = password;
 
     auto loginRet = CoreMsgBuilder::CreateLoginRet(
         ErrorNumber::OK, token,
@@ -38,19 +37,18 @@ TEST_F(LoginScreenFixture, LoginSuccess) {
     EXPECT_CALL(*mMockStub, ListenRaw(_, ListenArgsMatcher(token)))
         .Times(1)
         .WillOnce(Return(mMockStream));
-    mDock.mLoginScreen.mLoginButton.TakeFocus();
-    UserEvent(mDock.mLoginScreen.mLoginButton.on_click);
-    EXPECT_EQ(mDock.mLobbyScreen.mUsername, username);
-    EXPECT_EQ(mDock.mLobbyScreen.mPoints, points);
-    EXPECT_TRUE(mDock.mLobbyScreen.Active());
+    mDock.mLoginScreen->mLoginButton->TakeFocus();
+    mDock.mLoginScreen->mLoginButton->OnEvent(Event::Return);
+    EXPECT_EQ(mDock.mLobbyScreen->mUsername, username);
+    EXPECT_EQ(mDock.mLobbyScreen->mPoints, points);
+    EXPECT_TRUE(mDock.mLobbyScreen->Active());
 }
 
 TEST_F(LoginScreenFixture, LoginFailure) {
     std::string username = "tbc";
     std::string password = "errorpassword";
-    mDock.mLoginScreen.mUsernameInput.content = to_wstring(username);
-    mDock.mLoginScreen.mPasswordInput.content = to_wstring(password);
-    UserEvent();
+    mDock.mLoginScreen->mUsernameInputContent = username;
+    mDock.mLoginScreen->mPasswordInputContent = password;
 
     // what token and account will return if error number is not ok?
     auto loginRet = CoreMsgBuilder::CreateLoginRet(
@@ -59,9 +57,9 @@ TEST_F(LoginScreenFixture, LoginFailure) {
         .Times(1)
         .WillOnce(DoAll(SetArgPointee<2>(loginRet), Return(Status::OK)));
     EXPECT_CALL(*mMockStub, ListenRaw(_, _)).Times(0);
-    mDock.mLoginScreen.mLoginButton.TakeFocus();
-    UserEvent(mDock.mLoginScreen.mLoginButton.on_click);
-    EXPECT_TRUE(mDock.mLoginScreen.Active());
-    EXPECT_FALSE(mDock.mLobbyScreen.Active());
+    mDock.mLoginScreen->mLoginButton->TakeFocus();
+    mDock.mLoginScreen->mLoginButton->OnEvent(Event::Return);
+    EXPECT_TRUE(mDock.mLoginScreen->Active());
+    EXPECT_FALSE(mDock.mLobbyScreen->Active());
 }
 }}  // namespace SailGame::Test

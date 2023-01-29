@@ -29,10 +29,10 @@ public:
         mYellowButton = Button(
             L"Yellow", [this] { Specify(CardColor::YELLOW); },
             ButtonOption::Animated(ftxui::Color::Yellow));
-        mBlueButton = Button(
+        mGreenButton = Button(
             L"Green", [this] { Specify(CardColor::GREEN); },
             ButtonOption::Animated(ftxui::Color::Green));
-        mRedButton = Button(
+        mBlueButton = Button(
             L"Blue", [this] { Specify(CardColor::BLUE); },
             ButtonOption::Animated(ftxui::Color::Blue));
         mCancelButton = Button(L"Cancel", [this] { OnCancel(); });

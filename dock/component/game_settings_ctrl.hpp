@@ -19,7 +19,6 @@ using google::protobuf::Any;
 class GameSettingsController : public ComponentWithUIProxy {
 public:
     GameSettingsController() {
-        mEmptyComponent = std::make_shared<EmptyComponent>();
         mController = Container::Vertical({});
         mTabContainer = Container::Tab(
             {
@@ -73,7 +72,7 @@ protected:
 protected:
     int mSelected = 0;
     Component mTabContainer;
-    Component mEmptyComponent;
+    Component mEmptyComponent = std::make_shared<EmptyComponent>();
     Component mController;
 };
 }}  // namespace SailGame::Dock

@@ -29,22 +29,12 @@ public:
     std::function<void()> OnExitRoom;
 
     RoomScreen() {
-        for (const auto& gameName : SupportedGames) {
-            try {
-                mGameAttrs.emplace(gameName, GameAttrFactory::Create(gameName));
-            } catch (const std::exception& e) {
-            }
-        }
-
-        mGameSettingsController =
-            std::make_shared<PolyComponent<GameSettingsController>>();
-        mEmptyComponent = std::make_shared<EmptyComponent>();
-
         auto gameListOption = RadioboxOption::Simple();
         gameListOption.on_change = [this] {
             if (mGameSelected != 0) {
                 mGameSettingsController->SetComponent(
-                    mGameAttrs.at(GetGameName())->GetGameSettingsController());
+                    GameAttrFactory::Get(GetGameName())
+                        ->GetGameSettingsController());
                 ControlRoom();
             } else {
                 mGameSettingsController->ResetComponent();
@@ -198,7 +188,6 @@ public:
     bool mIsReady{false};
     int mSettingButtonsContainerSelected{0};
     std::wstring mReadyToggleButtonLabel;
-    std::unordered_map<std::string, std::unique_ptr<IGameAttr>> mGameAttrs;
     int mGameSelected{0};
 
 public:
@@ -208,9 +197,11 @@ public:
     Component mExitRoomButton;
     Component mGameSettingsContainer;
     std::shared_ptr<PolyComponent<GameSettingsController>>
-        mGameSettingsController;
+        mGameSettingsController =
+            std::make_shared<PolyComponent<GameSettingsController>>();
+
     Component mSettingButtonsContainer;
-    std::shared_ptr<EmptyComponent> mEmptyComponent;
+    Component mEmptyComponent = std::make_shared<EmptyComponent>();
     Component mSetButton;
     Component mSaveOrCancelButtonsContainer;
     Component mSaveChangeButton;

@@ -20,7 +20,7 @@ Element Dom::ShowGameSettings(const RoomDetails &details) {
     if (details.gamename().empty()) {
         return text(L"empty");
     }
-    return GameAttrFactory::Create(details.gamename())
+    return GameAttrFactory::Get(details.gamename())
         ->ShowGameSettings(details.gamesetting());
 }
 

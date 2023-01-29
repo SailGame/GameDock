@@ -35,10 +35,11 @@ public:
     int mScreenContainerSelected{0};
     Component mScreenContainer;
     std::shared_ptr<UIProxy> mUIProxy;
-    std::shared_ptr<LoginScreen> mLoginScreen;
-    std::shared_ptr<LobbyScreen> mLobbyScreen;
-    std::shared_ptr<RoomScreen> mRoomScreen;
-    std::shared_ptr<PolyComponent<GameScreen>> mPolyGameScreen;
+    std::shared_ptr<LoginScreen> mLoginScreen = std::make_shared<LoginScreen>();
+    std::shared_ptr<LobbyScreen> mLobbyScreen = std::make_shared<LobbyScreen>();
+    std::shared_ptr<RoomScreen> mRoomScreen = std::make_shared<RoomScreen>();
+    std::shared_ptr<PolyComponent<GameScreen>> mPolyGameScreen =
+        std::make_shared<PolyComponent<GameScreen>>();
 };
 
 }}  // namespace SailGame::Dock

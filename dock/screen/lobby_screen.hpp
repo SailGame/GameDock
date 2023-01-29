@@ -7,8 +7,8 @@
 #include <ftxui/component/component.hpp>
 #include <ftxui/screen/string.hpp>
 
+#include "../component/option.hpp"
 #include "../core/component.h"
-#include "../dock/component/option.hpp"
 #include "../util/dom.hpp"
 #include "../util/util.hpp"
 

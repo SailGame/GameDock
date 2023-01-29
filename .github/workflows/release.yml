@@ -9,11 +9,8 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [macos-latest, ubuntu-20.04, ubuntu-18.04]
-    
-    env:
-      GRPC_INSTALL_DIR: ~/.grpc
-      GRPC_VERSION: 1.32.0
+        os: [ubuntu-20.04]
+        build_type: [release]
 
     steps:
     - uses: actions/checkout@v1
@@ -25,25 +22,14 @@ jobs:
       shell: bash
       run: |
         CMAKE_VERSION=$(cmake --version | grep -o "[0-9]*\.[0-9]*\.[0-9]*")
-        echo ::set-output name=CMAKE_VERSION::${CMAKE_VERSION}
+        echo "CMAKE_VERSION=${CMAKE_VERSION}" >> $GITHUB_OUTPUT
 
-    - name: Cache grpc
+    - name: Cache deps
       uses: actions/cache@v2
-      id: grpc-cache
+      id: deps-cache
       with:
-        path: ${{ env.GRPC_INSTALL_DIR }}
-        key: ${{ runner.os }}-${{ matrix.build_type }}-grpc-${{ env.GRPC_VERSION }}-${{ steps.cmake-version.outputs.CMAKE_VERSION }}
-
-    - name: Set up grpc
-      if: steps.grpc-cache.outputs.cache-hit != 'true'
-      run: |
-        cmake -E make_directory ${{ env.GRPC_INSTALL_DIR }}
-        git clone --depth 1 --recurse-submodules ---shallow-submodules -b v${{ env.GRPC_VERSION }} https://github.com/grpc/grpc
-        cmake -E make_directory grpc/cmake/build
-        cd grpc/cmake/build
-        cmake -DgRPC_INSTALL=ON -DgRPC_BUILD_TESTS=OFF -DCMAKE_INSTALL_PREFIX=${{ env.GRPC_INSTALL_DIR }} -DBENCHMARK_ENABLE_TESTING=OFF ../..
-        cmake --build . -j 8
-        cmake --build . --target install
+        path: build/_deps
+        key: ${{ runner.os }}-${{ matrix.build_type }}-${{ steps.cmake-version.outputs.CMAKE_VERSION }}-${{ hashFiles('externals/CMakeLists.txt') }}
 
     - name: Configure CMake
       shell: bash
