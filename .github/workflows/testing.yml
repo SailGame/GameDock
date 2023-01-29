@@ -32,7 +32,7 @@ jobs:
       shell: bash
       run: |
         sudo apt update
-        sudo apt install libprotobuf-dev
+        sudo apt install -y libprotobuf-dev
 
     - name: Cache deps
       uses: actions/cache@v2

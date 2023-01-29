@@ -1,6 +1,7 @@
 #pragma once
 
 #include <sailgame/common/types.h>
+// #include <texas/core/game_attr.h>
 
 #include <memory>
 #include <unordered_map>
@@ -21,6 +22,9 @@ public:
             switch (gameType) {
                 case GameType::Uno:
                     mGames.emplace(gameType, std::make_shared<Uno::GameAttr>());
+                    break;
+                case GameType::Texas:
+                    // mGames.emplace(gameType, std::make_shared<Texas::GameAttr>());
                     break;
                 default:
                     throw std::runtime_error("Unsupported game.");

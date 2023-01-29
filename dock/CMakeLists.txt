@@ -12,6 +12,7 @@ add_library(${PROJECT_NAME} ${DOCK_SRCS})
 target_link_libraries(${PROJECT_NAME} PUBLIC
   spdlog::spdlog
   game_core
+  texas
 )
 
 set_property(TARGET ${PROJECT_NAME} PROPERTY CXX_STANDARD 17)
