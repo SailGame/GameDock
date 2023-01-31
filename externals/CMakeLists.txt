@@ -6,6 +6,8 @@ set(BUILD_UNO_LIB ON)
 set(BUILD_TEXAS_LIB ON)
 set(IMPORT_GRPC_BY_FETCHCONTENT ON)
 set(GRPC_FETCHCONTENT_VERSION 1.32.0)
+# DEBUG_POSTFIX is set in Release build. Haven't figured out why, this is a workaround.
+set(protobuf_DEBUG_POSTFIX "")
 add_subdirectory(CommonLib)
 
 include(FetchContent)

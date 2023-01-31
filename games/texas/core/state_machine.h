@@ -12,13 +12,11 @@ namespace SailGame { namespace Texas {
 
 using Common::ClientStateMachine;
 using Common::GameType;
-using Common::IStateMachine;
 using Common::IState;
+using Common::IStateMachine;
 using namespace ::Core;
 
-struct State : IState {
-
-};
+struct State : IState {};
 
 class StateMachine : public ClientStateMachine {
 public:
@@ -30,8 +28,7 @@ public:
 
     const IState &GetState() const override { return mState; }
 
-    void SetState(const IState &state) override {
-    }
+    void SetState(const IState &state) override {}
 
     GameType GetType() const override { return GameType::Texas; }
 
@@ -45,4 +42,4 @@ protected:
 private:
     State mState;
 };
-}}  // namespace SailGame::Uno
+}}  // namespace SailGame::Texas

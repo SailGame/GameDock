@@ -28,12 +28,6 @@ jobs:
         CMAKE_VERSION=$(cmake --version | grep -o "[0-9]*\.[0-9]*\.[0-9]*")
         echo "CMAKE_VERSION=${CMAKE_VERSION}" >> $GITHUB_OUTPUT
 
-    - name: Install protobuf
-      shell: bash
-      run: |
-        sudo apt update
-        sudo apt install -y libprotobuf-dev
-
     - name: Cache deps
       uses: actions/cache@v2
       id: deps-cache

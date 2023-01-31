@@ -15,8 +15,7 @@ namespace SailGame { namespace Texas {
 using Common::CoreMsgBuilder;
 using Common::Util;
 
-void StateMachine::SwitchFrom(const ClientStateMachine &stateMachine) {
-}
+void StateMachine::SwitchFrom(const ClientStateMachine &stateMachine) {}
 
 // Dock::State StateMachine::SwitchToRoom() const { return mState.mRoomState; }
 
@@ -44,4 +43,4 @@ void StateMachine::Transition(const BroadcastMsg &msg) {
 //     throw std::runtime_error("Unsupported msg type");
 // }
 
-}}  // namespace SailGame::Uno
+}}  // namespace SailGame::Texas

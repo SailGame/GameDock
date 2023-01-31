@@ -24,7 +24,8 @@ public:
                     mGames.emplace(gameType, std::make_shared<Uno::GameAttr>());
                     break;
                 case GameType::Texas:
-                    // mGames.emplace(gameType, std::make_shared<Texas::GameAttr>());
+                    // mGames.emplace(gameType,
+                    // std::make_shared<Texas::GameAttr>());
                     break;
                 default:
                     throw std::runtime_error("Unsupported game.");
