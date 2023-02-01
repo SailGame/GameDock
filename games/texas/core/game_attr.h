@@ -11,14 +11,14 @@
 #include "../ui/game_screen.hpp"
 #include "state_machine.h"
 
-namespace SailGame { namespace Uno {
+namespace SailGame { namespace Texas {
 
 using Common::ClientStateMachine;
 using Common::Util;
 using Dock::IGameAttr;
 using ftxui::Element;
 using google::protobuf::Any;
-using ::Uno::StartGameSettings;
+using ::Texas::StartGameSettings;
 
 class GameAttr : public IGameAttr {
 public:
@@ -41,4 +41,4 @@ public:
     }
 };
 
-}}  // namespace SailGame::Uno
+}}  // namespace SailGame::Texas

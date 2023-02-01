@@ -1,6 +1,5 @@
 #pragma once
 
-#include <grpcpp/test/mock_stream.h>
 #include <gtest/gtest.h>
 #include <sailgame_pb/core/core_mock.grpc.pb.h>
 #include <sailgame_pb/core/types.pb.h>
@@ -11,6 +10,7 @@
 #include "../dock.h"
 #include "../util/util.hpp"
 #include "matcher.h"
+#include "mock_stream.h"
 
 namespace SailGame { namespace Test {
 
