@@ -42,8 +42,7 @@ jobs:
         cmake -E make_directory grpc/cmake/build
         cd grpc/cmake/build
         cmake -DgRPC_INSTALL=ON -DgRPC_BUILD_TESTS=OFF -DCMAKE_INSTALL_PREFIX=${{ env.GRPC_INSTALL_DIR }} -DBENCHMARK_ENABLE_TESTING=OFF ../..
-        cmake --build . -j 8
-        cmake --build . --target install
+        cmake --build . --target install -j 8
 
     - name: Configure CMake
       shell: bash
@@ -58,11 +57,6 @@ jobs:
       shell: bash
       run: |
         cmake --build . --config release -j 4 --target sailgame
-
-    - name: Test Release
-      working-directory: ${{runner.workspace}}/build/
-      shell: bash
-      run: ctest -L GameDock
 
     - name: Create package
       id: package

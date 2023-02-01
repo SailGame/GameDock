@@ -48,8 +48,7 @@ jobs:
         cmake -E make_directory grpc/cmake/build
         cd grpc/cmake/build
         cmake -DgRPC_INSTALL=ON -DgRPC_BUILD_TESTS=OFF -DCMAKE_INSTALL_PREFIX=${{ env.GRPC_INSTALL_DIR }} -DBENCHMARK_ENABLE_TESTING=OFF ../..
-        cmake --build . -j 8
-        cmake --build . --target install
+        cmake --build . --target install -j 8
   
     - name: Configure CMake
       shell: bash
@@ -68,4 +67,6 @@ jobs:
     - name: Test
       working-directory: ${{runner.workspace}}/build/
       shell: bash
-      run: ctest -L GameDock
+      run: |
+        cmake --build . --config ${{ matrix.build_type }} -j 4 --target dock_screen_test
+        ctest -L GameDock

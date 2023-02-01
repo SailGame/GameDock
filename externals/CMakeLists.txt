@@ -1,9 +1,6 @@
-# add_subdirectory(grpc)
 add_subdirectory(googletest)
 add_subdirectory(spdlog)
 add_subdirectory(cxxopts)
-set(BUILD_UNO_LIB ON)
-set(BUILD_TEXAS_LIB ON)
 add_subdirectory(CommonLib)
 
 include(FetchContent)
