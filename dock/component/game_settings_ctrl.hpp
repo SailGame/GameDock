@@ -5,7 +5,6 @@
 #include <sailgame/common/util.h>
 
 #include <ftxui/component/component.hpp>
-#include <ftxui/component/container.hpp>
 
 #include "../core/component.h"
 #include "empty_component.hpp"
@@ -20,26 +19,33 @@ using google::protobuf::Any;
 class GameSettingsController : public ComponentWithUIProxy {
 public:
     GameSettingsController() {
-        Add(&mTabContainer);
-        mTabContainer.Add(&mEmptyComponent);
-        mTabContainer.Add(&mController);
+        mController = Container::Vertical({});
+        mTabContainer = Container::Tab(
+            {
+                mEmptyComponent,
+                mController,
+            },
+            &mSelected);
+        Add(mTabContainer);
     }
 
     void ControlMode() {
         InitControlMode();
-        mController.TakeFocus();
+        mController->TakeFocus();
     }
 
-    void ReadOnlyMode() { mTabContainer.SetActiveChild(&mEmptyComponent); }
+    void ReadOnlyMode() {
+        mTabContainer->SetActiveChild(mEmptyComponent.get());
+    }
 
     virtual Any GetControlResults() = 0;
 
     virtual Element Render() {
-        if (mUIProxy->mGameManager->GetGameType() != GameType::NoGame) {
+        if (mUIProxy->mGameManager->GetGameType() == GameType::NoGame) {
             return hbox();
         }
-        return mController.Active() ? RenderControlMode()
-                                    : RenderReadOnlyMode();
+        return mController->Active() ? RenderControlMode()
+                                     : RenderReadOnlyMode();
     }
 
 protected:
@@ -64,8 +70,9 @@ protected:
     bool ConvertSelectedToBool(int selected) { return (selected == 0); }
 
 protected:
-    Container mTabContainer{Container::Tab(nullptr)};
-    EmptyComponent mEmptyComponent;
+    int mSelected = 0;
+    Component mTabContainer;
+    Component mEmptyComponent = std::make_shared<EmptyComponent>();
     Component mController;
 };
 }}  // namespace SailGame::Dock

@@ -4,15 +4,10 @@
 #include <sailgame_pb/core/error.pb.h>
 #include <sailgame_pb/core/types.pb.h>
 
-#include <ftxui/component/button.hpp>
 #include <ftxui/component/component.hpp>
-#include <ftxui/component/container.hpp>
-#include <ftxui/component/input.hpp>
-#include <ftxui/component/menu.hpp>
 #include <ftxui/screen/string.hpp>
 
-#include "../component/non_border_button.hpp"
-#include "../component/text_center_button.hpp"
+#include "../component/option.hpp"
 #include "../core/component.h"
 #include "../util/dom.hpp"
 #include "../util/util.hpp"
@@ -28,47 +23,54 @@ using ::Core::RoomDetails;
 using SailGame::Common::CoreMsgBuilder;
 using SailGame::Common::Util;
 using SailGame::Dock::DockUtil;
-using SailGame::Dock::NonBorderButton;
 
 class LobbyScreen : public DockComponent {
 public:
     std::function<void(int)> OnJoinRoom;
 
     LobbyScreen() {
-        mContainer.Add(&mOpBar);
-        mContainer.Add(&mRoomDisplayArea);
+        auto roomListOption = MenuOption::Vertical();
+        roomListOption.on_change = [this] {
+            if (mRoomSelected < mRooms.size()) QueryRoomByIndex(mRoomSelected);
+        };
+        mRoomList = Menu(&mRoomNames, &mRoomSelected, roomListOption);
 
-        mOpBar.Add(&mSearchInput);
-        mOpBar.Add(&mSearchButton);
-        mOpBar.Add(&mCreateButton);
-        mOpBar.Add(&mQueryAccountInput);
-        mOpBar.Add(&mQueryAccountButton);
+        mJoinRoomButton = Button(
+            L"Join", [this] { JoinRoom(); }, TextCenterButtonOption());
 
-        mRoomDisplayArea.Add(&mRoomList);
-        mRoomDisplayArea.Add(&mRoomDetail);
+        mRoomDetail = Container::Vertical({mJoinRoomButton});
 
-        mRoomDetail.Add(&mJoinRoomButton);
+        mRoomDisplayArea = Container::Horizontal({mRoomList, mRoomDetail});
+        mSearchInput = Input(&mSearchInputContent, L"game name or room id");
+        mSearchButton = Button(
+            L"Search Room", [this] { SearchRoom(); }, NonBorderButtonOption());
 
-        mSearchInput.placeholder = L"game name or room id";
-        mSearchButton.on_click = [this] { SearchRoom(); };
+        mCreateButton = Button(
+            L"Create Room", [this] { CreateRoom(); }, NonBorderButtonOption());
 
-        mCreateButton.on_click = [this] { CreateRoom(); };
+        mQueryAccountInput = Input(&mQueryAccountInputContent, L"username");
+        mQueryAccountButton = Button(
+            L"Query Account", [this] { QueryAccount(); },
+            NonBorderButtonOption());
 
-        mQueryAccountInput.placeholder = L"username";
-        mQueryAccountButton.on_click = [this] { QueryAccount(); };
+        mOpBar =
+            Container::Horizontal({mSearchInput, mSearchButton, mCreateButton,
+                                   mQueryAccountInput, mQueryAccountButton});
 
-        mRoomList.on_change = [this] { QueryRoomByIndex(mRoomList.selected); };
-
-        mJoinRoomButton.on_click = [this] { JoinRoom(); };
+        mContainer->Add(mOpBar);
+        mContainer->Add(mRoomDisplayArea);
     }
 
     void Update() {
-        Dom::MapVectorToMenuEntries(mRoomList, mRooms, &Dom::RoomToString);
-        if (mRooms.empty() && mRoomList.Focused()) {
+        mRoomNames.clear();
+        for (const auto& room : mRooms) {
+            mRoomNames.push_back(Dom::RoomToString(room));
+        }
+        if (mRooms.empty() && mRoomList->Focused()) {
             if (mDetails.gamename().empty()) {
-                mContainer.SetActiveChild(&mOpBar);
+                mContainer->SetActiveChild(mOpBar.get());
             } else {
-                mRoomDisplayArea.SetActiveChild(&mRoomDetail);
+                mRoomDisplayArea->SetActiveChild(mRoomDetail.get());
             }
         }
     }
@@ -81,8 +83,8 @@ public:
                   text(L"points: "), text(to_wstring(mPoints))});
 
         auto roomList =
-            vbox({text(L"Room List"), separator(), mRoomList.Render()}) | flex |
-            width(20);
+            vbox({text(L"Room List"), separator(), mRoomList->Render()}) |
+            flex | width(20);
 
         auto roomDetail =
             vbox({text(L"Room Detail"), separator(),
@@ -92,17 +94,17 @@ public:
                       text(L"RoomId: ") | bold,
                       text(to_wstring(mDetails.roomid())) | flex,
                   }),
-                  separator(), text(L"Players in the room") | bold,
+                  separator(), text(L"Players in the room: ") | bold,
                   Dom::MapVectorToVBox(
                       DockUtil::GetUsernamesFromRoomDetails(mDetails),
                       &Dom::UserNameToText),
-                  separator(), text(L"Game settings") | bold,
+                  separator(), text(L"Game settings: ") | bold,
                   Dom::ShowGameSettings(mDetails), separator(),
-                  mJoinRoomButton.Render()}) |
+                  mJoinRoomButton->Render()}) |
             xflex;
 
         auto roomElement = hbox({roomList, separator(),
-                                 (mDetails.gamename().empty()
+                                 (mDetails.roomid() == 0
                                       ? text(L"choose a room to view details")
                                       : roomDetail)}) |
                            yflex;
@@ -116,11 +118,11 @@ public:
         auto doc = vbox(
             {topBar, separator(),
              // mOpBar.Render(),
-             hbox({mSearchInput.Render() | width(25), mSearchButton.Render(),
-                   text(L" "), separator(), text(L" "), mCreateButton.Render(),
+             hbox({mSearchInput->Render() | width(25), mSearchButton->Render(),
+                   text(L" "), separator(), text(L" "), mCreateButton->Render(),
                    text(L" "), separator(), text(L" "),
-                   mQueryAccountInput.Render() | width(14),
-                   mQueryAccountButton.Render()}),
+                   mQueryAccountInput->Render() | width(14),
+                   mQueryAccountButton->Render()}),
              separator(), mShowRoomList ? roomElement : accountElement});
 
         return TryRenderDialog(doc) | range(80, 25) | border | center;
@@ -128,23 +130,20 @@ public:
 
 private:
     void SearchRoom() {
-        if (mSearchInput.content.empty()) {
-            return;
-        }
         mShowRoomList = true;
-        auto content = to_string(mSearchInput.content);
+        auto content = mSearchInputContent;
         if (auto roomId = DockUtil::TryToGetRoomId(content); roomId != -1) {
             QueryRoomByRoomId(roomId);
         } else {
             auto ret = mUIProxy->ListRoom(content);
             if (ret.err() != ErrorNumber::OK) {
-                ShowDialogWithText();
+                ShowDialogWithText(ErrorNumber_Name(ret.err()));
                 return;
             }
             mRooms = Util::ConvertGrpcRepeatedPtrFieldToVector(ret.room());
             if (!mRooms.empty()) {
-                mRoomList.selected = 0;
-                QueryRoomByIndex(0);
+                mRoomSelected = 0;
+                QueryRoomByIndex(mRoomSelected);
             }
         }
     }
@@ -152,24 +151,14 @@ private:
     void CreateRoom() {
         auto ret = mUIProxy->CreateRoom();
         if (ret.err() != ErrorNumber::OK) {
-            ShowDialogWithText();
+            ShowDialogWithText(ErrorNumber_Name(ret.err()));
             return;
         }
         auto roomId = ret.roomid();
 
-        /// TODO: for now set game to UNO, in the future make it configurable
-        auto ctrlRet =
-            mUIProxy->ControlRoom(roomId, "UNO", "",
-                                  Uno::MsgBuilder::CreateStartGameSettings(
-                                      true, true, false, false, 15));
-        if (ctrlRet.err() != ErrorNumber::OK) {
-            ShowDialogWithText();
-            return;
-        }
-
         auto joinRet = mUIProxy->JoinRoom(roomId);
         if (joinRet.err() != ErrorNumber::OK) {
-            ShowDialogWithText();
+            ShowDialogWithText(ErrorNumber_Name(joinRet.err()));
             return;
         }
 
@@ -188,35 +177,23 @@ private:
     void QueryRoomByRoomId(int roomId) {
         auto ret = mUIProxy->QueryRoom(roomId);
         if (ret.err() != ErrorNumber::OK) {
-            switch (ret.err()) {
-                case ErrorNumber::QryRoom_InvalidRoomID:
-                    ShowDialogWithText("Room doesn't exist.");
-                    return;
-                default:
-                    ShowDialogWithText();
-                    return;
-            }
+            ShowDialogWithText(ErrorNumber_Name(ret.err()));
+            mDetails.Clear();
+            return;
         }
         mDetails = ret.room();
     }
 
     void QueryRoomByIndex(int roomIndex) {
-        QueryRoomByRoomId(mRooms[roomIndex].roomid());
+        QueryRoomByRoomId(mRooms.at(roomIndex).roomid());
     }
 
     void JoinRoom() {
-        // auto roomId = mRooms[mRoomList.selected].roomid();
         auto roomId = mDetails.roomid();
         auto ret = mUIProxy->JoinRoom(roomId);
         if (ret.err() != ErrorNumber::OK) {
-            switch (ret.err()) {
-                case ErrorNumber::JoinRoom_FullRoom:
-                    ShowDialogWithText("Room is full.");
-                    return;
-                default:
-                    ShowDialogWithText();
-                    return;
-            }
+            ShowDialogWithText(ErrorNumber_Name(ret.err()));
+            return;
         }
         OnJoinRoom(roomId);
     }
@@ -226,22 +203,27 @@ public:
     std::string mUsername;
     int mPoints{0};
     std::vector<Room> mRooms;
+    std::vector<std::wstring> mRoomNames;
     RoomDetails mDetails;
     // if true, left sidebar will show roomlist, otherwise show account info
     bool mShowRoomList{true};
     Account mAccount;
 
 public:
-    Container mOpBar{Container::Horizontal()};
-    Input mSearchInput;
-    NonBorderButton mSearchButton{L"Search Room"};
-    NonBorderButton mCreateButton{L"Create Room"};
-    Input mQueryAccountInput;
-    NonBorderButton mQueryAccountButton{L"Query Account"};
-    Container mRoomDisplayArea{Container::Horizontal()};
-    Menu mRoomList;
-    Container mRoomDetail{Container::Vertical()};
-    TextCenterButton mJoinRoomButton{L"Join"};
+    std::string mSearchInputContent;
+    std::string mQueryAccountInputContent;
+    int mRoomSelected = 0;
+    ftxui::Component mContent;
+    ftxui::Component mOpBar;
+    ftxui::Component mSearchInput;
+    ftxui::Component mSearchButton;
+    ftxui::Component mCreateButton;
+    ftxui::Component mQueryAccountInput;
+    ftxui::Component mQueryAccountButton;
+    ftxui::Component mRoomDisplayArea;
+    ftxui::Component mRoomList;
+    ftxui::Component mRoomDetail;
+    ftxui::Component mJoinRoomButton;
 };
 
 }}  // namespace SailGame::Dock

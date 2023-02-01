@@ -5,8 +5,7 @@
 #include <sailgame/uno/card.h>
 #include <sailgame/uno/msg_builder.h>
 
-#include <ftxui/component/button.hpp>
-#include <ftxui/component/container.hpp>
+#include <ftxui/component/component.hpp>
 
 #include "../component.h"
 #include "../component/handcards_selector.hpp"
@@ -29,10 +28,6 @@ public:
     std::function<void()> OnPlayWildCard;
 
     ChooseCardPanel() {
-        Add(&mContainer);
-        mContainer.Add(&mHandcardsSelector);
-        mContainer.Add(&mCancelButton);
-
         // wrap mCursor in Render method instead of here.
         // ftxui processes all pending events before rendering next frame
         // so if OnMove and OnPlay event come and get processed together,
@@ -41,19 +36,23 @@ public:
         // but such possibility is too small, and considering that
         // we want event callbacks defined in constructor, mCursor is
         // not wrapped here.
-        mHandcardsSelector.OnMoveLeft = [this] {
+        mHandcardsSelector = std::make_shared<HandcardsSelector>();
+        mHandcardsSelector->OnMoveLeft = [this] {
             mHintText = L"";
             mCursor--;
         };
-        mHandcardsSelector.OnMoveRight = [this] {
+        mHandcardsSelector->OnMoveRight = [this] {
             mHintText = L"";
             mCursor++;
         };
-        mHandcardsSelector.OnPlay = [this] {
+        mHandcardsSelector->OnPlay = [this] {
             mHintText = L"";
             TryToPlay();
         };
-        mCancelButton.on_click = [this] { OnCancel(); };
+        mCancelButton = Button(L"Cancel", [this] { OnCancel(); });
+
+        mContainer = Container::Vertical({mHandcardsSelector, mCancelButton});
+        Add(mContainer);
     }
 
     void Update() {
@@ -83,17 +82,17 @@ public:
             (handcards.Number() == 0 ? -1
                                      : Util::Wrap(mCursor, handcards.Number()));
 
-        auto doc =
-            vbox({Dom::PlayerBox(to_wstring(username),
-                                 mHandcardsSelector.Render(handcards, mCursor)),
-                  Dom::TimeIndicator(timeElapsed), text(mHintText),
-                  mCancelButton.Render() | hcenter});
+        auto doc = vbox(
+            {Dom::PlayerBox(to_wstring(username),
+                            mHandcardsSelector->Render(handcards, mCursor)),
+             Dom::TimeIndicator(timeElapsed), text(mHintText),
+             mCancelButton->Render() | hcenter});
         return doc;
     }
 
     void TakeFocus() override {
         mHintText = L"";
-        mHandcardsSelector.TakeFocus();
+        mHandcardsSelector->TakeFocus();
         mHasTimeout = false;
         // Component::TakeFocus();
     }
@@ -134,8 +133,8 @@ public:
 
 public:
     // private:
-    Container mContainer{Container::Vertical()};
-    HandcardsSelector mHandcardsSelector;
-    Button mCancelButton{L"Cancel"};
+    Component mContainer;
+    std::shared_ptr<HandcardsSelector> mHandcardsSelector;
+    Component mCancelButton;
 };
 }}  // namespace SailGame::Uno

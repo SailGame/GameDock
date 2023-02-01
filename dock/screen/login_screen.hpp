@@ -1,11 +1,7 @@
 #pragma once
 
-#include <ftxui/component/button.hpp>
 #include <ftxui/component/component.hpp>
-#include <ftxui/component/container.hpp>
-#include <ftxui/component/input.hpp>
 
-#include "../component/text_center_button.hpp"
 #include "../core/component.h"
 
 namespace SailGame { namespace Dock {
@@ -20,30 +16,30 @@ public:
     std::function<void(const LoginRet &)> OnLogin;
 
     LoginScreen() {
-        mContainer.Add(&mUsernameInput);
-        mContainer.Add(&mPasswordInput);
-        mContainer.Add(&mLoginButton);
-
-        mUsernameInput.placeholder = L"username";
-        mPasswordInput.placeholder = L"password";
-        mLoginButton.on_click = [this] {
-            auto ret = mUIProxy->Login(to_string(mUsernameInput.content),
-                                       to_string(mPasswordInput.content));
+        mUsernameInput = Input(&mUsernameInputContent, L"username");
+        mPasswordInput = Input(&mPasswordInputContent, L"password");
+        mLoginButton = Button(L"Login", [this] {
+            auto ret =
+                mUIProxy->Login(mUsernameInputContent, mPasswordInputContent);
             if (ret.err() != ErrorNumber::OK) {
-                ShowDialogWithText();
+                ShowDialogWithText(ErrorNumber_Name(ret.err()));
                 return;
             }
             OnLogin(ret);
-        };
+        });
+
+        mContainer->Add(mUsernameInput);
+        mContainer->Add(mPasswordInput);
+        mContainer->Add(mLoginButton);
     }
 
     Element Render() final {
         auto doc = vbox({
                        text(L"Login") | hcenter,
                        separator(),
-                       mUsernameInput.Render(),
-                       mPasswordInput.Render(),
-                       mLoginButton.Render(),
+                       mUsernameInput->Render(),
+                       mPasswordInput->Render(),
+                       mLoginButton->Render(),
                    }) |
                    range(40, 10) | center;
 
@@ -51,9 +47,11 @@ public:
     }
 
 public:
-    Input mUsernameInput;
-    Input mPasswordInput;
-    TextCenterButton mLoginButton{L"Login"};
+    std::string mUsernameInputContent;
+    std::string mPasswordInputContent;
+    Component mUsernameInput;
+    Component mPasswordInput;
+    Component mLoginButton;
 };
 
 }}  // namespace SailGame::Dock

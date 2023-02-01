@@ -1,7 +1,6 @@
 #pragma once
 
-#include <ftxui/component/button.hpp>
-#include <ftxui/component/container.hpp>
+#include <ftxui/component/component.hpp>
 #include <ftxui/screen/string.hpp>
 
 #include "../component.h"
@@ -16,10 +15,11 @@ public:
     std::function<void()> OnReturn;
 
     GameOverPanel() {
-        Add(&mContainer);
-        mContainer.Add(&mReturnButton);
+        mReturnButton = Button(L"Return", [this] { OnReturn(); });
 
-        mReturnButton.on_click = [this] { OnReturn(); };
+        mContainer = Container::Horizontal({mReturnButton});
+
+        Add(mContainer);
     }
 
     Element Render() {
@@ -38,13 +38,13 @@ public:
         auto doc = vbox({Dom::PlayerBox(to_wstring(username),
                                         Dom::ConvertHandcardsToVBox(handcards)),
                          text(to_wstring(winnerText)),
-                         mReturnButton.Render() | hcenter});
+                         mReturnButton->Render() | hcenter});
         return doc;
     }
 
 public:
-    Container mContainer{Container::Horizontal()};
-    Button mReturnButton{L"Return"};
+    Component mContainer;
+    Component mReturnButton;
 };
 
 }}  // namespace SailGame::Uno

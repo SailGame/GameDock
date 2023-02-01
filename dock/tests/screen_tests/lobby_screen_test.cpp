@@ -22,9 +22,9 @@ class LobbyScreenFixture : public ScreenFixture {
 public:
     LobbyScreenFixture() : ScreenFixture() {
         LoginSuccess(mToken);
-        mDock.mLobbyScreen.mUsername = "test";
-        mDock.mLobbyScreen.mPoints = 2147483648;
-        mDock.mLobbyScreen.TakeFocus();
+        mDock.mLobbyScreen->mUsername = "test";
+        mDock.mLobbyScreen->mPoints = 2147483648;
+        mDock.mLobbyScreen->TakeFocus();
     }
 
 protected:
@@ -33,8 +33,7 @@ protected:
 
 TEST_F(LobbyScreenFixture, SearchRoomList_HasRoom) {
     std::string content = "UNO";
-    mDock.mLobbyScreen.mSearchInput.content = to_wstring(content);
-    UserEvent();
+    mDock.mLobbyScreen->mSearchInputContent = content;
 
     std::vector<Room> roomList = {
         CoreMsgBuilder::CreateRoom("UNO", 101, {"a", "b", "c"}),
@@ -61,20 +60,19 @@ TEST_F(LobbyScreenFixture, SearchRoomList_HasRoom) {
         .Times(1)
         .WillOnce(DoAll(SetArgPointee<2>(queryRoomRet), Return(Status::OK)));
 
-    mDock.mLobbyScreen.mSearchButton.TakeFocus();
-    UserEvent(mDock.mLobbyScreen.mSearchButton.on_click);
+    mDock.mLobbyScreen->mSearchButton->TakeFocus();
+    mDock.mLobbyScreen->mSearchButton->OnEvent(Event::Return);
     for (auto i = 0; i < roomList.size(); i++) {
-        EXPECT_TRUE(MessageDifferencer::Equals(mDock.mLobbyScreen.mRooms[i],
+        EXPECT_TRUE(MessageDifferencer::Equals(mDock.mLobbyScreen->mRooms[i],
                                                roomList[i]));
     }
-    EXPECT_TRUE(MessageDifferencer::Equals(mDock.mLobbyScreen.mDetails,
+    EXPECT_TRUE(MessageDifferencer::Equals(mDock.mLobbyScreen->mDetails,
                                            queryRoomRet.room()));
 }
 
 TEST_F(LobbyScreenFixture, SearchRoomList_NoRoom) {
     std::string content = "UNA";
-    mDock.mLobbyScreen.mSearchInput.content = to_wstring(content);
-    UserEvent();
+    mDock.mLobbyScreen->mSearchInputContent = content;
 
     auto listRoomRet = CoreMsgBuilder::CreateListRoomRet(ErrorNumber::OK, {});
     EXPECT_CALL(*mMockStub, ListRoom(_, ListRoomArgsMatcher(content), _))
@@ -82,9 +80,9 @@ TEST_F(LobbyScreenFixture, SearchRoomList_NoRoom) {
         .WillOnce(DoAll(SetArgPointee<2>(listRoomRet), Return(Status::OK)));
     EXPECT_CALL(*mMockStub, QueryRoom(_, _, _)).Times(0);
 
-    mDock.mLobbyScreen.mSearchButton.TakeFocus();
-    UserEvent(mDock.mLobbyScreen.mSearchButton.on_click);
-    EXPECT_TRUE(mDock.mLobbyScreen.mRooms.empty());
+    mDock.mLobbyScreen->mSearchButton->TakeFocus();
+    mDock.mLobbyScreen->mSearchButton->OnEvent(Event::Return);
+    EXPECT_TRUE(mDock.mLobbyScreen->mRooms.empty());
 }
 
 }}  // namespace SailGame::Test

@@ -1,7 +1,6 @@
 #pragma once
 
-#include <ftxui/component/button.hpp>
-#include <ftxui/component/container.hpp>
+#include <ftxui/component/component.hpp>
 
 #include "../component.h"
 
@@ -18,12 +17,12 @@ public:
     std::function<void()> OnHasChanceToPlayAfterDraw;
 
     PlayOrPassPanel() {
-        Add(&mContainer);
-        mContainer.Add(&mPlayButton);
-        mContainer.Add(&mPassButton);
+        mPassButtonLabel = L"Choose a card to play";
+        mPlayButton = Button(&mPassButtonLabel, [this] { OnPlay(); });
+        mPassButton = Button(L"", [this] { Pass(); });
 
-        mPlayButton.on_click = [this] { OnPlay(); };
-        mPassButton.on_click = [this] { Pass(); };
+        mContainer = Container::Horizontal({mPlayButton, mPassButton});
+        Add(mContainer);
     }
 
     void Update() {
@@ -63,7 +62,7 @@ public:
             {Dom::PlayerBox(to_wstring(username),
                             Dom::ConvertHandcardsToVBox(handcards)),
              Dom::TimeIndicator(timeElapsed),
-             hbox({mPlayButton.Render(), mPassButton.Render()}) | hcenter});
+             hbox({mPlayButton->Render(), mPassButton->Render()}) | hcenter});
         return doc;
     }
 
@@ -93,11 +92,11 @@ private:
 
     void UpdatePassButtonLabel() {
         if (GetState().mGameState.mLastPlayedCard.mText == CardText::SKIP) {
-            mPassButton.label = L"Skip this turn";
+            mPassButtonLabel = L"Skip this turn";
         } else {
             auto number = GetState().mGameState.mCardsNumToDraw;
-            mPassButton.label = L"Draw " + to_wstring(number) +
-                                (number == 1 ? L" card" : L" cards");
+            mPassButtonLabel = L"Draw " + to_wstring(number) +
+                               (number == 1 ? L" card" : L" cards");
         }
     }
 
@@ -115,8 +114,9 @@ private:
 
     // private:
 public:
-    Container mContainer{Container::Horizontal()};
-    Button mPlayButton{L"Choose a card to play"};
-    Button mPassButton;
+    std::wstring mPassButtonLabel;
+    Component mContainer;
+    Component mPlayButton;
+    Component mPassButton;
 };
 }}  // namespace SailGame::Uno

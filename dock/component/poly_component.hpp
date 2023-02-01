@@ -23,18 +23,19 @@ public:
         return mComponent ? mComponent->Render() : hbox();
     }
 
-    Component *ActiveChild() override {
+    Component ActiveChild() override {
         // active child is the one that is currently held
-        return mComponent.get();
+        return mComponent;
     }
 
     bool HasComponent() const { return mComponent != nullptr; }
 
-    void SetComponent(const std::shared_ptr<T> &component) {
+    void SetComponent(std::shared_ptr<T> component) {
         // append each component ever met as child
-        Add(component.get());
         mComponent = component;
         mComponent->SetUIProxy(mUIProxy);
+
+        Add(component);
     }
 
     void ResetComponent() { mComponent.reset(); }

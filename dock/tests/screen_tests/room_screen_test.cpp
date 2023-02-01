@@ -22,7 +22,7 @@ class RoomScreenFixture : public ScreenFixture {
 public:
     RoomScreenFixture() : ScreenFixture() {
         LoginSuccess(mToken);
-        mDock.mRoomScreen.TakeFocus();
+        mDock.mRoomScreen->TakeFocus();
     }
 
 protected:
@@ -30,22 +30,22 @@ protected:
 };
 
 TEST_F(RoomScreenFixture, ToggleReady) {
-    EXPECT_FALSE(mDock.mRoomScreen.mIsReady);
+    EXPECT_FALSE(mDock.mRoomScreen->mIsReady);
 
     Ready ready = Ready::READY;
     auto readyRet = CoreMsgBuilder::CreateOperationInRoomRet(ErrorNumber::OK);
     EXPECT_CALL(*mMockStub, OperationInRoom(_, ReadyMatcher(mToken, ready), _))
         .Times(1)
         .WillOnce(DoAll(SetArgPointee<2>(readyRet), Return(Status::OK)));
-    UserEvent(mDock.mRoomScreen.mReadyToggleButton.on_click);
-    EXPECT_TRUE(mDock.mRoomScreen.mIsReady);
+    mDock.mRoomScreen->mReadyToggleButton->OnEvent(Event::Return);
+    EXPECT_TRUE(mDock.mRoomScreen->mIsReady);
 
     ready = Ready::CANCEL;
     EXPECT_CALL(*mMockStub, OperationInRoom(_, ReadyMatcher(mToken, ready), _))
         .Times(1)
         .WillOnce(DoAll(SetArgPointee<2>(readyRet), Return(Status::OK)));
-    UserEvent(mDock.mRoomScreen.mReadyToggleButton.on_click);
-    EXPECT_FALSE(mDock.mRoomScreen.mIsReady);
+    mDock.mRoomScreen->mReadyToggleButton->OnEvent(Event::Return);
+    EXPECT_FALSE(mDock.mRoomScreen->mIsReady);
 }
 
 TEST_F(RoomScreenFixture, ExitRoom) {
@@ -53,8 +53,8 @@ TEST_F(RoomScreenFixture, ExitRoom) {
     EXPECT_CALL(*mMockStub, ExitRoom(_, ExitRoomArgsMatcher(mToken), _))
         .Times(1)
         .WillOnce(DoAll(SetArgPointee<2>(exitRoomRet), Return(Status::OK)));
-    UserEvent(mDock.mRoomScreen.mExitRoomButton.on_click);
-    EXPECT_TRUE(mDock.mLobbyScreen.Focused());
+    mDock.mRoomScreen->mExitRoomButton->OnEvent(Event::Return);
+    EXPECT_TRUE(mDock.mLobbyScreen->Focused());
 }
 
 TEST_F(RoomScreenFixture, NewPlayerJoins) {
@@ -68,8 +68,7 @@ TEST_F(RoomScreenFixture, NewPlayerJoins) {
     CoreMsg(
         CoreMsgBuilder::CreateBroadcastMsgByRoomDetails(0, 0, 0, roomDetails));
     EXPECT_TRUE(MessageDifferencer::Equals(
-        mDock.mRoomScreen.GetState().mRoomDetails, roomDetails));
-    UserEvent();
+        mDock.mRoomScreen->GetState().mRoomDetails, roomDetails));
 
     // now comes a new player
     roomDetails.add_user()->CopyFrom(
@@ -77,11 +76,20 @@ TEST_F(RoomScreenFixture, NewPlayerJoins) {
     CoreMsg(
         CoreMsgBuilder::CreateBroadcastMsgByRoomDetails(0, 0, 0, roomDetails));
     EXPECT_TRUE(MessageDifferencer::Equals(
-        mDock.mRoomScreen.GetState().mRoomDetails, roomDetails));
-    UserEvent();
+        mDock.mRoomScreen->GetState().mRoomDetails, roomDetails));
 }
 
 TEST_F(RoomScreenFixture, GameStart) {
+    mDock.mRoomScreen->mGameList->TakeFocus();
+    mDock.mRoomScreen->mGameList->OnEvent(Event::ArrowDown);
+
+    auto controlRoomRet = CoreMsgBuilder::CreateControlRoomRet(
+        ErrorNumber::OK, google::protobuf::Any());
+    EXPECT_CALL(*mMockStub, ControlRoom(_, _, _))
+        .Times(1)
+        .WillOnce(DoAll(SetArgPointee<2>(controlRoomRet), Return(Status::OK)));
+    mDock.mRoomScreen->mGameList->OnEvent(Event::Return);
+
     RoomDetails roomDetails = CoreMsgBuilder::CreateRoomDetails(
         "UNO", 102,
         {
@@ -94,7 +102,6 @@ TEST_F(RoomScreenFixture, GameStart) {
         Uno::MsgBuilder::CreateStartGameSettings(true, true, false, false, 15));
     CoreMsg(
         CoreMsgBuilder::CreateBroadcastMsgByRoomDetails(0, 0, 0, roomDetails));
-    UserEvent();
 
     // b gets ready, game start now
     // note that when all users are ready, Core will automatically

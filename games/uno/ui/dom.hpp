@@ -4,7 +4,7 @@
 #include <sailgame/common/util.h>
 #include <sailgame/uno/card.h>
 
-#include <ftxui/component/container.hpp>
+#include <ftxui/component/component.hpp>
 #include <ftxui/screen/string.hpp>
 
 #include "../core/state.h"
@@ -121,30 +121,30 @@ public:
     static Element ConvertCardRowToHBox(const Handcards &handcards, int rowNum,
                                         int cursor = -1) {
         auto cardsPerRow = 8;
-        auto hBox = hbox({});
         auto start = rowNum * cardsPerRow;
         auto end = std::min(start + cardsPerRow, handcards.Number());
+        ftxui::Elements elements;
         for (auto i = start; i < end; i++) {
             auto prefix = (i == cursor) ? L">" : L" ";
-            hBox->children.push_back(text(prefix));
-            hBox->children.push_back(ConvertCardToFtxText(handcards.At(i)));
-            hBox->children.push_back(text(L" "));
+            elements.push_back(text(prefix));
+            elements.push_back(ConvertCardToFtxText(handcards.At(i)));
+            elements.push_back(text(L" "));
         }
-        hBox = hBox | hcenter;
-        return hBox;
+        return hbox(std::move(elements)) | hcenter;
     }
 
     static Element ConvertHandcardsToVBox(const Handcards &handcards,
                                           int cursor = -1) {
+        ftxui::Elements elements;
+
         auto cardsPerRow = 8;
-        auto vBox = vbox({});
         auto rowNums = handcards.Number() / cardsPerRow + 1;
         for (auto i = 0; i < rowNums; i++) {
-            auto hBox = ConvertCardRowToHBox(handcards, i, cursor);
-            vBox->children.push_back(hBox);
+            elements.push_back(ConvertCardRowToHBox(handcards, i, cursor));
         }
         auto selfBoxWidth = 42;
-        return vBox | size(WIDTH, EQUAL, selfBoxWidth) | hcenter;
+        return vbox(std::move(elements)) | size(WIDTH, EQUAL, selfBoxWidth) |
+               hcenter;
     }
 
     static ftxui::Color ConvertCardColorToFtxColor(CardColor color) {
@@ -173,24 +173,23 @@ public:
     }
 
     static Element ShowGameSettings(const StartGameSettings &settings) {
-        auto vBox = vbox({});
+        ftxui::Elements elements;
+
         auto boolToWstring = [](bool b) -> std::wstring {
             return b ? L"true" : L"false";
         };
-        vBox->children.push_back(
-            text(L"isDraw2Consumed       : " +
-                 boolToWstring(settings.isdraw2consumed())));
-        vBox->children.push_back(
-            text(L"canSkipRespond        : " +
-                 boolToWstring(settings.canskiprespond())));
-        vBox->children.push_back(
+        elements.push_back(text(L"isDraw2Consumed       : " +
+                                boolToWstring(settings.isdraw2consumed())));
+        elements.push_back(text(L"canSkipRespond        : " +
+                                boolToWstring(settings.canskiprespond())));
+        elements.push_back(
             text(L"hasWildSwapHandsCard  : " +
                  boolToWstring(settings.haswildswaphandscard())));
-        vBox->children.push_back(text(L"canDoubtDraw4         : " +
-                                      boolToWstring(settings.candoubtdraw4())));
-        vBox->children.push_back(text(L"roundTime             : " +
-                                      to_wstring(settings.roundtime())));
-        return vBox;
+        elements.push_back(text(L"canDoubtDraw4         : " +
+                                boolToWstring(settings.candoubtdraw4())));
+        elements.push_back(text(L"roundTime             : " +
+                                to_wstring(settings.roundtime())));
+        return vbox(std::move(elements));
     }
 };
 

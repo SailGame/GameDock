@@ -1,6 +1,6 @@
 #pragma once
 
-#include <ftxui/component/container.hpp>
+#include <ftxui/component/component.hpp>
 
 #include "../../../dock/core/component.h"
 #include "../../../dock/core/ui_proxy.h"

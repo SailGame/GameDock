@@ -10,15 +10,11 @@
 #include "../../../../dock/component/game_settings_ctrl.hpp"
 #include "../dom.hpp"
 
-namespace SailGame { namespace Uno {
+namespace SailGame { namespace Texas {
 
 using namespace ftxui;
 using google::protobuf::Any;
-using ::Uno::StartGameSettings;
-
-const static std::vector<std::string> bool_toggle_entries = {"On", "Off"};
-const static std::vector<std::string> round_time_toggle_entries = {"5s", "10s",
-                                                                   "15s"};
+using ::Texas::StartGameSettings;
 
 class GameSettingsController : public Dock::GameSettingsController {
 public:
@@ -123,4 +119,4 @@ private:
     int mRoundTimeToggleSelected = 0;
 };
 
-}}  // namespace SailGame::Uno
+}}  // namespace SailGame::Texas

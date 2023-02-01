@@ -22,7 +22,7 @@ class Dock {
 public:
     Dock(const std::shared_ptr<UIProxy> &uiProxy);
 
-    ~Dock();
+    ~Dock() = default;
 
     void Loop(bool useRefersher = true);
 
@@ -32,12 +32,14 @@ private:
 public:
     ftxui::ScreenInteractive mScreen{ScreenInteractive::Fullscreen()};
 
-    Container mScreenContainer{Container::Tab(nullptr)};
+    int mScreenContainerSelected{0};
+    Component mScreenContainer;
     std::shared_ptr<UIProxy> mUIProxy;
-    LoginScreen mLoginScreen;
-    LobbyScreen mLobbyScreen;
-    RoomScreen mRoomScreen;
-    PolyComponent<GameScreen> mPolyGameScreen;
+    std::shared_ptr<LoginScreen> mLoginScreen = std::make_shared<LoginScreen>();
+    std::shared_ptr<LobbyScreen> mLobbyScreen = std::make_shared<LobbyScreen>();
+    std::shared_ptr<RoomScreen> mRoomScreen = std::make_shared<RoomScreen>();
+    std::shared_ptr<PolyComponent<GameScreen>> mPolyGameScreen =
+        std::make_shared<PolyComponent<GameScreen>>();
 };
 
 }}  // namespace SailGame::Dock

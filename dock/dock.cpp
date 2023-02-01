@@ -8,45 +8,46 @@ using namespace ftxui;
 using ::Core::ErrorNumber;
 
 Dock::Dock(const std::shared_ptr<UIProxy> &uiProxy) : mUIProxy(uiProxy) {
-    mScreenContainer.Add(&mLoginScreen);
-    mScreenContainer.Add(&mLobbyScreen);
-    mScreenContainer.Add(&mRoomScreen);
-    mScreenContainer.Add(&mPolyGameScreen);
+    mLoginScreen = std::make_shared<LoginScreen>();
+    mLobbyScreen = std::make_shared<LobbyScreen>();
+    mRoomScreen = std::make_shared<RoomScreen>();
+    mPolyGameScreen = std::make_shared<PolyComponent<GameScreen>>();
 
-    mLoginScreen.SetUIProxy(mUIProxy.get());
-    mLobbyScreen.SetUIProxy(mUIProxy.get());
-    mRoomScreen.SetUIProxy(mUIProxy.get());
-    mPolyGameScreen.SetUIProxy(mUIProxy.get());
+    mLoginScreen->SetUIProxy(mUIProxy.get());
+    mLobbyScreen->SetUIProxy(mUIProxy.get());
+    mRoomScreen->SetUIProxy(mUIProxy.get());
+    mPolyGameScreen->SetUIProxy(mUIProxy.get());
 
     // navigation between screens
-    mLoginScreen.OnLogin = [this](const auto &ret) {
+    mLoginScreen->OnLogin = [this](const auto &ret) {
         assert(ret.err() == ErrorNumber::OK);
         spdlog::info("login success");
         auto username = ret.account().username();
         mUIProxy->OnLoginSuccess(ret.token(), username);
-        mLobbyScreen.mUsername = username;
-        mLobbyScreen.mPoints = ret.account().points();
-        mLobbyScreen.TakeFocus();
+        mLobbyScreen->mUsername = username;
+        mLobbyScreen->mPoints = ret.account().points();
+        mLobbyScreen->TakeFocus();
     };
 
-    mLobbyScreen.OnJoinRoom = [this](int roomId) {
+    mLobbyScreen->OnJoinRoom = [this](int roomId) {
         QueryRoomAndSetStateMachine(roomId);
     };
 
-    mRoomScreen.OnExitRoom = [this] { mLobbyScreen.TakeFocus(); };
+    mRoomScreen->OnExitRoom = [this] { mLobbyScreen->TakeFocus(); };
 
     mUIProxy->OnGameStart = [this](GameType game) {
+        spdlog::info("Game Start");
         mUIProxy->SwitchToNewStateMachine(
-            GameAttrFactory::Create(game)->GetStateMachine());
-        mPolyGameScreen.SetComponent(
-            GameAttrFactory::Create(game)->GetGameScreen());
-        mPolyGameScreen.TakeFocus();
+            GameAttrFactory::Get(game)->GetStateMachine());
+        mPolyGameScreen->SetComponent(
+            GameAttrFactory::Get(game)->GetGameScreen());
+        mPolyGameScreen->TakeFocus();
 
-        mPolyGameScreen.Invoke(&GameScreen::RegisterGameOverCallback, [this] {
+        mPolyGameScreen->Invoke(&GameScreen::RegisterGameOverCallback, [this] {
             spdlog::info("Game Over callback invoked");
             mUIProxy->SwitchToNewStateMachine(StateMachine::Create());
             mUIProxy->SetGameStartCallback();
-            mPolyGameScreen.ResetComponent();
+            mPolyGameScreen->ResetComponent();
             auto roomId = dynamic_cast<const State &>(mUIProxy->GetState())
                               .mRoomDetails.roomid();
             QueryRoomAndSetStateMachine(roomId);
@@ -58,6 +59,10 @@ Dock::Dock(const std::shared_ptr<UIProxy> &uiProxy) : mUIProxy(uiProxy) {
         mScreen.ExitLoopClosure()();
         mUIProxy->Stop();
     };
+
+    mScreenContainer = Container::Tab(
+        {mLoginScreen, mLobbyScreen, mRoomScreen, mPolyGameScreen},
+        &mScreenContainerSelected);
 }
 
 void Dock::QueryRoomAndSetStateMachine(int roomId) {
@@ -66,10 +71,8 @@ void Dock::QueryRoomAndSetStateMachine(int roomId) {
     auto state = dynamic_cast<const State &>(mUIProxy->GetState());
     state.mRoomDetails = ret.room();
     mUIProxy->SetState(state);
-    mRoomScreen.TakeFocus();
+    mRoomScreen->TakeFocus();
 }
-
-Dock::~Dock() {}
 
 void Dock::Loop(bool useRefresher) {
     std::unique_ptr<std::thread> refresher;
@@ -83,7 +86,7 @@ void Dock::Loop(bool useRefresher) {
             }
         });
     }
-    mScreen.Loop(&mScreenContainer);
+    mScreen.Loop(mScreenContainer);
     shouldStop = true;
     if (refresher) {
         refresher->join();
